@@ -24,20 +24,30 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 md:p-12 bg-gray-50">
-      <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 font-serif text-center">
+    <main
+      className="flex min-h-screen flex-col items-center p-8 md:p-12"
+      style={{
+        backgroundColor: 'var(--color-sai-cream)',
+        color: 'var(--color-sai-charcoal)',
+        fontFamily: 'var(--font-serif)',
+      }}
+    >
+      <h1
+        className="text-4xl md:text-5xl font-bold mb-4 text-center"
+        style={{ color: 'var(--color-sai-rose)', fontFamily: 'var(--font-serif)' }}
+      >
         Sugar And Icing
       </h1>
-      <p className="text-lg text-gray-600 mb-12">Handmade with love in KL Sentral</p>
-      
-      {/* 2. Grid for the products */}
-      {/* Responsive grid: 1 column on mobile, 2 on tablet, 3 on laptop */}
+      <p className="text-lg mb-12 opacity-90" style={{ color: 'var(--color-sai-charcoal)' }}>
+        Handmade with love in KL Sentral
+      </p>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
         {products?.map((product: Product) => (
-          <ProductCard 
+          <ProductCard
             key={product.id}
-            name={product.name} 
-            price={product.price} 
+            name={product.name}
+            price={product.price}
             description={product.description}
             category={product.category_name}
           />

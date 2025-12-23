@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* The S.A.I. 5-Color Palette */
+  --color-sai-cream: #FDFBF7;      /* Main Background */
+  --color-sai-pink: #F48FB1;       /* Primary Brand Color */
+  --color-sai-rose: #AD1457;       /* Headings & Dark UI */
+  --color-sai-blush: #FCE4EC;      /* Subtle Highlights/Hovers */
+  --color-sai-gold: #D4AF37;       /* Premium Accents */
+  --color-sai-charcoal: #4B5563;   /* Body Text */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Fonts */
+  --font-serif: var(--font-playfair); 
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  /* 5‑color palette derived from your logo */
+  --color-sai-cream:  #FDF7F1;
+  --color-sai-pink:   #F48FB1;
+  --color-sai-rose:   #AD1457;
+  --color-sai-blush:  #F6D7E0; /* slightly deeper for contrast */
+  --color-sai-gold:   #D4AF37;
+  --color-sai-charcoal:#374151;
+
+  /* fonts (keep your font import setup elsewhere) */
+  --font-serif: var(--font-playfair, 'Playfair Display', serif);
+  --font-sans: var(--font-geist-sans, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial);
+}
+
+/* Base defaults to use the palette */
+@layer base {
+  html, body {
+    background-color: var(--color-sai-cream);
+    color: var(--color-sai-charcoal);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    color: var(--color-sai-rose);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Small set of utility classes and a reusable button component */
+@layer components {
+  .bg-sai-cream { background-color: var(--color-sai-cream); }
+  .bg-sai-pink { background-color: var(--color-sai-pink); }
+  .text-sai-rose { color: var(--color-sai-rose); }
+  .text-sai-charcoal { color: var(--color-sai-charcoal); }
+
+  .btn-sai {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-full text-white font-semibold;
+    background-color: var(--color-sai-pink);
+    box-shadow: 0 6px 18px rgba(244,143,177,0.14);
+  }
 }

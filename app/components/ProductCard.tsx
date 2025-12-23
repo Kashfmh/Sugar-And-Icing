@@ -1,32 +1,60 @@
 import React from 'react';
+import Image from 'next/image';
 
-interface ProductProps {
+interface Props {
   name: string;
   price: number;
-  description: string;
-  category: string;
+  description?: string;
+  category?: string;
+  image_url?: string;
 }
 
-const ProductCard = ({ name, price, description, category }: ProductProps) => {
+export default function ProductCard({ name, price, description, category, image_url }: Props) {
   return (
-    <div className="max-w-sm rounded-lg overflow-hidden shadow-lg bg-white border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-      <div className="h-48 bg-gray-200 flex items-center justify-center">
-        {/* Placeholder for now until we connect Supabase Storage */}
-        <span className="text-gray-400 font-serif">Product Image</span>
+    <article
+      className="rounded-lg shadow-md overflow-hidden bg-white"
+      style={{
+        borderTop: `6px solid var(--color-sai-pink)`,
+      }}
+    >
+      <div className="h-48 flex items-center justify-center" style={{ backgroundColor: 'var(--color-sai-cream)' }}>
+        {image_url ? (
+          <Image src={image_url} alt={name} width={640} height={400} className="object-cover w-full h-full" />
+        ) : (
+          <div className="text-sm text-gray-400">Product Image</div>
+        )}
       </div>
-      <div className="px-6 py-4">
-        <span className="text-xs font-semibold text-pink-500 uppercase tracking-wide">{category}</span>
-        <div className="font-bold text-xl mb-2 text-gray-800">{name}</div>
-        <p className="text-gray-600 text-sm line-clamp-2">{description}</p>
-      </div>
-      <div className="px-6 pt-2 pb-6 flex justify-between items-center">
-        <span className="text-2xl font-bold text-gray-900">RM {price.toFixed(2)}</span>
-        <button className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-colors">
-          Add to Cart
-        </button>
-      </div>
-    </div>
-  );
-};
 
-export default ProductCard;
+      <div className="p-6" style={{ backgroundColor: 'var(--color-sai-blush)' }}>
+        {category && (
+          <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-sai-pink)' }}>
+            {category}
+          </div>
+        )}
+
+        <h3 className="text-lg font-bold mt-2" style={{ color: 'var(--color-sai-rose)' }}>
+          {name}
+        </h3>
+
+        <p className="text-sm mt-2" style={{ color: 'var(--color-sai-charcoal)' }}>
+          {description}
+        </p>
+
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-xl font-extrabold" style={{ color: 'var(--color-sai-charcoal)' }}>
+            RM {price.toFixed(2)}
+          </div>
+          <button
+            className="btn-sai"
+            style={{
+              backgroundColor: 'var(--color-sai-pink)',
+              boxShadow: '0 6px 18px rgba(244,143,177,0.18)',
+            }}
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
