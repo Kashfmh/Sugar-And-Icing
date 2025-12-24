@@ -51,7 +51,7 @@ export default async function Home() {
         {/* Hero Image */}
         <div className="mt-12 w-full max-w-2xl aspect-video relative rounded-2xl overflow-hidden shadow-xl">
           <Image
-            src="/hero-cake.jpg"
+            src="/images/hero/baking.png"
             alt="Delicious cakes from Sugar And Icing"
             fill
             className="object-cover"
