@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { ShoppingBag, User } from 'lucide-react';
 
@@ -18,8 +19,14 @@ export default function Navbar() {
     <nav className="fixed top-6 left-0 right-0 z-50 hidden md:flex justify-center w-full px-4">
       <div className="glass-nav rounded-full px-8 py-4 flex items-center gap-8">
         {/* Logo/Brand */}
-        <Link href="/" className="font-serif text-xl font-bold text-sai-rose hover:text-sai-pink transition-colors mr-4">
-          S&I
+        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity mr-2">
+          <Image
+            src="/images/logo/icon-white.png"
+            alt="Sugar And Icing"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
         </Link>
 
         {/* Divider */}
@@ -31,8 +38,8 @@ export default function Navbar() {
             key={item.href}
             href={item.href}
             className={`text-sm font-bold uppercase tracking-wide transition-colors ${pathname === item.href
-                ? 'text-sai-rose'
-                : 'text-sai-charcoal hover:text-sai-pink'
+              ? 'text-sai-rose'
+              : 'text-sai-charcoal hover:text-sai-pink'
               }`}
           >
             {item.label}

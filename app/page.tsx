@@ -1,4 +1,5 @@
 import Navbar from './components/Navbar';
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
 export default async function Home() {
@@ -21,11 +22,16 @@ export default async function Home() {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-4 max-w-lg">
-          {/* Decorative Bakery Icon */}
-          <div className="text-sai-gold mb-2 opacity-80">
-            <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C11.5 2 11 2.19 10.59 2.59L2.59 10.59C1.8 11.37 1.8 12.63 2.59 13.41L10.59 21.41C11.37 22.2 12.63 22.2 13.41 21.41L21.41 13.41C22.2 12.63 22.2 11.37 21.41 10.59L13.41 2.59C13 2.19 12.5 2 12 2M12 4L20 12L12 20L4 12L12 4M7 10.5C6.17 10.5 5.5 11.17 5.5 12S6.17 13.5 7 13.5 8.5 12.83 8.5 12 7.83 10.5 7 10.5M12 10.5C11.17 10.5 10.5 11.17 10.5 12S11.17 13.5 12 13.5 13.5 12.83 13.5 12 12.83 10.5 12 10.5M17 10.5C16.17 10.5 15.5 11.17 15.5 12S16.17 13.5 17 13.5 18.5 12.83 18.5 12 17.83 10.5 17 10.5Z" />
-            </svg>
+          {/* SAI Logo Icon */}
+          <div className="mb-2">
+            <Image
+              src="/images/logo/icon-white.png"
+              alt="Sugar And Icing Logo"
+              width={80}
+              height={80}
+              className="object-contain drop-shadow-lg"
+              priority
+            />
           </div>
 
           {/* Brand Name in Pink */}
