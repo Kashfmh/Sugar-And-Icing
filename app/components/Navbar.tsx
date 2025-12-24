@@ -1,41 +1,60 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ShoppingBag, User } from 'lucide-react';
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/menu', label: 'Menu' },
+    { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-6 px-4">
-      {/* The "Glass" Pill Container */}
-      <div className="bg-white/80 backdrop-blur-md border border-white/40 shadow-soft rounded-full px-8 py-3 flex items-center gap-8 md:gap-12 transition-all hover:shadow-lg">
-        
-        {/* Left Links */}
-        <Link href="/" className="text-sm font-medium text-sai-charcoal hover:text-sai-rose transition-colors">
-          Home
-        </Link>
-        <Link href="#menu" className="text-sm font-medium text-sai-charcoal hover:text-sai-rose transition-colors">
-          Menu
+    <nav className="fixed top-6 left-0 right-0 z-50 hidden md:flex justify-center w-full px-4">
+      <div className="glass-nav rounded-full px-8 py-4 flex items-center gap-8">
+        {/* Logo/Brand */}
+        <Link href="/" className="font-serif text-xl font-bold text-sai-rose hover:text-sai-pink transition-colors mr-4">
+          S&I
         </Link>
 
-        {/* Center Logo (Icon Only for Nav) */}
-        <Link href="/" className="transform hover:scale-110 transition-transform">
-           {/* If you have the icon file, use it here. For now, text fallback: */}
-           <div className="w-10 h-10 bg-sai-pink rounded-full flex items-center justify-center text-white font-serif font-bold text-xl shadow-md">
-             S
-           </div>
-        </Link>
+        {/* Divider */}
+        <div className="h-6 w-[1px] bg-sai-gold/30"></div>
 
-        {/* Right Links */}
-        <Link href="#about" className="text-sm font-medium text-sai-charcoal hover:text-sai-rose transition-colors">
-          About
-        </Link>
-        
-        {/* Cart Button with Counter */}
-        <button className="relative group">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-sai-charcoal group-hover:text-sai-rose transition-colors">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-          </svg>
-          <span className="absolute -top-2 -right-2 bg-sai-rose text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+        {/* Navigation Links */}
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`text-sm font-bold uppercase tracking-wide transition-colors ${pathname === item.href
+                ? 'text-sai-rose'
+                : 'text-sai-charcoal hover:text-sai-pink'
+              }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+
+        {/* Divider */}
+        <div className="h-6 w-[1px] bg-sai-gold/30"></div>
+
+        {/* Cart Icon with Badge */}
+        <Link href="/cart" className="relative group">
+          <ShoppingBag className="w-6 h-6 text-sai-gold group-hover:text-sai-pink transition-colors" />
+          {/* TODO: Connect to cart state */}
+          <span className="absolute -top-2 -right-2 bg-sai-rose text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-sm">
             0
           </span>
-        </button>
+        </Link>
+
+        {/* Profile Icon */}
+        <Link href="/profile" className="group">
+          <User className="w-6 h-6 text-sai-gold group-hover:text-sai-pink transition-colors" />
+        </Link>
       </div>
     </nav>
   );
