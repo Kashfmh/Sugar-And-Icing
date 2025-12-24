@@ -25,8 +25,13 @@ const dancingScript = Dancing_Script({
 });
 
 export const metadata: Metadata = {
-  title: "Sugar And Icing",
-  description: "Handmade with love in KL Sentral",
+  title: "Sugar And Icing - Handmade Treats in Brickfields",
+  description: "Artisanal bakery offering handmade brownies, cakes, and sweet treats. Freshly baked with love in KL Sentral, Brickfields.",
+  openGraph: {
+    title: "Sugar And Icing",
+    description: "Handmade with love in KL Sentral",
+    images: ['/images/logo/full-logo-white.png'],
+  },
 };
 
 export default function RootLayout({

@@ -7,6 +7,7 @@ import CategoryTabs from '../components/CategoryTabs';
 import Badge from '../components/Badge';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Product {
     id: string;
@@ -57,8 +58,15 @@ export default function MenuPage() {
                     <Link href="/" className="text-sai-charcoal">
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
+                    <Image
+                        src="/images/logo/icon-white.png"
+                        alt="Sugar And Icing"
+                        width={32}
+                        height={32}
+                        className="object-contain"
+                    />
                     <h1 className="font-serif text-2xl" style={{ color: 'var(--color-sai-rose)' }}>
-                        Sugar And Icing
+                        Our Menu
                     </h1>
                 </div>
             </header>
