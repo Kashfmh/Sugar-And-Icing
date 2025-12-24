@@ -19,13 +19,14 @@ export default function Navbar() {
     <nav className="fixed top-6 left-0 right-0 z-50 hidden md:flex justify-center w-full px-4">
       <div className="glass-nav rounded-full px-8 py-4 flex items-center gap-8">
         {/* Logo/Brand */}
-        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity mr-2">
+        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity mr-2 relative z-50">
           <Image
             src="/images/logo/icon-white.png"
             alt="Sugar And Icing"
             width={40}
             height={40}
             className="object-contain"
+            priority
           />
         </Link>
 

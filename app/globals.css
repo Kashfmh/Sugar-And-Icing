@@ -1,29 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  /* Custom color palette for Sugar And Icing */
-  --color-sai-cream: #FCF6F3;
-  --color-sai-pink: #F48FB1;
-  --color-sai-rose: #AD1457;
-  --color-sai-blush: #F6D7E0;
-  --color-sai-gold: #D4AF37;
-  --color-sai-charcoal: #4B5563;
+  /* Minimal Color Palette - Alo! Inspired */
+  --color-sai-yellow: #F5A623;
+  /* Primary accent */
+  --color-sai-charcoal: #2B2B2B;
+  /* Primary text */
+  --color-sai-white: #FFFFFF;
+  /* Pure white */
+  --color-sai-light: #F5F5F5;
+  /* Light gray backgrounds */
+  --color-sai-dark: #3D3D3D;
+  /* Dark buttons/elements */
+  --color-sai-border: #E0E0E0;
+  /* Subtle borders */
 
   /* Shadows */
-  --shadow-soft: 0 4px 20px -2px rgba(244, 143, 177, 0.15);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
 
   /* Fonts */
   --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --font-sans: 'Geist Sans', Inter, system-ui, sans-serif;
 }
 
 /* Glassmorphism for navbar */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-sai-border);
+  box-shadow: var(--shadow-soft);
 }
 
 /* Base element styles using the palette */
@@ -31,7 +38,7 @@
 
   html,
   body {
-    background-color: var(--color-sai-cream);
+    background-color: var(--color-sai-white);
     color: var(--color-sai-charcoal);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -44,7 +51,7 @@
   h3,
   h4 {
     font-family: var(--font-serif);
-    color: var(--color-sai-rose);
+    color: var(--color-sai-charcoal);
   }
 }
 
@@ -54,75 +61,66 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 1rem;
-    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
     font-weight: 600;
     color: #fff;
-    background-color: var(--color-sai-pink);
-    box-shadow: 0 6px 18px rgba(244, 143, 177, 0.18);
+    background-color: var(--color-sai-dark);
+    box-shadow: var(--shadow-soft);
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .btn-sai:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(244, 143, 177, 0.25);
+    background-color: var(--color-sai-charcoal);
+    box-shadow: var(--shadow-medium);
   }
 
-  /* Hero ribbon for small decorative tagline */
-  .ribbon {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background: linear-gradient(180deg, rgba(244, 143, 177, 0.12), rgba(244, 143, 177, 0.06));
-    color: var(--color-sai-pink);
-    border-radius: 9999px;
+  .btn-sai-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
     font-weight: 600;
-    transform: rotate(-5deg);
-    box-shadow: 0 6px 18px rgba(244, 143, 177, 0.06);
+    color: var(--color-sai-charcoal);
+    background-color: transparent;
+    border: 2px solid var(--color-sai-yellow);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-sai-secondary:hover {
+    background-color: var(--color-sai-yellow);
+    color: white;
   }
 }
 
 /* Utility classes for custom colors */
 @layer utilities {
-  .bg-sai-cream {
-    background-color: var(--color-sai-cream);
+  .bg-sai-white {
+    background-color: var(--color-sai-white);
   }
 
-  .bg-sai-pink {
-    background-color: var(--color-sai-pink);
+  .bg-sai-light {
+    background-color: var(--color-sai-light);
   }
 
-  .bg-sai-rose {
-    background-color: var(--color-sai-rose);
+  .bg-sai-yellow {
+    background-color: var(--color-sai-yellow);
   }
 
-  .bg-sai-blush {
-    background-color: var(--color-sai-blush);
+  .bg-sai-dark {
+    background-color: var(--color-sai-dark);
   }
 
-  .bg-sai-gold {
-    background-color: var(--color-sai-gold);
-  }
-
-  .text-sai-pink {
-    color: var(--color-sai-pink);
-  }
-
-  .text-sai-rose {
-    color: var(--color-sai-rose);
+  .text-sai-yellow {
+    color: var(--color-sai-yellow);
   }
 
   .text-sai-charcoal {
     color: var(--color-sai-charcoal);
-  }
-
-  .text-sai-gold {
-    color: var(--color-sai-gold);
-  }
-
-  .font-hand {
-    font-family: var(--font-hand, 'Dancing Script', cursive);
   }
 
   .font-serif {
@@ -131,5 +129,9 @@
 
   .shadow-soft {
     box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
   }
 }

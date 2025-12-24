@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 
 export default async function Home() {
   return (
-    <main className="h-screen bg-sai-cream overflow-hidden">
+    <main className="h-screen bg-sai-white overflow-hidden">
       {/* Desktop Navbar - hidden on mobile */}
       <div className="hidden md:block">
         <Navbar />
@@ -16,7 +16,7 @@ export default async function Home() {
         <div
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `linear-gradient(to bottom, rgba(253, 251, 247, 0.3) 0%, rgba(253, 251, 247, 0.5) 60%, rgba(253, 251, 247, 0.8) 100%), url('/images/hero/baking.png')`
+            backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0.85) 100%), url('/images/hero/baking.png')`
           }}
         />
 
@@ -34,20 +34,20 @@ export default async function Home() {
             />
           </div>
 
-          {/* Brand Name in Pink */}
-          <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight drop-shadow-sm" style={{ color: 'var(--color-sai-rose)' }}>
+          {/* Brand Name */}
+          <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight drop-shadow-sm text-sai-charcoal">
             Sugar And Icing
           </h1>
 
-          {/* Handwritten Tagline */}
-          <p className="font-[family-name:var(--font-dancing)] text-3xl md:text-5xl transform -rotate-2 origin-center mt-2 mb-8" style={{ color: '#8c737a' }}>
+          {/* Tagline */}
+          <p className="text-xl md:text-2xl mt-2 mb-8 text-sai-charcoal/70">
             Freshly Baked in Brickfields
           </p>
 
           {/* CTA Button */}
           <a
             href="/menu"
-            className="bg-sai-pink hover:bg-sai-rose text-white font-bold px-10 py-4 rounded-full shadow-xl transition-all transform hover:-translate-y-1 hover:scale-105 flex items-center gap-3 text-xl"
+            className="bg-sai-dark hover:bg-sai-charcoal text-white font-bold px-10 py-4 rounded-lg shadow-medium transition-all flex items-center gap-3 text-lg"
           >
             Shop Now
             <ArrowRight className="w-6 h-6" />
