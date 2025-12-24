@@ -42,22 +42,18 @@ export default function ProductCard({ name, price, description, category, image_
       </div>
 
       {/* Footer stripe (blush) with price + button */}
-      <div className="px-6 py-4" style={{ backgroundColor: 'var(--color-sai-blush)', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+      <div className="px-6 py-4 relative" style={{ backgroundColor: 'var(--color-sai-blush)', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
         <div className="flex items-center justify-between">
           <div className="text-xl font-extrabold" style={{ color: 'var(--color-sai-charcoal)' }}>
             RM {price.toFixed(2)}
           </div>
+
+          {/* Round Pink Add Button */}
           <button
-            className="btn-sai"
+            className="w-12 h-12 rounded-full bg-sai-pink hover:bg-sai-rose transition-all shadow-md flex items-center justify-center text-white text-2xl font-light hover:scale-110"
             aria-label={`Add ${name} to cart`}
-            style={{
-              minWidth: 120,
-              padding: '0.5rem 1rem',
-              backgroundColor: 'var(--color-sai-pink)',
-              boxShadow: '0 6px 18px rgba(244,143,177,0.14)',
-            }}
           >
-            Add to Cart
+            +
           </button>
         </div>
       </div>
