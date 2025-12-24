@@ -6,6 +6,15 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Safelist classes used only via @apply so Tailwind generates them
+  safelist: [
+    'inline-flex', 'items-center', 'justify-center',
+    'px-4', 'py-2', 'rounded-full', 'text-white', 'font-semibold',
+    // ProductCard classes
+    'bg-white', 'rounded-lg', 'shadow-md', 'overflow-hidden',
+    // Grid layout classes
+    'grid', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-8',
+  ],
   theme: {
     extend: {
       colors: {

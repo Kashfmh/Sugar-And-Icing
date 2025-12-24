@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google"; // Added Playfair_Display
+import { Geist, Geist_Mono, Playfair_Display, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,15 +12,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Load the Bakery Font
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
 });
 
+// New Handwritten Font
+const dancingScript = Dancing_Script({
+  variable: "--font-dancing",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Sugar And Icing",
-  description: "Handmade with love",
+  description: "Handmade with love in KL Sentral",
 };
 
 export default function RootLayout({
@@ -31,8 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        // Add playfair.variable to this list so Tailwind can find it
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${dancingScript.variable} antialiased bg-sai-cream text-sai-charcoal`}
       >
         {children}
       </body>
