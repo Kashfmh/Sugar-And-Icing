@@ -86,13 +86,13 @@
     font-weight: 600;
     color: var(--color-sai-charcoal);
     background-color: transparent;
-    border: 2px solid var(--color-sai-yellow);
+    border: 2px solid var(--color-sai-pink);
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .btn-sai-secondary:hover {
-    background-color: var(--color-sai-yellow);
+    background-color: var(--color-sai-pink);
     color: white;
   }
 }
@@ -107,16 +107,16 @@
     background-color: var(--color-sai-light);
   }
 
-  .bg-sai-yellow {
-    background-color: var(--color-sai-yellow);
+  .bg-sai-pink {
+    background-color: var(--color-sai-pink);
   }
 
   .bg-sai-dark {
     background-color: var(--color-sai-dark);
   }
 
-  .text-sai-yellow {
-    color: var(--color-sai-yellow);
+  .text-sai-pink {
+    color: var(--color-sai-pink);
   }
 
   .text-sai-charcoal {
