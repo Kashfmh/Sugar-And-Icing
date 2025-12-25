@@ -51,7 +51,7 @@ export default function MenuPage() {
         : products.filter(p => p.category_name === activeCategory);
 
     return (
-        <main className="min-h-screen bg-sai-cream pb-24 md:pb-8">
+        <main className="min-h-screen bg-sai-white pb-24 md:pb-8">
             {/* Header */}
             <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-white/40 px-4 py-4">
                 <div className="max-w-6xl mx-auto flex items-center gap-4">
@@ -65,7 +65,7 @@ export default function MenuPage() {
                         height={32}
                         className="object-contain"
                     />
-                    <h1 className="font-serif text-2xl" style={{ color: 'var(--color-sai-rose)' }}>
+                    <h1 className="font-serif text-2xl text-sai-charcoal">
                         Our Menu
                     </h1>
                 </div>
@@ -73,10 +73,10 @@ export default function MenuPage() {
 
             {/* Tagline */}
             <section className="px-6 pt-8 pb-4">
-                <h2 className="font-[family-name:var(--font-dancing)] text-3xl text-center" style={{ color: 'var(--color-sai-gold)' }}>
+                <h2 className="text-2xl text-center text-sai-charcoal/70">
                     Sweet cravings sorted
                 </h2>
-                <p className="font-serif text-3xl text-center mt-2" style={{ color: 'var(--color-sai-rose)' }}>
+                <p className="font-serif text-3xl text-center mt-2 text-sai-charcoal">
                     Freshly Baked
                 </p>
             </section>
