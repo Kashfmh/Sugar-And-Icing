@@ -62,7 +62,7 @@ export default async function Home() {
           {/* Social Icons */}
           <div className="flex gap-3">
             <a
-              href="https://wa.me/"
+              href="https://wa.me/60108091351?text=Hi%20i%20am%20looking%20forward%20to%20buyign%20something"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
@@ -72,7 +72,7 @@ export default async function Home() {
               </svg>
             </a>
             <a
-              href="https://facebook.com/"
+              href="https://www.facebook.com/profile.php?id=100063595831512"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
@@ -80,13 +80,14 @@ export default async function Home() {
               <Facebook className="w-4 h-4" />
             </a>
             <a
-              href="https://twitter.com/"
+              href="https://www.instagram.com/_sugar_and_icing"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
             >
-              <Twitter className="w-4 h-4" />
+              <Instagram className="w-4 h-4" />
             </a>
+
             <a
               href="https://tiktok.com/"
               target="_blank"
@@ -103,6 +104,6 @@ export default async function Home() {
 
       {/* Keep current bottom nav for mobile */}
       <BottomNav />
-    </main>
+    </main >
   );
 }
