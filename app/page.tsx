@@ -7,11 +7,35 @@ import { Instagram, Facebook, Twitter } from 'lucide-react';
 export default async function Home() {
   return (
     <main className="min-h-screen overflow-hidden relative">
+
       {/* Background Image with Transparency */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90"
         style={{ backgroundImage: "url('/images/hero/baking.png')" }}
       />
+
+      {/* Brand Logo - Top Left Floating */}
+      <div className="absolute top-4 left-4 z-40 hidden md:block">
+        <Image
+          src="/images/logo/full-logo-white.png"
+          alt="Sugar And Icing"
+          width={340}
+          height={80}
+          className="object-contain hover:scale-105 transition-transform duration-300 -ml-16 -mt-4"
+          priority
+        />
+      </div>
+      <div className="absolute top-4 left-4 z-40 block md:hidden">
+        <Image
+          src="/images/logo/icon-white.png"
+          alt="Sugar And Icing"
+          width={296}
+          height={96}
+          className="object-contain -ml-16 -mt-8"
+          priority
+        />
+      </div>
+
       {/* Desktop Navbar */}
       <div className="hidden md:block">
         <Navbar />
@@ -54,15 +78,15 @@ export default async function Home() {
 
         {/* Social Icons - Bottom Left */}
         <div className="absolute bottom-8 left-8 flex flex-col gap-4 hidden md:flex">
-          {/* Daily Deals Button (Optional) */}
-          <button className="bg-sai-charcoal text-white px-4 py-2 rounded-lg text-sm font-semibold mb-2">
-            Daily Deals
-          </button>
+          {/* Socials Label */}
+          <div className="bg-sai-charcoal text-white px-4 py-2 rounded-lg text-sm font-semibold mb-2 w-fit cursor-default select-none">
+            Follow My Socials
+          </div>
 
           {/* Social Icons */}
-          <div className="flex gap-3">
+          <div className="flex gap-5">
             <a
-              href="https://wa.me/60108091351?text=Hi%20i%20am%20looking%20forward%20to%20buyign%20something"
+              href="https://wa.me/60108091351?text=Hi,%20I%20am%20looking%20to%20buying%20something.%20Are%20you%20available?"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
@@ -72,7 +96,7 @@ export default async function Home() {
               </svg>
             </a>
             <a
-              href="https://www.facebook.com/profile.php?id=100063595831512"
+              href="https://facebook.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
@@ -80,23 +104,12 @@ export default async function Home() {
               <Facebook className="w-4 h-4" />
             </a>
             <a
-              href="https://www.instagram.com/_sugar_and_icing"
+              href="https://instagram.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
             >
               <Instagram className="w-4 h-4" />
-            </a>
-
-            <a
-              href="https://tiktok.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-sai-pink transition-colors"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
-              </svg>
             </a>
           </div>
         </div>
