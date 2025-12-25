@@ -1,23 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* Minimal Color Palette - Alo! Inspired */
-  --color-sai-yellow: #F5A623;
-  /* Primary accent */
+  /* Clean Minimal Color Palette */
+  --color-sai-pink: #F48FB1;
+  /* Primary accent - use sparingly */
   --color-sai-charcoal: #2B2B2B;
   /* Primary text */
   --color-sai-white: #FFFFFF;
   /* Pure white */
-  --color-sai-light: #F5F5F5;
-  /* Light gray backgrounds */
-  --color-sai-dark: #3D3D3D;
-  /* Dark buttons/elements */
-  --color-sai-border: #E0E0E0;
-  /* Subtle borders */
+  --color-sai-gray: #6B7280;
+  /* Secondary text */
+  --color-sai-light-gray: #F3F4F6;
+  /* Subtle backgrounds */
+  --color-sai-border: #E5E7EB;
+  /* Borders */
 
   /* Shadows */
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-large: 0 10px 25px rgba(0, 0, 0, 0.15);
 
   /* Fonts */
   --font-serif: 'Playfair Display', Georgia, serif;
@@ -30,10 +31,10 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--color-sai-border);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-medium);
 }
 
-/* Base element styles using the palette */
+/* Base element styles */
 @layer base {
 
   html,
@@ -55,64 +56,61 @@
   }
 }
 
-/* Small component utilities */
+/* Button components */
 @layer components {
-  .btn-sai {
+  .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 2rem;
     border-radius: 0.5rem;
     font-weight: 600;
-    color: #fff;
-    background-color: var(--color-sai-dark);
+    color: white;
+    background-color: var(--color-sai-pink);
     box-shadow: var(--shadow-soft);
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
-  .btn-sai:hover {
-    background-color: var(--color-sai-charcoal);
+  .btn-primary:hover {
+    background-color: #E07BA0;
     box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
   }
 
-  .btn-sai-secondary {
+  .btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 2rem;
     border-radius: 0.5rem;
     font-weight: 600;
     color: var(--color-sai-charcoal);
     background-color: transparent;
-    border: 2px solid var(--color-sai-pink);
+    border: 2px solid var(--color-sai-charcoal);
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
-  .btn-sai-secondary:hover {
-    background-color: var(--color-sai-pink);
+  .btn-secondary:hover {
+    background-color: var(--color-sai-charcoal);
     color: white;
   }
 }
 
-/* Utility classes for custom colors */
+/* Utility classes */
 @layer utilities {
   .bg-sai-white {
     background-color: var(--color-sai-white);
   }
 
-  .bg-sai-light {
-    background-color: var(--color-sai-light);
+  .bg-sai-light-gray {
+    background-color: var(--color-sai-light-gray);
   }
 
   .bg-sai-pink {
     background-color: var(--color-sai-pink);
-  }
-
-  .bg-sai-dark {
-    background-color: var(--color-sai-dark);
   }
 
   .text-sai-pink {
@@ -121,6 +119,14 @@
 
   .text-sai-charcoal {
     color: var(--color-sai-charcoal);
+  }
+
+  .text-sai-gray {
+    color: var(--color-sai-gray);
+  }
+
+  .border-sai-border {
+    border-color: var(--color-sai-border);
   }
 
   .font-serif {
@@ -133,5 +139,9 @@
 
   .shadow-medium {
     box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-large {
+    box-shadow: var(--shadow-large);
   }
 }
