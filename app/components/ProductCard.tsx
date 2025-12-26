@@ -24,8 +24,8 @@ export default function ProductCard({ name, price, description, category, image_
         )}
       </div>
 
-      {/* Content Section with Pink Gradient Background */}
-      <div className="p-6 flex-grow" style={{ background: 'linear-gradient(to bottom, #FCE4EC 0%, #F8BBD0 100%)' }}>
+      {/* Content Section with Pink Background */}
+      <div className="p-6 flex-grow" style={{ backgroundColor: '#fce4ec' }}>
         {category && (
           <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#F48FB1' }}>
             {category}
@@ -36,13 +36,24 @@ export default function ProductCard({ name, price, description, category, image_
           {name}
         </h3>
 
-        <p className="text-sm mb-4" style={{ color: '#4A4A4A' }}>
+        {/* Description with 2-line limit */}
+        <p
+          className="text-sm mb-4 line-clamp-2"
+          style={{ color: '#4A4A4A' }}
+          title={description}
+        >
           {description}
         </p>
 
         {/* Price and Button */}
         <div className="flex items-center justify-between mt-4">
-          <div className="text-2xl font-bold" style={{ color: '#1A237E' }}>
+          <div
+            className="text-2xl font-bold"
+            style={{
+              color: '#1A237E',
+              fontFamily: "'Playfair Display', Georgia, serif"
+            }}
+          >
             RM {price.toFixed(2)}
           </div>
 

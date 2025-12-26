@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
+import ProductCardSkeleton from '../components/ProductCardSkeleton';
+import ProductListItem from '../components/ProductListItem';
+import ProductListItemSkeleton from '../components/ProductListItemSkeleton';
 import CategoryTabs from '../components/CategoryTabs';
 import Badge from '../components/Badge';
 import BottomNav from '../components/BottomNav';
@@ -256,9 +259,20 @@ export default function MenuPage() {
             <section className="px-6 py-4">
                 <div className="max-w-6xl mx-auto">
                     {loading ? (
-                        <div className="text-center py-12">
-                            <p className="text-sai-charcoal/60">Loading delicious treats...</p>
-                        </div>
+                        <>
+                            {/* Desktop: Card Skeletons */}
+                            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <ProductCardSkeleton key={i} />
+                                ))}
+                            </div>
+                            {/* Mobile: List Skeletons */}
+                            <div className="md:hidden flex flex-col gap-4">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <ProductListItemSkeleton key={i} />
+                                ))}
+                            </div>
+                        </>
                     ) : paginatedProducts.length === 0 ? (
                         <div className="text-center py-12">
                             <p className="text-sai-charcoal/60">
@@ -267,7 +281,8 @@ export default function MenuPage() {
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Desktop: Card Grid */}
+                            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {paginatedProducts.map((product, index) => (
                                     <div key={product.id} className="relative">
                                         {/* Best Seller Badge on first product */}
@@ -284,6 +299,20 @@ export default function MenuPage() {
                                             image_url={product.image_url || undefined}
                                         />
                                     </div>
+                                ))}
+                            </div>
+
+                            {/* Mobile: Compact List */}
+                            <div className="md:hidden flex flex-col gap-4">
+                                {paginatedProducts.map((product) => (
+                                    <ProductListItem
+                                        key={product.id}
+                                        name={product.name}
+                                        price={product.price}
+                                        description={product.description || undefined}
+                                        category={product.category_name}
+                                        image_url={product.image_url || undefined}
+                                    />
                                 ))}
                             </div>
 
