@@ -39,12 +39,12 @@ export function Select({ value, onChange, options, className }: SelectProps) {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="appearance-none bg-white border border-gray-200 rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2 min-w-[180px]"
+                className="appearance-none bg-white border border-gray-200 rounded-lg pl-4 pr-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between min-w-[180px]"
             >
                 <span>{selectedOption?.label}</span>
                 <ChevronDown
                     className={cn(
-                        "w-4 h-4 text-gray-400 transition-transform ml-auto",
+                        "w-4 h-4 text-gray-400 transition-transform",
                         isOpen && "rotate-180"
                     )}
                 />
