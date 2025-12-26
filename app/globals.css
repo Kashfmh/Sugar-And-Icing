@@ -6,8 +6,8 @@
   /* Primary accent - use sparingly */
   --color-sai-charcoal: #2B2B2B;
   /* Primary text */
-  --color-sai-white: #FFFFFF;
-  /* Pure white */
+  --color-sai-white: #FAFAF9;
+  /* Soft off-white (easier on eyes) */
   --color-sai-gray: #6B7280;
   /* Secondary text */
   --color-sai-light-gray: #F3F4F6;
@@ -27,7 +27,7 @@
 
 /* Glassmorphism for navbar */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(250, 250, 249, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--color-sai-border);

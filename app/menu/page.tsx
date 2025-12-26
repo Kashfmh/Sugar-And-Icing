@@ -202,9 +202,13 @@ export default function MenuPage() {
                     {/* Filter Button */}
                     <button
                         onClick={() => setIsFilterModalOpen(true)}
-                        className="w-12 h-12 rounded-xl bg-sai-pink text-white flex items-center justify-center hover:bg-sai-pink/90 transition-colors"
+                        className="relative w-12 h-12 rounded-xl bg-sai-pink text-white flex items-center justify-center hover:bg-sai-pink/90 transition-colors"
                     >
                         <SlidersHorizontal className="w-5 h-5" />
+                        {/* Active filter indicator */}
+                        {sortBy !== 'newest' && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+                        )}
                     </button>
                 </div>
 
