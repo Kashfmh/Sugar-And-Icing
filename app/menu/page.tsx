@@ -17,9 +17,10 @@ interface Product {
     id: string;
     name: string;
     price: number;
-    description: string;
+    description?: string | null;
     category_name: string;
-    image_url: string;
+    image_url?: string | null;
+    is_available?: boolean;
     is_best_seller?: boolean;
 }
 
@@ -33,7 +34,7 @@ export default function MenuPage() {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const itemsPerPage = 12;
 
-    const categories = ['All', 'Signature Cakes', 'Brownies', 'Cupcakes', 'Fruit Cakes'];
+    const categories = ['All', 'Cakes', 'Brownies', 'Fruit Cakes', 'Banana Bread'];
 
     useEffect(() => {
         fetchProducts();
@@ -55,20 +56,14 @@ export default function MenuPage() {
         }
     }
 
-    // Filter by category and search
-    let filteredProducts = activeCategory === 'All'
-        ? products
-        : products.filter(p => p.category_name === activeCategory);
-
-    // Apply search filter
-    if (searchQuery) {
-        filteredProducts = filteredProducts.filter(p =>
-            p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }
-
-    // Apply sorting
+    // Filter products by category and search
+    const filteredProducts = products.filter(product => {
+        const matchesCategory = activeCategory === 'All' || product.category_name === activeCategory;
+        const matchesSearch = !searchQuery ||
+            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         switch (sortBy) {
             case 'price-low':
@@ -100,18 +95,18 @@ export default function MenuPage() {
                 <Image
                     src="/images/logo/full-logo-pink.png"
                     alt="Sugar And Icing"
-                    width={120}
+                    width={80}
                     height={80}
                     className="object-contain hover:scale-105 transition-transform duration-300"
                     priority
                 />
             </div>
-            <div className="absolute top-4 left-4 z-40 block md:hidden">
+            <div className="absolute top-4 right-4 z-50 block md:hidden">
                 <Image
                     src="/images/logo/icon-pink.png"
                     alt="Sugar And Icing"
-                    width={50}
-                    height={50}
+                    width={35}
+                    height={35}
                     className="object-contain"
                     priority
                 />

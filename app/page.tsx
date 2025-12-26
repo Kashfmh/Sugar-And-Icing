@@ -18,7 +18,7 @@ export default async function Home() {
         <Image
           src="/images/logo/full-logo-white.png"
           alt="Sugar And Icing"
-          width={120}
+          width={80}
           height={80}
           className="object-contain hover:scale-105 transition-transform duration-300"
           priority
