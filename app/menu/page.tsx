@@ -44,8 +44,7 @@ export default function MenuPage() {
         try {
             const { data, error } = await supabase
                 .from('products')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('*');
 
             if (error) throw error;
             setProducts(data || []);
