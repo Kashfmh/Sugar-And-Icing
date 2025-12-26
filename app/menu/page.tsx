@@ -94,7 +94,29 @@ export default function MenuPage() {
     }, [activeCategory, searchQuery, sortBy]);
 
     return (
-        <main className="min-h-screen bg-sai-white pb-24 md:pb-8">
+        <main className="min-h-screen bg-sai-white pb-24 md:pb-8 relative">
+            {/* Brand Logo - Top Left Floating */}
+            <div className="absolute top-4 left-4 z-40 hidden md:block">
+                <Image
+                    src="/images/logo/full-logo-pink.png"
+                    alt="Sugar And Icing"
+                    width={120}
+                    height={80}
+                    className="object-contain hover:scale-105 transition-transform duration-300"
+                    priority
+                />
+            </div>
+            <div className="absolute top-4 left-4 z-40 block md:hidden">
+                <Image
+                    src="/images/logo/icon-pink.png"
+                    alt="Sugar And Icing"
+                    width={50}
+                    height={50}
+                    className="object-contain"
+                    priority
+                />
+            </div>
+
             {/* Mobile Header - Simplified */}
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center gap-4">
