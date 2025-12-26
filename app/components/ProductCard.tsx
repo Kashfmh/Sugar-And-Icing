@@ -12,11 +12,11 @@ interface Props {
 export default function ProductCard({ name, price, description, category, image_url }: Props) {
   return (
     <article
-      className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow"
+      className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow h-full"
       style={{ borderTop: `4px solid #F48FB1` }}
     >
-      {/* Image Placeholder */}
-      <div className="h-48 flex items-center justify-center bg-sai-white">
+      {/* Image Placeholder - HEADER */}
+      <div className="h-48 flex items-center justify-center bg-sai-white flex-shrink-0">
         {image_url ? (
           <Image src={image_url} alt={name} width={640} height={400} className="object-cover w-full h-full" />
         ) : (
@@ -24,36 +24,46 @@ export default function ProductCard({ name, price, description, category, image_
         )}
       </div>
 
-      {/* Content Section with Pink Background */}
-      <div className="p-6 flex-grow" style={{ backgroundColor: '#fce4ec' }}>
+      {/* Content Section - BODY (grows to fill space) */}
+      <div className="p-6 flex flex-col flex-grow" style={{ backgroundColor: '#fce4ec' }}>
+        {/* Category */}
         {category && (
           <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#F48FB1' }}>
             {category}
           </div>
         )}
 
+        {/* Product Name */}
         <h3 className="text-xl font-bold mb-2" style={{ color: '#C2185B', fontFamily: 'var(--font-serif)' }}>
           {name}
         </h3>
 
-        {/* Description with 2-line limit and fixed height */}
+        {/* Description - fixed 2 lines */}
         <p
           className="text-sm mb-4 line-clamp-2"
           style={{
             color: '#4A4A4A',
-            minHeight: '2.5em' // Always reserve space for 2 lines
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            minHeight: '2.5em',
+            maxHeight: '2.5em'
           }}
           title={description}
         >
           {description}
         </p>
 
-        {/* Price and Button */}
-        <div className="flex items-center justify-between mt-4">
+        {/* Spacer to push footer to bottom */}
+        <div className="flex-grow" />
+
+        {/* FOOTER - Price and Button (always at bottom) */}
+        <div className="flex items-center justify-between mt-auto">
           <div
             className="text-2xl font-bold"
             style={{
-              color: '#1A237E',
+              color: '#000000',
               fontFamily: "'Playfair Display', Georgia, serif"
             }}
           >

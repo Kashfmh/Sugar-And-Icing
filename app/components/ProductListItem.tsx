@@ -42,7 +42,7 @@ export default function ProductListItem({ name, price, description, category, im
                     <div
                         className="text-lg font-bold"
                         style={{
-                            color: '#1A237E',
+                            color: '#000000',
                             fontFamily: "'Playfair Display', Georgia, serif"
                         }}
                     >

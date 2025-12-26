@@ -104,7 +104,7 @@ export default function MenuPage() {
                     priority
                 />
             </div>
-            <div className="absolute top-4 right-4 z-50 block md:hidden">
+            <div className="fixed top-4 right-4 z-50 block md:hidden">
                 <Image
                     src="/images/logo/icon-pink.png"
                     alt="Sugar And Icing"
