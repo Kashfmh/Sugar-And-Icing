@@ -51,6 +51,7 @@ export default function MenuPage() {
             setProducts(data || []);
         } catch (error) {
             console.error('Error fetching products:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
         } finally {
             setLoading(false);
         }
@@ -279,9 +280,9 @@ export default function MenuPage() {
                                         <ProductCard
                                             name={product.name}
                                             price={product.price}
-                                            description={product.description}
+                                            description={product.description || undefined}
                                             category={product.category_name}
-                                            image_url={product.image_url}
+                                            image_url={product.image_url || undefined}
                                         />
                                     </div>
                                 ))}
