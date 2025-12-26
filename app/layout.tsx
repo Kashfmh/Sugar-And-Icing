@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display, Dancing_Script } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 
 const geistSans = Geist({
@@ -44,7 +45,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${dancingScript.variable} antialiased bg-sai-cream text-sai-charcoal`}
       >
+        {/* Desktop Navbar - Fixed across all pages */}
+        <div className="hidden md:block">
+          <Navbar />
+        </div>
+
         {children}
+
+        {/* Mobile Bottom Nav - Fixed across all pages */}
         <BottomNav />
       </body>
     </html>

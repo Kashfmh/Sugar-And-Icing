@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
 import CategoryTabs from '../components/CategoryTabs';
 import Badge from '../components/Badge';
-import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -25,6 +24,10 @@ export default function MenuPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [activeCategory, setActiveCategory] = useState('All');
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'name'>('newest');
+    const itemsPerPage = 12;
 
     const categories = ['All', 'Signature Cakes', 'Brownies', 'Cupcakes', 'Fruit Cakes'];
 
@@ -48,17 +51,46 @@ export default function MenuPage() {
         }
     }
 
-    const filteredProducts = activeCategory === 'All'
+    // Filter by category and search
+    let filteredProducts = activeCategory === 'All'
         ? products
         : products.filter(p => p.category_name === activeCategory);
 
+    // Apply search filter
+    if (searchQuery) {
+        filteredProducts = filteredProducts.filter(p =>
+            p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }
+
+    // Apply sorting
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+        switch (sortBy) {
+            case 'price-low':
+                return a.price - b.price;
+            case 'price-high':
+                return b.price - a.price;
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'newest':
+            default:
+                return 0;
+        }
+    });
+
+    // Pagination
+    const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCategory, searchQuery, sortBy]);
+
     return (
         <main className="min-h-screen bg-white pb-24 md:pb-8">
-            {/* Desktop Navbar */}
-            <div className="hidden md:block">
-                <Navbar />
-            </div>
-
             {/* Mobile Header - Simplified */}
             <header className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center gap-4">
@@ -83,8 +115,65 @@ export default function MenuPage() {
                 </div>
             </section>
 
-            {/* Category Tabs */}
-            <section className="px-6 py-6">
+            {/* Desktop: Search & Filters Toolbar */}
+            <section className="hidden md:block px-6 py-6">
+                <div className="max-w-6xl mx-auto">
+                    {/* Search Bar */}
+                    <div className="mb-6">
+                        <div className="relative max-w-md mx-auto">
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full px-4 py-3 pl-11 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink transition-all"
+                            />
+                            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Category Filters - Centered */}
+                    <div className="flex justify-center mb-4">
+                        <CategoryTabs
+                            categories={categories}
+                            activeCategory={activeCategory}
+                            onCategoryChange={setActiveCategory}
+                        />
+                    </div>
+
+                    {/* Results Bar: Count + Sort */}
+                    <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-gray-600">
+                            Showing <span className="font-semibold">{paginatedProducts.length}</span> of <span className="font-semibold">{sortedProducts.length}</span> products
+                        </p>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as any)}
+                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink"
+                        >
+                            <option value="newest">Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name: A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            {/* Mobile: Category Tabs Only */}
+            <section className="md:hidden px-6 py-6">
                 <CategoryTabs
                     categories={categories}
                     activeCategory={activeCategory}
@@ -99,30 +188,70 @@ export default function MenuPage() {
                         <div className="text-center py-12">
                             <p className="text-sai-charcoal/60">Loading delicious treats...</p>
                         </div>
-                    ) : filteredProducts.length === 0 ? (
+                    ) : paginatedProducts.length === 0 ? (
                         <div className="text-center py-12">
-                            <p className="text-sai-charcoal/60">No products found in this category.</p>
+                            <p className="text-sai-charcoal/60">
+                                {searchQuery ? `No products found for "${searchQuery}"` : 'No products found in this category.'}
+                            </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredProducts.map((product, index) => (
-                                <div key={product.id} className="relative">
-                                    {/* Best Seller Badge on first product */}
-                                    {index === 0 && (
-                                        <div className="absolute top-4 left-4 z-10">
-                                            <Badge>BEST SELLER</Badge>
-                                        </div>
-                                    )}
-                                    <ProductCard
-                                        name={product.name}
-                                        price={product.price}
-                                        description={product.description}
-                                        category={product.category_name}
-                                        image_url={product.image_url}
-                                    />
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {paginatedProducts.map((product, index) => (
+                                    <div key={product.id} className="relative">
+                                        {/* Best Seller Badge on first product */}
+                                        {index === 0 && currentPage === 1 && !searchQuery && activeCategory === 'All' && (
+                                            <div className="absolute top-4 left-4 z-10">
+                                                <Badge>BEST SELLER</Badge>
+                                            </div>
+                                        )}
+                                        <ProductCard
+                                            name={product.name}
+                                            price={product.price}
+                                            description={product.description}
+                                            category={product.category_name}
+                                            image_url={product.image_url}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-2 mt-8">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+
+                                    <div className="flex gap-1">
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`w-10 h-10 rounded-lg transition-colors ${currentPage === page
+                                                        ? 'bg-sai-pink text-white'
+                                                        : 'border border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                    >
+                                        Next
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        </>
                     )}
                 </div>
             </section>

@@ -1,4 +1,3 @@
-import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import DraggableText from './components/DraggableText';
 import Image from 'next/image';
@@ -19,7 +18,7 @@ export default async function Home() {
         <Image
           src="/images/logo/full-logo-white.png"
           alt="Sugar And Icing"
-          width={340}
+          width={120}
           height={80}
           className="object-contain hover:scale-105 transition-transform duration-300"
           priority
@@ -29,16 +28,11 @@ export default async function Home() {
         <Image
           src="/images/logo/icon-white.png"
           alt="Sugar And Icing"
-          width={296}
-          height={96}
+          width={50}
+          height={50}
           className="object-contain"
           priority
         />
-      </div>
-
-      {/* Desktop Navbar */}
-      <div className="hidden md:block">
-        <Navbar />
       </div>
 
       {/* Hero Section - Right Aligned */}
