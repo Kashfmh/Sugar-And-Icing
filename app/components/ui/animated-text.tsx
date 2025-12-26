@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 interface AnimatedTextProps {
@@ -10,41 +10,30 @@ interface AnimatedTextProps {
 
 export function AnimatedText({ words, className = "" }: AnimatedTextProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const titles = useMemo(() => words, [words]);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (currentIndex === titles.length - 1) {
-                setCurrentIndex(0);
-            } else {
-                setCurrentIndex(currentIndex + 1);
-            }
-        }, 2500); // Change every 2.5 seconds
-        return () => clearTimeout(timeoutId);
-    }, [currentIndex, titles]);
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % words.length);
+        }, 2500);
+
+        return () => clearInterval(interval);
+    }, [words.length]);
 
     return (
-        <span className="relative flex w-full justify-center overflow-hidden text-center">
-            &nbsp;
-            {titles.map((title, index) => (
+        <span className="relative inline-block overflow-hidden w-[280px] sm:w-[400px] md:w-[500px]" style={{ minHeight: '1.2em' }}>
+            {words.map((word, index) => (
                 <motion.span
                     key={index}
-                    className={`absolute font-semibold ${className}`}
-                    initial={{ opacity: 0, y: -100 }}
+                    className={`absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap ${className}`}
+                    initial={{ opacity: 0, y: "-100%" }}
                     transition={{ type: "spring", stiffness: 50 }}
                     animate={
                         currentIndex === index
-                            ? {
-                                y: 0,
-                                opacity: 1,
-                            }
-                            : {
-                                y: currentIndex > index ? -150 : 150,
-                                opacity: 0,
-                            }
+                            ? { y: 0, opacity: 1 }
+                            : { y: currentIndex > index ? "150%" : "150%", opacity: 0 }
                     }
                 >
-                    {title}
+                    {word}
                 </motion.span>
             ))}
         </span>

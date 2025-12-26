@@ -47,6 +47,32 @@
     scroll-behavior: smooth;
   }
 
+  /* Custom Pink Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-sai-pink) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-sai-pink);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: #E57BA0;
+  }
+
   h1,
   h2,
   h3,

@@ -216,11 +216,6 @@ export default function MenuPage() {
                         )}
                     </button>
                 </div>
-
-                {/* Product Count (Mobile) */}
-                <p className="text-xs text-gray-500 mt-3">
-                    {sortedProducts.length} product{sortedProducts.length !== 1 ? 's' : ''}
-                </p>
             </section>
 
             {/* Mobile: Category Tabs */}
