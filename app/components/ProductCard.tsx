@@ -12,11 +12,11 @@ interface Props {
 export default function ProductCard({ name, price, description, category, image_url }: Props) {
   return (
     <article
-      className="rounded-lg shadow-md overflow-hidden bg-white flex flex-col"
-      style={{ borderTop: `6px solid var(--color-sai-pink)` }}
+      className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow"
+      style={{ borderTop: `4px solid #F48FB1` }}
     >
-      {/* Image / media */}
-      <div className="h-48 flex items-center justify-center" style={{ backgroundColor: 'var(--color-sai-cream)' }}>
+      {/* Image Placeholder */}
+      <div className="h-48 flex items-center justify-center bg-sai-white">
         {image_url ? (
           <Image src={image_url} alt={name} width={640} height={400} className="object-cover w-full h-full" />
         ) : (
@@ -24,36 +24,34 @@ export default function ProductCard({ name, price, description, category, image_
         )}
       </div>
 
-      {/* Main content (white) */}
-      <div className="p-6 bg-white flex-grow">
+      {/* Content Section with Pink Gradient Background */}
+      <div className="p-6 flex-grow" style={{ background: 'linear-gradient(to bottom, #FCE4EC 0%, #F8BBD0 100%)' }}>
         {category && (
-          <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-sai-pink)' }}>
+          <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#F48FB1' }}>
             {category}
           </div>
         )}
 
-        <h3 className="text-lg font-bold mt-2" style={{ color: 'var(--color-sai-rose)' }}>
+        <h3 className="text-xl font-bold mb-2" style={{ color: '#C2185B', fontFamily: 'var(--font-serif)' }}>
           {name}
         </h3>
 
-        <p className="text-sm mt-2" style={{ color: 'var(--color-sai-charcoal)' }}>
+        <p className="text-sm mb-4" style={{ color: '#4A4A4A' }}>
           {description}
         </p>
-      </div>
 
-      {/* Footer with price + button */}
-      <div className="px-6 py-4 relative bg-sai-light border-t border-sai-border">
-        <div className="flex items-center justify-between">
-          <div className="text-xl font-extrabold" style={{ color: 'var(--color-sai-charcoal)' }}>
+        {/* Price and Button */}
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-2xl font-bold" style={{ color: '#1A237E' }}>
             RM {price.toFixed(2)}
           </div>
 
-          {/* Round Add Button */}
           <button
-            className="w-12 h-12 rounded-full bg-sai-dark hover:bg-sai-charcoal transition-all shadow-soft flex items-center justify-center text-white text-2xl font-light hover:scale-110"
+            className="px-6 py-2 rounded-full text-white font-semibold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#F48FB1' }}
             aria-label={`Add ${name} to cart`}
           >
-            +
+            Add to Cart
           </button>
         </div>
       </div>
