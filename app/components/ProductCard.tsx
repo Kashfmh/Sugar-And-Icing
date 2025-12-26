@@ -36,10 +36,13 @@ export default function ProductCard({ name, price, description, category, image_
           {name}
         </h3>
 
-        {/* Description with 2-line limit */}
+        {/* Description with 2-line limit and fixed height */}
         <p
           className="text-sm mb-4 line-clamp-2"
-          style={{ color: '#4A4A4A' }}
+          style={{
+            color: '#4A4A4A',
+            minHeight: '2.5em' // Always reserve space for 2 lines
+          }}
           title={description}
         >
           {description}
