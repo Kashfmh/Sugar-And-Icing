@@ -71,14 +71,16 @@ export default function MenuPage() {
                 </div>
             </header>
 
-            {/* Tagline */}
-            <section className="px-6 pt-8 pb-4">
-                <h2 className="text-2xl text-center text-sai-charcoal/70">
-                    Sweet cravings sorted
-                </h2>
-                <p className="font-serif text-3xl text-center mt-2 text-sai-charcoal">
-                    Freshly Baked
-                </p>
+            {/* Tagline Section - Refined */}
+            <section className="px-6 pt-20 md:pt-28 pb-6">
+                <div className="max-w-4xl mx-auto text-center">
+                    <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-sai-charcoal/70 mb-3">
+                        Sweet cravings sorted
+                    </p>
+                    <h2 className="font-serif text-4xl md:text-5xl font-normal text-sai-charcoal">
+                        Freshly Baked
+                    </h2>
+                </div>
             </section>
 
             {/* Category Tabs */}
