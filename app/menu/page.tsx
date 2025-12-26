@@ -7,6 +7,8 @@ import CategoryTabs from '../components/CategoryTabs';
 import Badge from '../components/Badge';
 import BottomNav from '../components/BottomNav';
 import FilterModal from '../components/FilterModal';
+import { AnimatedText } from '../components/ui/animated-text';
+import { Select } from '../components/ui/select';
 import { ArrowLeft, Search, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -92,9 +94,9 @@ export default function MenuPage() {
     }, [activeCategory, searchQuery, sortBy]);
 
     return (
-        <main className="min-h-screen bg-white pb-24 md:pb-8">
+        <main className="min-h-screen bg-sai-white pb-24 md:pb-8">
             {/* Mobile Header - Simplified */}
-            <header className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
+            <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center gap-4">
                     <Link href="/" className="text-sai-charcoal">
                         <ArrowLeft className="w-6 h-6" />
@@ -105,14 +107,17 @@ export default function MenuPage() {
                 </div>
             </header>
 
-            {/* Tagline Section - Refined */}
+            {/* Tagline Section - Refined with Animated Text */}
             <section className="px-6 pt-20 md:pt-28 pb-6">
                 <div className="max-w-4xl mx-auto text-center">
                     <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-sai-charcoal/70 mb-3">
                         Sweet cravings sorted
                     </p>
-                    <h2 className="font-serif text-4xl md:text-5xl font-normal text-sai-charcoal">
-                        Freshly Baked
+                    <h2 className="font-serif text-4xl md:text-5xl font-normal text-sai-charcoal relative inline-block">
+                        <AnimatedText
+                            words={['Freshly Baked', 'Made With Love', 'Crafted Daily', 'Baked to Perfection']}
+                            className="text-sai-pink"
+                        />
                     </h2>
                 </div>
             </section>
@@ -160,16 +165,16 @@ export default function MenuPage() {
                         <p className="text-sm text-gray-600">
                             Showing <span className="font-semibold">{paginatedProducts.length}</span> of <span className="font-semibold">{sortedProducts.length}</span> products
                         </p>
-                        <select
+                        <Select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as any)}
-                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink"
-                        >
-                            <option value="newest">Newest First</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="name">Name: A-Z</option>
-                        </select>
+                            options={[
+                                { value: 'newest', label: 'Newest First' },
+                                { value: 'price-low', label: 'Price: Low to High' },
+                                { value: 'price-high', label: 'Price: High to Low' },
+                                { value: 'name', label: 'Name: A-Z' },
+                            ]}
+                        />
                     </div>
                 </div>
             </section>
@@ -207,7 +212,7 @@ export default function MenuPage() {
                         <SlidersHorizontal className="w-5 h-5" />
                         {/* Active filter indicator */}
                         {sortBy !== 'newest' && (
-                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-sai-white" />
                         )}
                     </button>
                 </div>
