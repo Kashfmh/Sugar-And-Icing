@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
 import CategoryTabs from '../components/CategoryTabs';
 import Badge from '../components/Badge';
+import Navbar from '../components/Navbar';
+import BottomNav from '../components/BottomNav';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -51,20 +53,18 @@ export default function MenuPage() {
         : products.filter(p => p.category_name === activeCategory);
 
     return (
-        <main className="min-h-screen bg-sai-white pb-24 md:pb-8">
-            {/* Header */}
-            <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-white/40 px-4 py-4">
-                <div className="max-w-6xl mx-auto flex items-center gap-4">
+        <main className="min-h-screen bg-white pb-24 md:pb-8">
+            {/* Desktop Navbar */}
+            <div className="hidden md:block">
+                <Navbar />
+            </div>
+
+            {/* Mobile Header - Simplified */}
+            <header className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
+                <div className="flex items-center gap-4">
                     <Link href="/" className="text-sai-charcoal">
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
-                    <Image
-                        src="/images/logo/icon-white.png"
-                        alt="Sugar And Icing"
-                        width={32}
-                        height={32}
-                        className="object-contain"
-                    />
                     <h1 className="font-serif text-2xl text-sai-charcoal">
                         Our Menu
                     </h1>
@@ -124,6 +124,9 @@ export default function MenuPage() {
                     )}
                 </div>
             </section>
+
+            {/* Mobile Bottom Navigation */}
+            <BottomNav />
         </main>
     );
 }
