@@ -21,7 +21,7 @@ export default async function Home() {
           alt="Sugar And Icing"
           width={340}
           height={80}
-          className="object-contain hover:scale-105 transition-transform duration-300 -ml-16 -mt-4"
+          className="object-contain hover:scale-105 transition-transform duration-300"
           priority
         />
       </div>
@@ -31,7 +31,7 @@ export default async function Home() {
           alt="Sugar And Icing"
           width={296}
           height={96}
-          className="object-contain -ml-16 -mt-8"
+          className="object-contain"
           priority
         />
       </div>
