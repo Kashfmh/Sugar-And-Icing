@@ -6,7 +6,8 @@ import ProductCard from '../components/ProductCard';
 import CategoryTabs from '../components/CategoryTabs';
 import Badge from '../components/Badge';
 import BottomNav from '../components/BottomNav';
-import { ArrowLeft } from 'lucide-react';
+import FilterModal from '../components/FilterModal';
+import { ArrowLeft, Search, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -27,6 +28,7 @@ export default function MenuPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'name'>('newest');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const itemsPerPage = 12;
 
     const categories = ['All', 'Signature Cakes', 'Brownies', 'Cupcakes', 'Fruit Cakes'];
@@ -172,14 +174,62 @@ export default function MenuPage() {
                 </div>
             </section>
 
-            {/* Mobile: Category Tabs Only */}
-            <section className="md:hidden px-6 py-6">
+            {/* Mobile: Search Bar + Filter Button */}
+            <section className="md:hidden px-6 pt-6 pb-4">
+                <div className="flex gap-2">
+                    {/* Search Bar */}
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter Button */}
+                    <button
+                        onClick={() => setIsFilterModalOpen(true)}
+                        className="w-12 h-12 rounded-xl bg-sai-pink text-white flex items-center justify-center hover:bg-sai-pink/90 transition-colors"
+                    >
+                        <SlidersHorizontal className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Product Count (Mobile) */}
+                <p className="text-xs text-gray-500 mt-3">
+                    {sortedProducts.length} product{sortedProducts.length !== 1 ? 's' : ''}
+                </p>
+            </section>
+
+            {/* Mobile: Category Tabs */}
+            <section className="md:hidden px-6 pb-6">
                 <CategoryTabs
                     categories={categories}
                     activeCategory={activeCategory}
                     onCategoryChange={setActiveCategory}
                 />
             </section>
+
+            {/* Filter Modal */}
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+            />
 
             {/* Products Grid */}
             <section className="px-6 py-4">
@@ -233,8 +283,8 @@ export default function MenuPage() {
                                                 key={page}
                                                 onClick={() => setCurrentPage(page)}
                                                 className={`w-10 h-10 rounded-lg transition-colors ${currentPage === page
-                                                        ? 'bg-sai-pink text-white'
-                                                        : 'border border-gray-200 hover:bg-gray-50'
+                                                    ? 'bg-sai-pink text-white'
+                                                    : 'border border-gray-200 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {page}
