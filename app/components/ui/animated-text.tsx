@@ -20,7 +20,7 @@ export function AnimatedText({ words, className = "" }: AnimatedTextProps) {
     }, [words.length]);
 
     return (
-        <span className="relative inline-block overflow-hidden w-[280px] sm:w-[400px] md:w-[500px]" style={{ minHeight: '1.2em' }}>
+        <span className="relative inline-block overflow-hidden w-[320px] sm:w-[400px] md:w-[500px]" style={{ minHeight: '1.2em' }}>
             {words.map((word, index) => (
                 <motion.span
                     key={index}
