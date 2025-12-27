@@ -13,7 +13,7 @@ export default function ProductCard({ name, price, description, category, image_
   return (
     <article
       className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow h-full"
-      style={{ borderTop: `4px solid #F48FB1` }}
+      style={{ borderTop: `4px solid var(--color-sai-pink)` }}
     >
       {/* Image Placeholder - HEADER */}
       <div className="h-48 flex items-center justify-center bg-sai-white flex-shrink-0">
@@ -25,16 +25,16 @@ export default function ProductCard({ name, price, description, category, image_
       </div>
 
       {/* Content Section - BODY (grows to fill space) */}
-      <div className="p-6 flex flex-col flex-grow" style={{ backgroundColor: '#fce4ec' }}>
+      <div className="p-6 flex flex-col flex-grow" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
         {/* Category */}
         {category && (
-          <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#F48FB1' }}>
+          <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-sai-pink)' }}>
             {category}
           </div>
         )}
 
         {/* Product Name */}
-        <h3 className="text-xl font-bold mb-2" style={{ color: '#C2185B', fontFamily: 'var(--font-serif)' }}>
+        <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-sai-pink-dark)', fontFamily: 'var(--font-serif)' }}>
           {name}
         </h3>
 
@@ -42,7 +42,7 @@ export default function ProductCard({ name, price, description, category, image_
         <p
           className="text-sm mb-4 line-clamp-2"
           style={{
-            color: '#4A4A4A',
+            color: 'var(--color-sai-text-gray)',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -64,7 +64,7 @@ export default function ProductCard({ name, price, description, category, image_
             className="text-2xl font-bold"
             style={{
               color: '#000000',
-              fontFamily: "'Playfair Display', Georgia, serif"
+              fontFamily: 'var(--font-serif)'
             }}
           >
             RM {price.toFixed(2)}

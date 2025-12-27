@@ -2,13 +2,13 @@ export default function ProductCardSkeleton() {
     return (
         <article
             className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm animate-pulse"
-            style={{ borderTop: `4px solid #F48FB1` }}
+            style={{ borderTop: `4px solid var(--color-sai-pink)` }}
         >
             {/* Image Skeleton */}
             <div className="h-48 bg-gray-200" />
 
             {/* Content Skeleton */}
-            <div className="p-6 flex-grow" style={{ backgroundColor: '#fce4ec' }}>
+            <div className="p-6 flex-grow" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
                 {/* Category */}
                 <div className="h-3 bg-gray-300 rounded w-24 mb-3" />
 

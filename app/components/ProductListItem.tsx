@@ -11,7 +11,7 @@ interface Props {
 
 export default function ProductListItem({ name, price, description, category, image_url }: Props) {
     return (
-        <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: '#F48FB1' }}>
+        <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
             {/* Compact Image */}
             <div className="w-24 h-24 flex-shrink-0 bg-sai-white flex items-center justify-center">
                 {image_url ? (
@@ -24,12 +24,12 @@ export default function ProductListItem({ name, price, description, category, im
             {/* Content */}
             <div className="flex-1 py-3 pr-3">
                 {category && (
-                    <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#F48FB1' }}>
+                    <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--color-sai-pink)' }}>
                         {category}
                     </div>
                 )}
 
-                <h3 className="text-base font-bold mb-1" style={{ color: '#C2185B', fontFamily: 'var(--font-serif)' }}>
+                <h3 className="text-base font-bold mb-1" style={{ color: 'var(--color-sai-pink-dark)', fontFamily: 'var(--font-serif)' }}>
                     {name}
                 </h3>
 
@@ -43,7 +43,7 @@ export default function ProductListItem({ name, price, description, category, im
                         className="text-lg font-bold"
                         style={{
                             color: '#000000',
-                            fontFamily: "'Playfair Display', Georgia, serif"
+                            fontFamily: 'var(--font-serif)'
                         }}
                     >
                         RM {price.toFixed(2)}
@@ -51,7 +51,7 @@ export default function ProductListItem({ name, price, description, category, im
 
                     <button
                         className="px-4 py-1.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                        style={{ backgroundColor: '#F48FB1' }}
+                        style={{ backgroundColor: 'var(--color-sai-pink)' }}
                         aria-label={`Add ${name} to cart`}
                     >
                         Add

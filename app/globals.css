@@ -4,12 +4,18 @@
   /* Clean Minimal Color Palette */
   --color-sai-pink: #F48FB1;
   /* Primary accent - use sparingly */
+  --color-sai-pink-light: #fce4ec;
+  /* Light pink background */
+  --color-sai-pink-dark: #C2185B;
+  /* Dark pink for emphasis */
   --color-sai-charcoal: #2B2B2B;
   /* Primary text */
   --color-sai-white: #FAFAF9;
   /* Soft off-white (easier on eyes) */
   --color-sai-gray: #6B7280;
   /* Secondary text */
+  --color-sai-text-gray: #4A4A4A;
+  /* Body text gray */
   --color-sai-light-gray: #F3F4F6;
   /* Subtle backgrounds */
   --color-sai-border: #E5E7EB;
