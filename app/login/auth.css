@@ -153,9 +153,10 @@
     /* Added margin to push buttons down */
 }
 
-.auth-page button:hover:not(:disabled) {
-    background-color: var(--color-sai-pink-dark);
-    border-color: var(--color-sai-pink-dark);
+.auth-page button:hover:not(:disabled):not(.ghost) {
+    background-color: #fff;
+    color: var(--color-sai-pink);
+    border-color: var(--color-sai-pink);
     box-shadow: 0 5px 15px rgba(244, 143, 177, 0.4);
 }
 
@@ -268,12 +269,13 @@
 
 .auth-page .password-toggle:hover {
     color: #d1d5db;
-    /* Light gray instead of pink */
+    /* Light gray */
 }
 
 .auth-page .password-toggle:active {
     transform: translateY(-50%);
-    /* Prevent downward movement on click */
+    /* Keep centered, prevent movement */
+    color: #d1d5db;
 }
 
 /* Password Status Icon (Checkmark/X) */
