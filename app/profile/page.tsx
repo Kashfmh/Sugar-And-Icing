@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, signOut, getUserProfile } from '@/lib/auth';
 import Image from 'next/image';
+import { getCurrentUser, signOut, getUserProfile } from '@/lib/auth';
+import type { AuthUser, UserProfile } from '@/lib/auth';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { User, Mail, LogOut, ArrowLeft, Phone } from 'lucide-react';
 
@@ -82,107 +84,63 @@ export default function ProfilePage() {
     return (
         <main className="min-h-screen bg-sai-white">
             {/* Brand Logo - Top Left */}
-            <div className="absolute top-4 left-4 z-40 hidden md:block">
-                <Image
-                    src="/images/logo/full-logo-pink.png"
-                    alt="Sugar And Icing"
-                    width={80}
-                    height={80}
-                    className="object-contain"
-                />
-            </div>
-            <div className="fixed top-4 right-4 z-50 block md:hidden">
-                <Image
-                    src="/images/logo/icon-pink.png"
-                    alt="Sugar And Icing"
-                    width={35}
-                    height={35}
-                    className="object-contain"
-                />
-            </div>
-
-            {/* Mobile Header */}
-            <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
-                <div className="flex items-center gap-4">
-                    <Link href="/" className="text-sai-charcoal">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <h1 className="font-serif text-2xl text-sai-charcoal">
-                        My Profile
-                    </h1>
+            {/* Mobile Header - Consistent with other pages */}
+            <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
+                <div className="flex items-center justify-between px-4 py-3">
+                    <button
+                        onClick={() => router.push('/')}
+                        className="flex items-center gap-2 text-sai-charcoal"
+                    >
+                        <ChevronLeft size={24} />
+                        <span className="font-semibold text-lg">Profile</span>
+                    </button>
+                    <Image
+                        src="/images/logo/full-logo-pink.png"
+                        alt="Sugar And Icing"
+                        width={50}
+                        height={50}
+                        className="object-contain"
+                    />
                 </div>
             </header>
 
             {/* Profile Content */}
-            <div className="max-w-2xl mx-auto px-6 pt-20 md:pt-28 pb-32 md:pb-16">
-                <h1 className="hidden md:block font-serif text-4xl text-sai-charcoal mb-8">
-                    My Profile
-                </h1>
-
-                {/* Profile Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-t-4 mb-6" style={{ borderTopColor: 'var(--color-sai-pink)' }}>
-                    {/* User Icon */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
-                            <User className="w-10 h-10" style={{ color: 'var(--color-sai-pink)' }} />
-                        </div>
-                        <div>
-                            <h2 className="font-serif text-2xl text-sai-charcoal">
-                                {profile?.first_name || 'User'}
-                            </h2>
-                            <p className="text-sm text-sai-gray">
-                                Member since {new Date(user.created_at).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    year: 'numeric'
-                                })}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* User Info */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-4 bg-sai-light-gray rounded-lg">
-                            <Mail className="w-5 h-5 text-sai-gray flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs text-sai-gray mb-1">Email</p>
-                                <p className="text-sm font-semibold text-sai-charcoal truncate">{user.email}</p>
+            <div className="pt-16 md:pt-24 pb-24 md:pb-12 px-4">
+                <div className="max-w-2xl mx-auto">
+                    {/* Profile Header */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
+                        <div className="flex items-center gap-6 mb-6">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sai-pink to-sai-pink-dark flex items-center justify-center">
+                                <span className="text-3xl font-bold text-white">
+                                    {profile?.first_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                                </span>
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-sai-charcoal mb-1">
+                                    {profile?.first_name || 'Welcome'}
+                                </h1>
+                                <p className="text-gray-500">Member since {new Date(user.created_at).toLocaleDateString()}</p>
                             </div>
                         </div>
 
-                        {profile?.phone && (
-                            <div className="flex items-center gap-3 p-4 bg-sai-light-gray rounded-lg">
-                                <Phone className="w-5 h-5 text-sai-gray flex-shrink-0" />
-                                <div className="flex-1">
-                                    <p className="text-xs text-sai-gray mb-1">Phone</p>
-                                    <p className="text-sm font-semibold text-sai-charcoal">{profile.phone}</p>
+                        {/* User Info */}
+                        <div className="space-y-4">
+                            <div className="border-t pt-4">
+                                <p className="text-sm text-gray-500 mb-1">Email</p>
+                                <p className="font-medium text-sai-charcoal">{user.email}</p>
+                            </div>
+                            {profile?.phone && (
+                                <div className="border-t pt-4">
+                                    <p className="text-sm text-gray-500 mb-1">Phone</p>
+                                    <p className="font-medium text-sai-charcoal">{profile.phone}</p>
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Logout Button */}
-                <button
-                    onClick={handleLogout}
-                    className="w-full py-3 rounded-full bg-white border-2 text-sai-charcoal font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                    style={{ borderColor: 'var(--color-sai-pink)' }}
-                >
-                    <LogOut className="w-5 h-5" />
-                    Sign Out
-                </button>
-
-                {/* Coming Soon Features */}
-                <div className="mt-8 p-6 bg-sai-light-gray rounded-xl">
-                    <h3 className="font-semibold text-sai-charcoal mb-3">Coming Soon</h3>
-                    <ul className="space-y-2 text-sm text-sai-gray">
-                        <li>• Edit profile details</li>
                         <li>• Order history</li>
                         <li>• Saved addresses</li>
                         <li>• Favorite cakes</li>
                         <li>• Track orders</li>
                     </ul>
+                    </div>
                 </div>
-            </div>
         </main>
     );
 }
