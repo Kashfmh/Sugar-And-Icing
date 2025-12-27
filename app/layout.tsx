@@ -52,6 +52,9 @@ export default function RootLayout({
 
         {children}
 
+        {/* Footer - All pages */}
+        <Footer />
+
         {/* Mobile Bottom Nav - Fixed across all pages */}
         <BottomNav />
       </body>
