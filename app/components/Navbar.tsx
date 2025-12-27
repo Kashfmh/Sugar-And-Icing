@@ -10,7 +10,7 @@ export default function Navbar() {
     const navItems = [
         { href: '/', label: 'Home' },
         { href: '/custom-cakes', label: 'Custom Cakes' },
-        { href: '/menu', label: 'Other Treats' },
+        { href: '/other-treats', label: 'Other Treats' },
         { href: '/contact', label: 'Contact' },
     ];
 

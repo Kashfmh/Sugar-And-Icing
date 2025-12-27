@@ -11,7 +11,7 @@ export default function BottomNav() {
         { href: '/', label: 'Home', icon: Home },
         { href: '/custom-cakes', label: 'Cakes', icon: CakeSlice },
         { href: '/cart', label: 'Cart', icon: ShoppingCart, isElevated: true },
-        { href: '/menu', label: 'Treats', icon: FileText },
+        { href: '/other-treats', label: 'Treats', icon: FileText },
         { href: '/profile', label: 'Profile', icon: User },
     ];
 
