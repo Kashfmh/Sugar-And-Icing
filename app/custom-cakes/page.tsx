@@ -19,6 +19,7 @@ interface CakeGalleryItem {
     description?: string | null;
     image_url?: string | null;
     category_name: string;
+    product_type?: string;
 }
 
 export default function CustomCakesPage() {
@@ -42,9 +43,7 @@ export default function CustomCakesPage() {
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .eq('category_name', 'Cakes')
-                .not('name', 'ilike', '%brownie%')
-                .not('name', 'ilike', '%cupcake%'); // Exclude brownies and cupcakes
+                .eq('product_type', 'Cake'); // Only custom cakes
 
             if (error) throw error;
             setCakes(data || []);

@@ -26,6 +26,7 @@ interface Product {
     is_available?: boolean;
     is_best_seller?: boolean;
     tags?: string[];
+    product_type?: string;
 }
 
 export default function MenuPage() {
@@ -46,11 +47,11 @@ export default function MenuPage() {
 
     async function fetchProducts() {
         try {
-            // Get all non-Cakes products + brownies/cupcakes from Cakes category
+            // Get all treats (everything except custom cakes)
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .or('category_name.neq.Cakes,and(category_name.eq.Cakes,or(name.ilike.%brownie%,name.ilike.%cupcake%))');
+                .in('product_type', ['Cupcake', 'Brownie', 'Fruit Cake', 'Bread']);
 
             if (error) throw error;
             setProducts(data || []);
