@@ -385,9 +385,9 @@
 /* Remember Me Checkbox */
 .auth-page .remember-me-container {
     width: 100%;
-    margin: 12px 0;
+    margin: 12px 0 0 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
 }
 
@@ -442,6 +442,7 @@
     color: var(--color-sai-pink);
 }
 
+/* Forgot Password Link - Below Remember Me */
 .auth-page .forgot-password-link {
     background: none;
     border: none;
@@ -450,8 +451,12 @@
     font-weight: 500;
     cursor: pointer;
     padding: 0;
+    margin-top: 12px;
+    margin-bottom: 8px;
     text-decoration: none;
     transition: opacity 0.2s ease;
+    align-self: flex-start;
+    display: block;
 }
 
 .auth-page .forgot-password-link:hover {
