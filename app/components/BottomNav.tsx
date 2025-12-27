@@ -66,7 +66,7 @@ export default function BottomNav() {
                 <div className="flex-1 flex justify-around gap-4">
                     {navItems.slice(3, 5).map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                        const isActive = pathname === item.href || (item.href === '/profile' && pathname === '/login');
                         return (
                             <Link
                                 key={item.href}

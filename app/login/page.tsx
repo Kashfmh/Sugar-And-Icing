@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp } from '@/lib/auth';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Check, X } from 'lucide-react';
 import './auth.css';
 
 export default function AuthPage() {
@@ -29,18 +29,52 @@ export default function AuthPage() {
     const [showSignUpPassword, setShowSignUpPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Password strength calculation
-    const calculatePasswordStrength = (password: string): { strength: number; label: string; color: string } => {
-        let strength = 0;
-        if (password.length >= 8) strength++;
-        if (password.length >= 12) strength++;
-        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    // Enhanced password strength calculation
+    const calculatePasswordStrength = (password: string): {
+        score: number;
+        level: 'empty' | 'weak' | 'medium' | 'strong';
+        label: string;
+        color: string;
+        bars: number;
+    } => {
+        if (!password) return { score: 0, level: 'empty', label: '', color: '#e5e7eb', bars: 0 };
 
-        if (strength <= 2) return { strength: 33, label: 'Weak', color: '#ef4444' };
-        if (strength <= 3) return { strength: 66, label: 'Medium', color: '#f59e0b' };
-        return { strength: 100, label: 'Strong', color: '#10b981' };
+        let score = 0;
+
+        // Length checks
+        if (password.length > 5) score += 1;
+        if (password.length > 8) score += 1;
+
+        // Character variety
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[a-z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+        // Determine level
+        let level: 'empty' | 'weak' | 'medium' | 'strong' = 'empty';
+        let label = '';
+        let color = '#e5e7eb';
+        let bars = 0;
+
+        if (score <= 2) {
+            level = 'weak';
+            label = 'Weak';
+            color = '#ef4444';
+            bars = 1;
+        } else if (score <= 4) {
+            level = 'medium';
+            label = 'Medium';
+            color = '#f59e0b';
+            bars = 2;
+        } else {
+            level = 'strong';
+            label = 'Strong';
+            color = '#10b981';
+            bars = 4;
+        }
+
+        return { score, level, label, color, bars };
     };
 
     const passwordStrength = calculatePasswordStrength(signUpPassword);
@@ -225,22 +259,34 @@ export default function AuthPage() {
                             >
                                 {showSignUpPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
+                            {/* Checkmark/X indicator */}
+                            {signUpPassword && (
+                                <div className="password-status-icon">
+                                    <div className={`status-circle ${passwordStrength.level === 'weak' ? 'status-weak' : passwordStrength.level === 'medium' ? 'status-medium' : 'status-strong'}`}>
+                                        {passwordStrength.level === 'weak' ? (
+                                            <X className="w-4 h-4 text-white" />
+                                        ) : (
+                                            <Check className="w-4 h-4 text-white" />
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {errors.password && <div className="field-error">{errors.password}</div>}
 
-                        {/* Password Strength Indicator */}
+                        {/* Enhanced Password Strength Indicator */}
                         {signUpPassword && (
-                            <div className="password-strength">
-                                <div className="strength-bar-bg">
-                                    <div
-                                        className="strength-bar-fill"
-                                        style={{
-                                            width: `${passwordStrength.strength}%`,
-                                            backgroundColor: passwordStrength.color
-                                        }}
-                                    />
+                            <div className="password-strength-enhanced">
+                                <div className="strength-bars">
+                                    {[1, 2, 3, 4].map((bar) => (
+                                        <div
+                                            key={bar}
+                                            className={`strength-bar ${bar <= passwordStrength.bars ? 'active' : ''}`}
+                                            style={{ backgroundColor: bar <= passwordStrength.bars ? passwordStrength.color : '#e5e7eb' }}
+                                        />
+                                    ))}
                                 </div>
-                                <span className="strength-label" style={{ color: passwordStrength.color }}>
+                                <span className="strength-label-enhanced" style={{ color: passwordStrength.color }}>
                                     {passwordStrength.label}
                                 </span>
                             </div>

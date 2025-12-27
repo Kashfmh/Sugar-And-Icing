@@ -44,7 +44,13 @@ export default function Navbar() {
 
                 {/* Profile Icon */}
                 <Link href="/profile" className="group">
-                    <User className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" strokeWidth={2} />
+                    <User
+                        className={`w-5 h-5 transition-colors ${pathname === '/profile' || pathname === '/login'
+                                ? 'text-sai-pink'
+                                : 'text-sai-charcoal group-hover:text-sai-pink'
+                            }`}
+                        strokeWidth={pathname === '/profile' || pathname === '/login' ? 2.5 : 2}
+                    />
                 </Link>
             </div>
         </nav>

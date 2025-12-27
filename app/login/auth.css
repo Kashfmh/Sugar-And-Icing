@@ -276,30 +276,65 @@
     /* Prevent downward movement on click */
 }
 
-/* Password Strength Indicator */
-.auth-page .password-strength {
-    width: 100%;
-    margin: 12px 0 8px 0;
+/* Password Status Icon (Checkmark/X) */
+.auth-page .password-status-icon {
+    position: absolute;
+    right: 45px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.auth-page .status-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.auth-page .strength-bar-bg {
-    flex: 1;
-    height: 5px;
-    background-color: #e5e7eb;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.auth-page .strength-bar-fill {
-    height: 100%;
+    justify-content: center;
     transition: all 0.3s ease;
-    border-radius: 3px;
 }
 
-.auth-page .strength-label {
+.auth-page .status-weak {
+    background-color: #ef4444;
+}
+
+.auth-page .status-medium {
+    background-color: #f59e0b;
+}
+
+.auth-page .status-strong {
+    background-color: #10b981;
+}
+
+/* Enhanced Password Strength Indicator with 4 bars */
+.auth-page .password-strength-enhanced {
+    width: 100%;
+    margin: 8px 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auth-page .strength-bars {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    height: 6px;
+}
+
+.auth-page .strength-bar {
+    flex: 1;
+    height: 100%;
+    border-radius: 3px;
+    background-color: #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.auth-page .strength-bar.active {
+    transform: scaleY(1);
+}
+
+.auth-page .strength-label-enhanced {
     font-size: 12px;
     font-weight: 600;
     min-width: 60px;
