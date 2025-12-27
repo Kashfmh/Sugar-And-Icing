@@ -26,8 +26,20 @@ export default function GalleryCard({ name, description, image_url, onRequestQuo
 
             {/* Content Section - Grows to fill space */}
             <div className="p-6 flex flex-col flex-grow" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
-                {/* Product Name */}
-                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-sai-pink-dark)', fontFamily: 'var(--font-serif)' }}>
+                {/* Product Name - Fixed height for alignment */}
+                <h3
+                    className="text-xl font-bold mb-2 line-clamp-2"
+                    style={{
+                        color: 'var(--color-sai-pink-dark)',
+                        fontFamily: 'var(--font-serif)',
+                        minHeight: '3.5em',
+                        maxHeight: '3.5em',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                    }}
+                >
                     {name}
                 </h3>
 
