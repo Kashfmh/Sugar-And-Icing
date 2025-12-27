@@ -38,7 +38,7 @@ export default function MenuPage() {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const itemsPerPage = 12;
 
-    const categories = ['All', 'Cakes', 'Brownies', 'Fruit Cakes', 'Banana Bread'];
+    const categories = ['All', 'Cakes', 'Brownies', 'Fruit Cakes', 'Bread'];
 
     useEffect(() => {
         fetchProducts();

@@ -31,7 +31,7 @@ export default function CustomCakesPage() {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const itemsPerPage = 12;
 
-    const categories = ['All', 'Birthday Cakes', 'Wedding Cakes', 'Custom Design'];
+    const categories = ['All', 'Birthday', 'Holiday', 'Wedding', 'Anniversary'];
 
     useEffect(() => {
         fetchCustomCakes();
@@ -42,7 +42,8 @@ export default function CustomCakesPage() {
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .eq('category_name', 'Cakes');
+                .eq('category_name', 'Cakes')
+                .neq('name', 'Brownies'); // Exclude brownies - they're in Other Treats
 
             if (error) throw error;
             setCakes(data || []);
@@ -61,7 +62,8 @@ export default function CustomCakesPage() {
 
     // Filter cakes by category and search
     const filteredCakes = cakes.filter(cake => {
-        const matchesCategory = activeCategory === 'All' || cake.name.includes(activeCategory);
+        const matchesCategory = activeCategory === 'All' ||
+            cake.name.toLowerCase().includes(activeCategory.toLowerCase());
         const matchesSearch = !searchQuery ||
             cake.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             cake.description?.toLowerCase().includes(searchQuery.toLowerCase());
