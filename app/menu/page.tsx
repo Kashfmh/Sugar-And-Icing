@@ -124,7 +124,7 @@ export default function MenuPage() {
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
                     <h1 className="font-serif text-2xl text-sai-charcoal">
-                        Our Shop
+                        Other Treats
                     </h1>
                 </div>
             </header>

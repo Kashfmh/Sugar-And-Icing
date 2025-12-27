@@ -9,9 +9,9 @@ export default function BottomNav() {
 
     const navItems = [
         { href: '/', label: 'Home', icon: Home },
-        { href: '/menu', label: 'Shop', icon: FileText },
-        { href: '/cart', label: 'Cart', icon: ShoppingCart, isElevated: true },
         { href: '/custom-cakes', label: 'Cakes', icon: CakeSlice },
+        { href: '/cart', label: 'Cart', icon: ShoppingCart, isElevated: true },
+        { href: '/menu', label: 'Treats', icon: FileText },
         { href: '/profile', label: 'Profile', icon: User },
     ];
 
