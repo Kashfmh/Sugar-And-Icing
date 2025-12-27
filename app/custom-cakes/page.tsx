@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import GalleryCard from '../components/GalleryCard';
+import GalleryListItem from '../components/GalleryListItem';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import CategoryTabs from '../components/CategoryTabs';
 import FilterModal from '../components/FilterModal';
@@ -280,9 +281,23 @@ export default function CustomCakesPage() {
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Desktop Grid */}
+                            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {paginatedCakes.map((cake) => (
                                     <GalleryCard
+                                        key={cake.id}
+                                        name={cake.name}
+                                        description={cake.description || undefined}
+                                        image_url={cake.image_url || undefined}
+                                        onRequestQuote={() => handleRequestQuote(cake.name)}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Mobile List */}
+                            <div className="flex flex-col gap-3 md:hidden">
+                                {paginatedCakes.map((cake) => (
+                                    <GalleryListItem
                                         key={cake.id}
                                         name={cake.name}
                                         description={cake.description || undefined}
@@ -338,7 +353,9 @@ export default function CustomCakesPage() {
                     <h3 className="font-serif text-3xl text-center text-sai-charcoal mb-8">
                         How Custom Orders Work
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    {/* Desktop: 3 columns */}
+                    <div className="hidden md:grid md:grid-cols-3 gap-6">
                         <div className="text-center">
                             <div className="w-12 h-12 rounded-full bg-sai-pink text-white flex items-center justify-center text-xl font-bold mx-auto mb-4">
                                 1
@@ -365,6 +382,37 @@ export default function CustomCakesPage() {
                             <p className="text-sm text-sai-gray">
                                 We'll bake it fresh and deliver to your location in KL Sentral area
                             </p>
+                        </div>
+                    </div>
+
+                    {/* Mobile: Compact list */}
+                    <div className="md:hidden space-y-4">
+                        <div className="flex gap-3 items-start">
+                            <div className="w-10 h-10 rounded-full bg-sai-pink text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                                1
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-sai-charcoal mb-1">Share Your Vision</h4>
+                                <p className="text-sm text-sai-gray">Message us on WhatsApp with your cake idea</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 items-start">
+                            <div className="w-10 h-10 rounded-full bg-sai-pink text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                                2
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-sai-charcoal mb-1">Get a Quote</h4>
+                                <p className="text-sm text-sai-gray">We'll discuss size, design, and pricing</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 items-start">
+                            <div className="w-10 h-10 rounded-full bg-sai-pink text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                                3
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-sai-charcoal mb-1">Enjoy Your Cake</h4>
+                                <p className="text-sm text-sai-gray">Fresh baked and delivered in KL Sentral</p>
+                            </div>
                         </div>
                     </div>
                 </div>
