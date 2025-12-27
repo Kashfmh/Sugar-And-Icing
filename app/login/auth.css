@@ -69,6 +69,8 @@
         width: 100%;
         padding: 32px 24px;
         min-height: calc(100vh - 64px);
+        max-height: calc(100vh - 64px);
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
     }
@@ -384,6 +386,9 @@
 .auth-page .remember-me-container {
     width: 100%;
     margin: 12px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .auth-page .remember-me-label {
@@ -435,6 +440,26 @@
 
 .auth-page .remember-me-label:hover .remember-me-text {
     color: var(--color-sai-pink);
+}
+
+.auth-page .forgot-password-link {
+    background: none;
+    border: none;
+    color: var(--color-sai-pink);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.auth-page .forgot-password-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+    background: none;
+    box-shadow: none;
+    transform: none;
 }
 
 /* Phone Input Group */

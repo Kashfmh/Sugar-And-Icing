@@ -374,6 +374,13 @@ export default function AuthPage() {
                                 />
                                 <span className="remember-me-text">Remember me for 30 days</span>
                             </label>
+                            <button
+                                type="button"
+                                className="forgot-password-link"
+                                onClick={() => alert('Password reset feature coming soon! Please contact support at support@sugarandicing.com')}
+                            >
+                                Forgot password?
+                            </button>
                         </div>
 
                         {errors.general && <div className="error-message">{errors.general}</div>}

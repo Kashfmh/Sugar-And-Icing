@@ -63,89 +63,88 @@ export async function signUp(
     password: string,
     firstName: string,
     phone: string
-) {
-    // Sanitize inputs
-    const cleanEmail = sanitizeInput(email.toLowerCase());
-    const cleanFirstName = sanitizeInput(firstName);
-    const cleanPhone = sanitizeInput(phone.replace(/[\s-]/g, ''));
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Sanitize inputs
+        const sanitizedEmail = sanitizeInput(email.toLowerCase());
+        const sanitizedFirstName = sanitizeInput(firstName);
+        const sanitizedPhone = sanitizeInput(phone);
 
-    // Validate inputs
-    if (!isValidEmail(cleanEmail)) {
-        throw new Error('Please enter a valid email address');
-    }
+        // Validate inputs
+        if (!isValidEmail(sanitizedEmail)) {
+            return { success: false, error: 'Please enter a valid email address' };
+        }
 
-    if (!isValidPhone(cleanPhone)) {
-        throw new Error('Please enter a valid phone number with country code (+60 or +91)');
-    }
+        const phoneValidation = isValidPhone(sanitizedPhone);
+        if (!phoneValidation.valid) {
+            return { success: false, error: phoneValidation.error };
+        }
 
-    const passwordCheck = isStrongPassword(password);
-    if (!passwordCheck.valid) {
-        throw new Error(passwordCheck.message || 'Invalid password');
-    }
+        if (!isValidPassword(password)) {
+            return { success: false, error: 'Password must be at least 8 characters with at least one letter and one number' };
+        }
 
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password: password,
-    });
+        if (sanitizedFirstName.length < 2) {
+            return { success: false, error: 'First name must be at least 2 characters' };
+        }
 
-    if (authError) {
-        throw new Error(authError.message);
-    }
-
-    if (!authData.user) {
-        throw new Error('Failed to create account');
-    }
-
-    // Create profile record
-    const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-            user_id: authData.user.id,
-            first_name: cleanFirstName,
-            phone: cleanPhone,
+        // Sign up the user
+        const { data, error } = await supabase.auth.signUp({
+            email: sanitizedEmail,
+            password: password,
         });
 
-    if (profileError) {
-        // If profile creation fails, we should ideally delete the auth user
-        // For now, log the error
-        console.error('Profile creation error:', profileError);
-        throw new Error('Failed to create profile. Please contact support.');
-    }
+        if (error) {
+            // Specific error messages based on Supabase error codes
+            if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+                return { success: false, error: 'This email is already registered. Please sign in instead.' };
+            }
+            if (error.message.includes('Invalid email')) {
+                return { success: false, error: 'Please enter a valid email address' };
+            }
+            if (error.message.includes('Password')) {
+                return { success: false, error: 'Password is too weak. Use at least 8 characters with letters and numbers.' };
+            }
+            if (error.message.includes('rate limit')) {
+                return { success: false, error: 'Too many attempts. Please try again in a few minutes.' };
+            }
+            return { success: false, error: error.message || 'Failed to create account. Please try again.' };
+        }
 
-    return authData;
+        if (!data.user) {
+            return { success: false, error: 'Account creation failed. Please try again.' };
+        }
+
+        // Create user profile
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([{
+                user_id: data.user.id, // Changed from 'id' to 'user_id' to match UserProfile interface
+                first_name: sanitizedFirstName,
+                phone: phoneValidation.formatted,
+                created_at: new Date().toISOString(),
+            }]);
+
+        if (profileError) {
+            console.error('Profile creation error:', profileError);
+            // User was created but profile failed - still allow login
+            if (profileError.message.includes('duplicate')) {
+                return { success: true }; // Profile already exists, that's okay
+            }
+            return { success: false, error: 'Account created but profile setup failed. Please contact support.' };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('Sign up error:', error);
+        return { success: false, error: 'An unexpected error occurred. Please try again.' };
+    }
 }
 
 /**
  * Sign in an existing user
  */
-export async function signIn(email: string, password: string, rememberMe: boolean = true) {
-    const cleanEmail = sanitizeInput(email.toLowerCase());
-
-    if (!isValidEmail(cleanEmail)) {
-        throw new Error('Please enter a valid email address');
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: password,
-    });
-
-    if (error) {
-        throw new Error(error.message);
-    }
-
-    // If remember me is unchecked, set session to expire on browser close
-    if (!rememberMe && data.session) {
-        // Store in sessionStorage instead of localStorage
-        // This makes the session expire when browser closes
-        if (typeof window !== 'undefined') {
-            window.sessionStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
-            window.localStorage.removeItem('supabase.auth.token');
-        }
-    }
-
-    return data;
+return data;
 }
 
 /**
