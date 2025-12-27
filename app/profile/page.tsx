@@ -6,7 +6,6 @@ import { getCurrentUser, signOut, getUserProfile } from '@/lib/auth';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User, Mail, LogOut, ArrowLeft, Phone } from 'lucide-react';
-import BottomNav from '@/app/components/BottomNav';
 
 interface UserData {
     id: string;
@@ -180,8 +179,6 @@ export default function ProfilePage() {
                     </ul>
                 </div>
             </div>
-
-            <BottomNav />
         </main>
     );
 }

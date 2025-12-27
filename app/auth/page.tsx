@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp } from '@/lib/auth';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Eye, EyeOff } from 'lucide-react';
 import './auth.css';
 
 export default function AuthPage() {
@@ -16,12 +17,33 @@ export default function AuthPage() {
     // Sign In State
     const [signInEmail, setSignInEmail] = useState('');
     const [signInPassword, setSignInPassword] = useState('');
+    const [showSignInPassword, setShowSignInPassword] = useState(false);
 
     // Sign Up State
     const [signUpEmail, setSignUpEmail] = useState('');
     const [signUpPassword, setSignUpPassword] = useState('');
+    const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('');
     const [signUpFirstName, setSignUpFirstName] = useState('');
     const [signUpPhone, setSignUpPhone] = useState('');
+    const [countryCode, setCountryCode] = useState('+60'); // Malaysia default
+    const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Password strength calculation
+    const calculatePasswordStrength = (password: string): { strength: number; label: string; color: string } => {
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (password.length >= 12) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+        if (strength <= 2) return { strength: 33, label: 'Weak', color: '#ef4444' };
+        if (strength <= 3) return { strength: 66, label: 'Medium', color: '#f59e0b' };
+        return { strength: 100, label: 'Strong', color: '#10b981' };
+    };
+
+    const passwordStrength = calculatePasswordStrength(signUpPassword);
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,10 +64,18 @@ export default function AuthPage() {
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        // Validate passwords match
+        if (signUpPassword !== signUpConfirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            await signUp(signUpEmail, signUpPassword, signUpFirstName, signUpPhone);
+            const fullPhone = countryCode + signUpPhone;
+            await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone);
             router.push('/profile');
             router.refresh();
         } catch (err: any) {
@@ -70,6 +100,22 @@ export default function AuthPage() {
                 </Link>
             </div>
 
+            {/* Mobile Toggle Tabs */}
+            <div className="mobile-toggle-tabs">
+                <button
+                    className={`mobile-tab ${!isSignUp ? 'active' : ''}`}
+                    onClick={() => setIsSignUp(false)}
+                >
+                    Sign In
+                </button>
+                <button
+                    className={`mobile-tab ${isSignUp ? 'active' : ''}`}
+                    onClick={() => setIsSignUp(true)}
+                >
+                    Sign Up
+                </button>
+            </div>
+
             <div className={`auth-container ${isSignUp ? 'right-panel-active' : ''}`}>
                 {/* Sign Up Form */}
                 <div className="form-container sign-up-container">
@@ -85,14 +131,29 @@ export default function AuthPage() {
                             required
                             disabled={loading}
                         />
-                        <input
-                            type="tel"
-                            placeholder="Phone (e.g., 0123456789)"
-                            value={signUpPhone}
-                            onChange={(e) => setSignUpPhone(e.target.value)}
-                            required
-                            disabled={loading}
-                        />
+
+                        {/* Phone with Country Code */}
+                        <div className="phone-input-group">
+                            <select
+                                value={countryCode}
+                                onChange={(e) => setCountryCode(e.target.value)}
+                                className="country-code-select"
+                                disabled={loading}
+                            >
+                                <option value="+60">🇲🇾 +60</option>
+                                <option value="+91">🇮🇳 +91</option>
+                            </select>
+                            <input
+                                type="tel"
+                                placeholder="123456789"
+                                value={signUpPhone}
+                                onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ''))}
+                                required
+                                disabled={loading}
+                                className="phone-input"
+                            />
+                        </div>
+
                         <input
                             type="email"
                             placeholder="Email"
@@ -101,15 +162,66 @@ export default function AuthPage() {
                             required
                             disabled={loading}
                         />
-                        <input
-                            type="password"
-                            placeholder="Password (min 8 chars, 1 number)"
-                            value={signUpPassword}
-                            onChange={(e) => setSignUpPassword(e.target.value)}
-                            required
-                            minLength={8}
-                            disabled={loading}
-                        />
+
+                        {/* Password with Eye Toggle */}
+                        <div className="password-input-group">
+                            <input
+                                type={showSignUpPassword ? 'text' : 'password'}
+                                placeholder="Password (min 8 chars, 1 number)"
+                                value={signUpPassword}
+                                onChange={(e) => setSignUpPassword(e.target.value)}
+                                required
+                                minLength={8}
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                                tabIndex={-1}
+                            >
+                                {showSignUpPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Password Strength Indicator */}
+                        {signUpPassword && (
+                            <div className="password-strength">
+                                <div className="strength-bar-bg">
+                                    <div
+                                        className="strength-bar-fill"
+                                        style={{
+                                            width: `${passwordStrength.strength}%`,
+                                            backgroundColor: passwordStrength.color
+                                        }}
+                                    />
+                                </div>
+                                <span className="strength-label" style={{ color: passwordStrength.color }}>
+                                    {passwordStrength.label}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Confirm Password */}
+                        <div className="password-input-group">
+                            <input
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder="Confirm Password"
+                                value={signUpConfirmPassword}
+                                onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                                required
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                tabIndex={-1}
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
                         {error && <div className="error-message">{error}</div>}
                         <button type="submit" disabled={loading}>
                             {loading ? 'Creating...' : 'Sign Up'}
@@ -131,14 +243,27 @@ export default function AuthPage() {
                             required
                             disabled={loading}
                         />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={signInPassword}
-                            onChange={(e) => setSignInPassword(e.target.value)}
-                            required
-                            disabled={loading}
-                        />
+
+                        {/* Password with Eye Toggle */}
+                        <div className="password-input-group">
+                            <input
+                                type={showSignInPassword ? 'text' : 'password'}
+                                placeholder="Password"
+                                value={signInPassword}
+                                onChange={(e) => setSignInPassword(e.target.value)}
+                                required
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowSignInPassword(!showSignInPassword)}
+                                tabIndex={-1}
+                            >
+                                {showSignInPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
                         {error && <div className="error-message">{error}</div>}
                         <button type="submit" disabled={loading}>
                             {loading ? 'Signing in...' : 'Sign In'}
@@ -146,7 +271,7 @@ export default function AuthPage() {
                     </form>
                 </div>
 
-                {/* Overlay */}
+                {/* Overlay - Desktop Only */}
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">

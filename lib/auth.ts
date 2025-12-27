@@ -31,11 +31,11 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
- * Validate phone number (Malaysian format)
+ * Validate phone number (Malaysian or Indian format with country code)
  */
 function isValidPhone(phone: string): boolean {
-    // Accepts: 0123456789, +60123456789, 60123456789
-    const phoneRegex = /^(\+?6?01)[0-46-9]-*[0-9]{7,8}$/;
+    // Accepts: +60123456789, +91123456789, 60123456789, 91123456789
+    const phoneRegex = /^(\+?60|60|\+?91|91)[0-9]{9,10}$/;
     return phoneRegex.test(phone.replace(/[\s-]/g, ''));
 }
 
@@ -75,7 +75,7 @@ export async function signUp(
     }
 
     if (!isValidPhone(cleanPhone)) {
-        throw new Error('Please enter a valid Malaysian phone number (e.g., 0123456789)');
+        throw new Error('Please enter a valid phone number with country code (+60 or +91)');
     }
 
     const passwordCheck = isStrongPassword(password);
