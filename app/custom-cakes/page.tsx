@@ -43,7 +43,8 @@ export default function CustomCakesPage() {
                 .from('products')
                 .select('*')
                 .eq('category_name', 'Cakes')
-                .neq('name', 'Brownies'); // Exclude brownies - they're in Other Treats
+                .not('name', 'ilike', '%brownie%')
+                .not('name', 'ilike', '%cupcake%'); // Exclude brownies and cupcakes
 
             if (error) throw error;
             setCakes(data || []);
@@ -62,11 +63,24 @@ export default function CustomCakesPage() {
 
     // Filter cakes by category and search
     const filteredCakes = cakes.filter(cake => {
-        const matchesCategory = activeCategory === 'All' ||
-            cake.name.toLowerCase().includes(activeCategory.toLowerCase());
+        if (activeCategory === 'All') {
+            const matchesSearch = !searchQuery ||
+                cake.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                cake.description?.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesSearch;
+        }
+
+        // Check if category matches name or description
+        const categoryLower = activeCategory.toLowerCase();
+        const matchesCategory =
+            cake.name.toLowerCase().includes(categoryLower) ||
+            cake.description?.toLowerCase().includes(categoryLower) ||
+            false;
+
         const matchesSearch = !searchQuery ||
             cake.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             cake.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
         return matchesCategory && matchesSearch;
     });
 
