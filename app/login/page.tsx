@@ -18,6 +18,7 @@ export default function AuthPage() {
     const [signInEmail, setSignInEmail] = useState('');
     const [signInPassword, setSignInPassword] = useState('');
     const [showSignInPassword, setShowSignInPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true); // Default to true
 
     // Sign Up State
     const [signUpEmail, setSignUpEmail] = useState('');
@@ -91,7 +92,7 @@ export default function AuthPage() {
         setLoading(true);
 
         try {
-            await signIn(signInEmail, signInPassword);
+            await signIn(signInEmail, signInPassword, rememberMe);
             router.push('/profile');
             router.refresh();
         } catch (err: any) {
@@ -353,6 +354,19 @@ export default function AuthPage() {
                             >
                                 {showSignInPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
+                        </div>
+
+                        {/* Remember Me Checkbox */}
+                        <div className="remember-me-container">
+                            <label className="remember-me-label">
+                                <input
+                                    type="checkbox"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="remember-me-checkbox"
+                                />
+                                <span className="remember-me-text">Remember me for 30 days</span>
+                            </label>
                         </div>
 
                         {errors.general && <div className="error-message">{errors.general}</div>}

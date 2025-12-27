@@ -119,7 +119,7 @@ export async function signUp(
 /**
  * Sign in an existing user
  */
-export async function signIn(email: string, password: string) {
+export async function signIn(email: string, password: string, rememberMe: boolean = true) {
     const cleanEmail = sanitizeInput(email.toLowerCase());
 
     if (!isValidEmail(cleanEmail)) {
@@ -133,6 +133,16 @@ export async function signIn(email: string, password: string) {
 
     if (error) {
         throw new Error(error.message);
+    }
+
+    // If remember me is unchecked, set session to expire on browser close
+    if (!rememberMe && data.session) {
+        // Store in sessionStorage instead of localStorage
+        // This makes the session expire when browser closes
+        if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+            window.localStorage.removeItem('supabase.auth.token');
+        }
     }
 
     return data;
