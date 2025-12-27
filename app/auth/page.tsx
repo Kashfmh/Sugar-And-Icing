@@ -11,7 +11,7 @@ import './auth.css';
 export default function AuthPage() {
     const [isSignUp, setIsSignUp] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const router = useRouter();
 
     // Sign In State
@@ -45,9 +45,15 @@ export default function AuthPage() {
 
     const passwordStrength = calculatePasswordStrength(signUpPassword);
 
+    // Email validation
+    const validateEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setErrors({});
         setLoading(true);
 
         try {
@@ -55,7 +61,7 @@ export default function AuthPage() {
             router.push('/profile');
             router.refresh();
         } catch (err: any) {
-            setError(err.message || 'Failed to sign in');
+            setErrors({ general: err.message || 'Failed to sign in' });
         } finally {
             setLoading(false);
         }
@@ -63,11 +69,43 @@ export default function AuthPage() {
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        const newErrors: { [key: string]: string } = {};
 
-        // Validate passwords match
+        // Validate first name
+        if (!signUpFirstName.trim()) {
+            newErrors.firstName = 'First name is required';
+        }
+
+        // Validate phone
+        if (!signUpPhone.trim()) {
+            newErrors.phone = 'Phone number is required';
+        } else if (signUpPhone.length < 9) {
+            newErrors.phone = 'Phone number must be at least 9 digits';
+        }
+
+        // Validate email
+        if (!signUpEmail.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!validateEmail(signUpEmail)) {
+            newErrors.email = 'Please enter a valid email address';
+        }
+
+        // Validate password
+        if (!signUpPassword) {
+            newErrors.password = 'Password is required';
+        } else if (signUpPassword.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        } else if (!/[0-9]/.test(signUpPassword)) {
+            newErrors.password = 'Password must contain at least one number';
+        }
+
+        // Validate password confirmation
         if (signUpPassword !== signUpConfirmPassword) {
-            setError('Passwords do not match');
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
@@ -79,7 +117,7 @@ export default function AuthPage() {
             router.push('/profile');
             router.refresh();
         } catch (err: any) {
-            setError(err.message || 'Failed to sign up');
+            setErrors({ general: err.message || 'Failed to sign up' });
         } finally {
             setLoading(false);
         }
@@ -102,18 +140,20 @@ export default function AuthPage() {
 
             {/* Mobile Toggle Tabs */}
             <div className="mobile-toggle-tabs">
-                <button
-                    className={`mobile-tab ${!isSignUp ? 'active' : ''}`}
-                    onClick={() => setIsSignUp(false)}
-                >
-                    Sign In
-                </button>
-                <button
-                    className={`mobile-tab ${isSignUp ? 'active' : ''}`}
-                    onClick={() => setIsSignUp(true)}
-                >
-                    Sign Up
-                </button>
+                <div className="mobile-toggle-container">
+                    <button
+                        className={`mobile-tab ${!isSignUp ? 'active' : ''}`}
+                        onClick={() => { setIsSignUp(false); setErrors({}); }}
+                    >
+                        Sign In
+                    </button>
+                    <button
+                        className={`mobile-tab ${isSignUp ? 'active' : ''}`}
+                        onClick={() => { setIsSignUp(true); setErrors({}); }}
+                    >
+                        Sign Up
+                    </button>
+                </div>
             </div>
 
             <div className={`auth-container ${isSignUp ? 'right-panel-active' : ''}`}>
@@ -131,6 +171,7 @@ export default function AuthPage() {
                             required
                             disabled={loading}
                         />
+                        {errors.firstName && <div className="field-error">{errors.firstName}</div>}
 
                         {/* Phone with Country Code */}
                         <div className="phone-input-group">
@@ -153,6 +194,7 @@ export default function AuthPage() {
                                 className="phone-input"
                             />
                         </div>
+                        {errors.phone && <div className="field-error">{errors.phone}</div>}
 
                         <input
                             type="email"
@@ -162,6 +204,7 @@ export default function AuthPage() {
                             required
                             disabled={loading}
                         />
+                        {errors.email && <div className="field-error">{errors.email}</div>}
 
                         {/* Password with Eye Toggle */}
                         <div className="password-input-group">
@@ -183,6 +226,7 @@ export default function AuthPage() {
                                 {showSignUpPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
+                        {errors.password && <div className="field-error">{errors.password}</div>}
 
                         {/* Password Strength Indicator */}
                         {signUpPassword && (
@@ -221,8 +265,9 @@ export default function AuthPage() {
                                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
+                        {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
+                        {errors.general && <div className="error-message">{errors.general}</div>}
 
-                        {error && <div className="error-message">{error}</div>}
                         <button type="submit" disabled={loading}>
                             {loading ? 'Creating...' : 'Sign Up'}
                         </button>
@@ -264,7 +309,7 @@ export default function AuthPage() {
                             </button>
                         </div>
 
-                        {error && <div className="error-message">{error}</div>}
+                        {errors.general && <div className="error-message">{errors.general}</div>}
                         <button type="submit" disabled={loading}>
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
@@ -277,14 +322,14 @@ export default function AuthPage() {
                         <div className="overlay-panel overlay-left">
                             <h1>Welcome Back!</h1>
                             <p>To keep connected with us please login with your personal info</p>
-                            <button className="ghost" onClick={() => setIsSignUp(false)}>
+                            <button className="ghost" onClick={() => { setIsSignUp(false); setErrors({}); }}>
                                 Sign In
                             </button>
                         </div>
                         <div className="overlay-panel overlay-right">
                             <h1>Hello, Friend!</h1>
                             <p>Enter your details and start your journey with delicious treats</p>
-                            <button className="ghost" onClick={() => setIsSignUp(true)}>
+                            <button className="ghost" onClick={() => { setIsSignUp(true); setErrors({}); }}>
                                 Sign Up
                             </button>
                         </div>
