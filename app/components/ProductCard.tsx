@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import AllergenBadge from './AllergenBadge';
 
 interface Props {
   name: string;
@@ -7,9 +8,10 @@ interface Props {
   description?: string;
   category?: string;
   image_url?: string;
+  tags?: string[];
 }
 
-export default function ProductCard({ name, price, description, category, image_url }: Props) {
+export default function ProductCard({ name, price, description, category, image_url, tags }: Props) {
   return (
     <article
       className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow h-full"
@@ -54,6 +56,15 @@ export default function ProductCard({ name, price, description, category, image_
         >
           {description}
         </p>
+
+        {/* Allergen Tags */}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {tags.map((tag) => (
+              <AllergenBadge key={tag} tag={tag} />
+            ))}
+          </div>
+        )}
 
         {/* Spacer to push footer to bottom */}
         <div className="flex-grow" />

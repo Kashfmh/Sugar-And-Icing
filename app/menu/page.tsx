@@ -25,6 +25,7 @@ interface Product {
     image_url?: string | null;
     is_available?: boolean;
     is_best_seller?: boolean;
+    tags?: string[];
 }
 
 export default function MenuPage() {
@@ -297,6 +298,7 @@ export default function MenuPage() {
                                             description={product.description || undefined}
                                             category={product.category_name}
                                             image_url={product.image_url || undefined}
+                                            tags={product.tags}
                                         />
                                     </div>
                                 ))}
@@ -312,6 +314,7 @@ export default function MenuPage() {
                                         description={product.description || undefined}
                                         category={product.category_name}
                                         image_url={product.image_url || undefined}
+                                        tags={product.tags}
                                     />
                                 ))}
                             </div>

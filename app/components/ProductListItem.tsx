@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import AllergenBadge from './AllergenBadge';
 
 interface Props {
     name: string;
@@ -7,9 +8,10 @@ interface Props {
     description?: string;
     category?: string;
     image_url?: string;
+    tags?: string[];
 }
 
-export default function ProductListItem({ name, price, description, category, image_url }: Props) {
+export default function ProductListItem({ name, price, description, category, image_url, tags }: Props) {
     return (
         <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
             {/* Compact Image - Full Height */}
@@ -36,6 +38,18 @@ export default function ProductListItem({ name, price, description, category, im
                 <p className="text-xs text-gray-600 line-clamp-1 mb-2">
                     {description}
                 </p>
+
+                {/* Compact Allergen Tags */}
+                {tags && tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                        {tags.slice(0, 3).map((tag) => (
+                            <AllergenBadge key={tag} tag={tag} />
+                        ))}
+                        {tags.length > 3 && (
+                            <span className="text-xs text-gray-500">+{tags.length - 3}</span>
+                        )}
+                    </div>
+                )}
 
                 {/* Price and Button - Compact */}
                 <div className="flex items-center justify-between">
