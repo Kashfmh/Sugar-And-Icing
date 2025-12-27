@@ -3,9 +3,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import GalleryCard from '../components/GalleryCard';
+import ProductCardSkeleton from '../components/ProductCardSkeleton';
+import CategoryTabs from '../components/CategoryTabs';
+import FilterModal from '../components/FilterModal';
+import { AnimatedText } from '../components/ui/animated-text';
+import { Select } from '../components/ui/select';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, MessageCircle } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 
 interface CakeGalleryItem {
@@ -18,7 +23,15 @@ interface CakeGalleryItem {
 
 export default function CustomCakesPage() {
     const [cakes, setCakes] = useState<CakeGalleryItem[]>([]);
+    const [activeCategory, setActiveCategory] = useState('All');
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortBy, setSortBy] = useState<'newest' | 'name'>('newest');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    const itemsPerPage = 12;
+
+    const categories = ['All', 'Birthday Cakes', 'Wedding Cakes', 'Custom Design'];
 
     useEffect(() => {
         fetchCustomCakes();
@@ -46,9 +59,35 @@ export default function CustomCakesPage() {
         window.open(whatsappUrl, '_blank');
     };
 
+    // Filter cakes by category and search
+    const filteredCakes = cakes.filter(cake => {
+        const matchesCategory = activeCategory === 'All' || cake.name.includes(activeCategory);
+        const matchesSearch = !searchQuery ||
+            cake.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            cake.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
+
+    const sortedCakes = [...filteredCakes].sort((a, b) => {
+        if (sortBy === 'name') {
+            return a.name.localeCompare(b.name);
+        }
+        return 0; // newest (default order)
+    });
+
+    // Pagination
+    const totalPages = Math.ceil(sortedCakes.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedCakes = sortedCakes.slice(startIndex, startIndex + itemsPerPage);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCategory, searchQuery, sortBy]);
+
     return (
         <main className="min-h-screen bg-sai-white pb-24 md:pb-8 relative">
-            {/* Brand Logo - Top Left Floating */}
+            {/* Brand Logo */}
             <div className="absolute top-4 left-4 z-40 hidden md:block">
                 <Image
                     src="/images/logo/full-logo-pink.png"
@@ -82,33 +121,132 @@ export default function CustomCakesPage() {
                 </div>
             </header>
 
-            {/* Hero Section */}
-            <section className="px-6 pt-20 md:pt-28 pb-8">
+            {/* Tagline Section */}
+            <section className="px-6 pt-20 md:pt-28 pb-6">
                 <div className="max-w-4xl mx-auto text-center">
                     <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-sai-charcoal/70 mb-3">
                         Made Just For You
                     </p>
-                    <h2 className="font-serif text-4xl md:text-5xl font-normal text-sai-charcoal mb-4">
-                        Custom Cake Creations
+                    <h2 className="font-serif text-4xl md:text-5xl font-normal text-sai-charcoal relative inline-block">
+                        <AnimatedText
+                            words={['Custom Cake Creations', 'Baked With Love', 'Dream Cakes', 'Made to Order']}
+                            className="text-sai-pink"
+                        />
                     </h2>
-                    <p className="text-base md:text-lg text-sai-gray max-w-2xl mx-auto mb-6">
-                        Every cake is uniquely crafted to match your vision. From birthdays to celebrations,
-                        we bring your dream cake to life with love and attention to detail.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button
-                            onClick={() => handleRequestQuote('a custom cake')}
-                            className="btn-primary flex items-center gap-2"
-                        >
-                            <MessageCircle className="w-5 h-5" />
-                            Start Your Custom Order
-                        </button>
-                        <p className="text-sm text-sai-gray">
-                            Starting from <span className="font-bold text-sai-pink">RM 80</span>
+                </div>
+            </section>
+
+            {/* Desktop: Search & Filters */}
+            <section className="hidden md:block px-6 py-6">
+                <div className="max-w-6xl mx-auto">
+                    {/* Search Bar */}
+                    <div className="mb-6">
+                        <div className="relative max-w-md mx-auto">
+                            <input
+                                type="text"
+                                placeholder="Search cake designs..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full px-4 py-3 pl-11 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink transition-all"
+                            />
+                            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Category Tabs */}
+                    <div className="flex justify-center mb-4">
+                        <CategoryTabs
+                            categories={categories}
+                            activeCategory={activeCategory}
+                            onCategoryChange={setActiveCategory}
+                        />
+                    </div>
+
+                    {/* Results Bar */}
+                    <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-gray-600">
+                            Showing <span className="font-semibold">{paginatedCakes.length}</span> of <span className="font-semibold">{sortedCakes.length}</span> designs
                         </p>
+                        <Select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as any)}
+                            options={[
+                                { value: 'newest', label: 'Newest First' },
+                                { value: 'name', label: 'Name: A-Z' },
+                            ]}
+                        />
                     </div>
                 </div>
             </section>
+
+            {/* Mobile: Search + Filter Button */}
+            <section className="md:hidden px-6 pt-6 pb-4">
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            placeholder="Search cake designs..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={() => setIsFilterModalOpen(true)}
+                        className="relative w-12 h-12 rounded-xl bg-sai-pink text-white flex items-center justify-center hover:bg-sai-pink/90 transition-colors"
+                    >
+                        <SlidersHorizontal className="w-5 h-5" />
+                        {sortBy !== 'newest' && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-sai-white" />
+                        )}
+                    </button>
+                </div>
+            </section>
+
+            {/* Mobile: Category Tabs */}
+            <section className="md:hidden px-6 pb-6">
+                <CategoryTabs
+                    categories={categories}
+                    activeCategory={activeCategory}
+                    onCategoryChange={setActiveCategory}
+                />
+            </section>
+
+            {/* Filter Modal */}
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                sortBy={sortBy as any}
+                onSortChange={(newSort) => {
+                    if (newSort === 'newest' || newSort === 'name') {
+                        setSortBy(newSort);
+                    }
+                }}
+            />
 
             {/* Gallery Grid */}
             <section className="px-6 py-4">
@@ -116,32 +254,65 @@ export default function CustomCakesPage() {
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="animate-pulse">
-                                    <div className="bg-gray-200 h-64 rounded-t-lg" />
-                                    <div className="bg-white p-6 rounded-b-lg space-y-3">
-                                        <div className="h-6 bg-gray-200 rounded w-3/4" />
-                                        <div className="h-4 bg-gray-200 rounded w-full" />
-                                        <div className="h-10 bg-gray-200 rounded" />
-                                    </div>
-                                </div>
+                                <ProductCardSkeleton key={i} />
                             ))}
                         </div>
-                    ) : cakes.length === 0 ? (
+                    ) : paginatedCakes.length === 0 ? (
                         <div className="text-center py-12">
-                            <p className="text-sai-charcoal/60">No custom cake examples available yet.</p>
+                            <p className="text-sai-charcoal/60">
+                                {searchQuery ? `No designs found for "${searchQuery}"` : 'No cake designs found in this category.'}
+                            </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {cakes.map((cake) => (
-                                <GalleryCard
-                                    key={cake.id}
-                                    name={cake.name}
-                                    description={cake.description || undefined}
-                                    image_url={cake.image_url || undefined}
-                                    onRequestQuote={() => handleRequestQuote(cake.name)}
-                                />
-                            ))}
-                        </div>
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {paginatedCakes.map((cake) => (
+                                    <GalleryCard
+                                        key={cake.id}
+                                        name={cake.name}
+                                        description={cake.description || undefined}
+                                        image_url={cake.image_url || undefined}
+                                        onRequestQuote={() => handleRequestQuote(cake.name)}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-2 mt-8">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+
+                                    <div className="flex gap-1">
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`w-10 h-10 rounded-lg transition-colors ${currentPage === page
+                                                    ? 'bg-sai-pink text-white'
+                                                    : 'border border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </section>
@@ -184,7 +355,6 @@ export default function CustomCakesPage() {
                 </div>
             </section>
 
-            {/* Mobile Bottom Navigation */}
             <BottomNav />
         </main>
     );
