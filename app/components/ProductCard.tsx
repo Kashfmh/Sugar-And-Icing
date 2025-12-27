@@ -74,7 +74,7 @@ export default function ProductCard({ name, price, description, category, image_
           <div
             className="text-2xl font-bold"
             style={{
-              color: '#000000',
+              color: 'var(--color-sai-charcoal)',
               fontFamily: 'var(--font-serif)'
             }}
           >

@@ -9,8 +9,8 @@ export default function Navbar() {
 
     const navItems = [
         { href: '/', label: 'Home' },
-        { href: '/menu', label: 'Menu' },
-        { href: '/about', label: 'About' },
+        { href: '/menu', label: 'Shop' },
+        { href: '/custom-cakes', label: 'Custom Cakes' },
         { href: '/contact', label: 'Contact' },
     ];
 
@@ -23,8 +23,8 @@ export default function Navbar() {
                         key={item.href}
                         href={item.href}
                         className={`text-sm font-semibold uppercase tracking-wide transition-colors ${pathname === item.href
-                                ? 'text-sai-pink'
-                                : 'text-sai-charcoal hover:text-sai-pink'
+                            ? 'text-sai-pink'
+                            : 'text-sai-charcoal hover:text-sai-pink'
                             }`}
                     >
                         {item.label}

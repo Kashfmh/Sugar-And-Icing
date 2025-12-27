@@ -56,7 +56,7 @@ export default function ProductListItem({ name, price, description, category, im
                     <div
                         className="text-lg font-bold"
                         style={{
-                            color: '#000000',
+                            color: 'var(--color-sai-charcoal)',
                             fontFamily: 'var(--font-serif)'
                         }}
                     >
