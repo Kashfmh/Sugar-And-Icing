@@ -33,26 +33,29 @@ function isValidEmail(email: string): boolean {
 /**
  * Validate phone number (Malaysian or Indian format with country code)
  */
-function isValidPhone(phone: string): boolean {
-    // Accepts: +60123456789, +91123456789, 60123456789, 91123456789
-    const phoneRegex = /^(\+?60|60|\+?91|91)[0-9]{9,10}$/;
-    return phoneRegex.test(phone.replace(/[\s-]/g, ''));
+function isValidPhone(phone: string): { valid: boolean; formatted: string; error?: string } {
+    const cleanPhone = phone.replace(/[\s-]/g, '');
+
+    // Malaysian number (+60)
+    if (cleanPhone.match(/^(\+?60|60)[0-9]{9,10}$/)) {
+        const formatted = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
+        return { valid: true, formatted };
+    }
+
+    // Indian number (+91)
+    if (cleanPhone.match(/^(\+?91|91)[0-9]{10}$/)) {
+        const formatted = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
+        return { valid: true, formatted };
+    }
+
+    return { valid: false, formatted: cleanPhone, error: 'Please enter a valid Malaysian (+60) or Indian (+91) phone number' };
 }
 
 /**
  * Validate password strength
  */
-function isStrongPassword(password: string): { valid: boolean; message?: string } {
-    if (password.length < 8) {
-        return { valid: false, message: 'Password must be at least 8 characters' };
-    }
-    if (!/[0-9]/.test(password)) {
-        return { valid: false, message: 'Password must contain at least one number' };
-    }
-    if (!/[a-zA-Z]/.test(password)) {
-        return { valid: false, message: 'Password must contain at least one letter' };
-    }
-    return { valid: true };
+function isValidPassword(password: string): boolean {
+    return password.length >= 8 && /[0-9]/.test(password) && /[a-zA-Z]/.test(password);
 }
 
 /**
@@ -119,7 +122,7 @@ export async function signUp(
         const { error: profileError } = await supabase
             .from('profiles')
             .insert([{
-                user_id: data.user.id, // Changed from 'id' to 'user_id' to match UserProfile interface
+                user_id: data.user.id,
                 first_name: sanitizedFirstName,
                 phone: phoneValidation.formatted,
                 created_at: new Date().toISOString(),
@@ -144,7 +147,49 @@ export async function signUp(
 /**
  * Sign in an existing user
  */
-return data;
+export async function signIn(
+    email: string,
+    password: string,
+    rememberMe: boolean = true
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const sanitizedEmail = sanitizeInput(email.toLowerCase());
+
+        if (!isValidEmail(sanitizedEmail)) {
+            return { success: false, error: 'Please enter a valid email address' };
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: sanitizedEmail,
+            password: password,
+        });
+
+        if (error) {
+            // Specific error messages based on Supabase error codes
+            if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid')) {
+                return { success: false, error: 'Incorrect email or password. Please try again.' };
+            }
+            if (error.message.includes('Email not confirmed')) {
+                return { success: false, error: 'Please verify your email before signing in.' };
+            }
+            if (error.message.includes('rate limit')) {
+                return { success: false, error: 'Too many login attempts. Please try again in a few minutes.' };
+            }
+            if (error.message.includes('User not found')) {
+                return { success: false, error: 'No account found with this email. Please sign up first.' };
+            }
+            return { success: false, error: error.message || 'Failed to sign in. Please try again.' };
+        }
+
+        if (!data.user) {
+            return { success: false, error: 'Sign in failed. Please check your credentials.' };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('Sign in error:', error);
+        return { success: false, error: 'An unexpected error occurred. Please try again.' };
+    }
 }
 
 /**
