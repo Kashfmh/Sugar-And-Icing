@@ -35,37 +35,14 @@
     min-height: 550px;
 }
 
-/* Mobile Toggle Tabs */
+/* Mobile Toggle Tabs - HIDDEN (using form tabs instead) */
 .auth-page .mobile-toggle-tabs {
+    display: none !important;
+}
+
+/* Simple Form Tabs - Inside Form (Mobile Only) */
+.auth-page .form-tabs-mobile {
     display: none;
-}
-
-.auth-page .mobile-toggle-container {
-    display: flex;
-    gap: 0;
-    background: #f3f4f6;
-    border-radius: 12px 12px 0 0;
-    padding: 4px;
-    margin-bottom: -1px;
-}
-
-.auth-page .mobile-tab {
-    flex: 1;
-    padding: 12px 24px;
-    border: none;
-    background: transparent;
-    font-size: 15px;
-    font-weight: 600;
-    color: #6b7280;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.auth-page .mobile-tab.active {
-    color: #fff;
-    background: var(--color-sai-pink);
-    box-shadow: 0 2px 8px rgba(244, 143, 177, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -75,16 +52,36 @@
         padding-bottom: 100px;
     }
 
-    .auth-page .mobile-toggle-tabs {
-        display: block;
-        margin-bottom: 0;
+    .auth-page .form-tabs-mobile {
+        display: flex;
+        gap: 8px;
+        margin: 16px 0 8px 0;
+        justify-content: center;
+    }
+
+    .auth-page .form-tab {
+        flex: 1;
+        padding: 8px 16px;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        font-weight: 600;
+        color: #9ca3af;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .auth-page .form-tab.active {
+        color: var(--color-sai-pink);
+        border-bottom-color: var(--color-sai-pink);
     }
 
     .auth-page .auth-container {
         min-height: auto;
         max-height: none;
         overflow-y: visible;
-        border-radius: 0 0 20px 20px;
+        border-radius: 20px;
     }
 
     /* Hide overlay on mobile */

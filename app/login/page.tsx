@@ -173,29 +173,30 @@ export default function AuthPage() {
                 </Link>
             </div>
 
-            {/* Mobile Toggle Tabs */}
-            <div className="mobile-toggle-tabs">
-                <div className="mobile-toggle-container">
-                    <button
-                        className={`mobile-tab ${!isSignUp ? 'active' : ''}`}
-                        onClick={() => { setIsSignUp(false); setErrors({}); }}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        className={`mobile-tab ${isSignUp ? 'active' : ''}`}
-                        onClick={() => { setIsSignUp(true); setErrors({}); }}
-                    >
-                        Sign Up
-                    </button>
-                </div>
-            </div>
-
             <div className={`auth-container ${isSignUp ? 'right-panel-active' : ''}`}>
                 {/* Sign Up Form */}
                 <div className="form-container sign-up-container">
                     <form onSubmit={handleSignUp}>
                         <h1>Create Account</h1>
+
+                        {/* Mobile Tabs - Inside Form */}
+                        <div className="form-tabs-mobile">
+                            <button
+                                type="button"
+                                className={`form-tab ${isSignUp ? 'active' : ''}`}
+                                onClick={() => { setIsSignUp(true); setErrors({}); }}
+                            >
+                                Sign Up
+                            </button>
+                            <button
+                                type="button"
+                                className={`form-tab ${!isSignUp ? 'active' : ''}`}
+                                onClick={() => { setIsSignUp(false); setErrors({}); }}
+                            >
+                                Sign In
+                            </button>
+                        </div>
+
                         <span className="auth-subtitle">Join us for sweet moments 🍰</span>
 
                         <input
@@ -325,6 +326,25 @@ export default function AuthPage() {
                 <div className="form-container sign-in-container">
                     <form onSubmit={handleSignIn}>
                         <h1>Welcome Back</h1>
+
+                        {/* Mobile Tabs - Inside Form */}
+                        <div className="form-tabs-mobile">
+                            <button
+                                type="button"
+                                className={`form-tab ${!isSignUp ? 'active' : ''}`}
+                                onClick={() => { setIsSignUp(false); setErrors({}); }}
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                type="button"
+                                className={`form-tab ${isSignUp ? 'active' : ''}`}
+                                onClick={() => { setIsSignUp(true); setErrors({}); }}
+                            >
+                                Sign Up
+                            </button>
+                        </div>
+
                         <span className="auth-subtitle">Sign in to your account</span>
 
                         <input
