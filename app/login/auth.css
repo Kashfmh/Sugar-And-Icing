@@ -35,13 +35,8 @@
     min-height: 550px;
 }
 
-/* Mobile Toggle Tabs - HIDDEN (using form tabs instead) */
-.auth-page .mobile-toggle-tabs {
-    display: none !important;
-}
-
-/* Simple Form Tabs - Inside Form (Mobile Only) */
-.auth-page .form-tabs-mobile {
+/* Mobile Tabs - Single Instance with Sliding Indicator */
+.auth-page .auth-tabs-mobile {
     display: none;
 }
 
@@ -52,29 +47,56 @@
         padding-bottom: 100px;
     }
 
-    .auth-page .form-tabs-mobile {
-        display: flex;
-        gap: 8px;
-        margin: 16px 0 8px 0;
-        justify-content: center;
+    .auth-page .auth-tabs-mobile {
+        display: block;
+        padding: 0 20px;
+        margin-bottom: 20px;
     }
 
-    .auth-page .form-tab {
+    .auth-page .tabs-wrapper {
+        position: relative;
+        display: flex;
+        background: #f3f4f6;
+        border-radius: 12px;
+        padding: 4px;
+    }
+
+    .auth-page .tab-button {
         flex: 1;
-        padding: 8px 16px;
+        padding: 10px 16px;
         border: none;
         background: transparent;
         font-size: 14px;
         font-weight: 600;
-        color: #9ca3af;
+        color: #6b7280;
         cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s ease;
+        transition: color 0.3s ease;
+        position: relative;
+        z-index: 2;
     }
 
-    .auth-page .form-tab.active {
-        color: var(--color-sai-pink);
-        border-bottom-color: var(--color-sai-pink);
+    .auth-page .tab-button.active {
+        color: #fff;
+    }
+
+    .auth-page .tab-indicator {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        width: calc(50% - 4px);
+        background: var(--color-sai-pink);
+        border-radius: 8px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+        box-shadow: 0 2px 8px rgba(244, 143, 177, 0.3);
+    }
+
+    .auth-page .tab-indicator.left {
+        transform: translateX(4px);
+    }
+
+    .auth-page .tab-indicator.right {
+        transform: translateX(calc(100% + 4px));
     }
 
     .auth-page .auth-container {
