@@ -38,7 +38,7 @@ export default function MenuPage() {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const itemsPerPage = 12;
 
-    const categories = ['All', 'Cakes', 'Brownies', 'Fruit Cakes', 'Bread'];
+    const categories = ['All', 'Cupcakes', 'Brownies', 'Fruit Cakes', 'Bread'];
 
     useEffect(() => {
         fetchProducts();
@@ -46,10 +46,11 @@ export default function MenuPage() {
 
     async function fetchProducts() {
         try {
+            // Get all non-Cakes products + brownies/cupcakes from Cakes category
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .neq('category_name', 'Cakes'); // Exclude cakes - they're in the gallery
+                .or('category_name.neq.Cakes,and(category_name.eq.Cakes,or(name.ilike.%brownie%,name.ilike.%cupcake%))');
 
             if (error) throw error;
             setProducts(data || []);
