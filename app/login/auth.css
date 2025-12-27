@@ -354,30 +354,32 @@
     padding: 0 40px;
 }
 
-/* Desktop Form Scrolling - ONLY for Sign-Up Form, higher threshold to prevent immediate scrollbar */
-.auth-page .sign-up-container form {
-    max-height: 490px;
-    overflow-y: auto;
-    padding-right: 10px;
-}
+/* Desktop Form Scrolling - ONLY for Sign-Up Form on DESKTOP */
+@media (min-width: 769px) {
+    .auth-page .sign-up-container form {
+        max-height: 490px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
 
-/* Custom scrollbar for sign-up form */
-.auth-page .sign-up-container form::-webkit-scrollbar {
-    width: 6px;
-}
+    /* Custom scrollbar for sign-up form */
+    .auth-page .sign-up-container form::-webkit-scrollbar {
+        width: 6px;
+    }
 
-.auth-page .sign-up-container form::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
+    .auth-page .sign-up-container form::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
 
-.auth-page .sign-up-container form::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 10px;
-}
+    .auth-page .sign-up-container form::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 10px;
+    }
 
-.auth-page .sign-up-container form::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    .auth-page .sign-up-container form::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
 }
 
 .auth-page .sign-in-container {
