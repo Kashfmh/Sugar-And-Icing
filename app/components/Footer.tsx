@@ -5,13 +5,13 @@ export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-sai-charcoal text-sai-white py-8 md:py-12">
+        <footer className="bg-sai-charcoal text-sai-white py-6 md:py-12">
             <div className="max-w-6xl mx-auto px-6">
                 {/* Main Footer Content */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
                     {/* About Section */}
                     <div>
-                        <h3 className="font-serif text-xl mb-4" style={{ color: 'var(--color-sai-pink)' }}>
+                        <h3 className="font-serif text-xl mb-2 md:mb-4" style={{ color: 'var(--color-sai-pink)' }}>
                             Sugar And Icing
                         </h3>
                         <p className="text-sm text-gray-300 leading-relaxed">
@@ -22,7 +22,7 @@ export default function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="font-semibold mb-4">Quick Links</h4>
+                        <h4 className="font-semibold mb-2 md:mb-4">Quick Links</h4>
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <Link href="/" className="text-gray-300 hover:text-sai-pink transition-colors">
@@ -49,7 +49,7 @@ export default function Footer() {
 
                     {/* Contact Info */}
                     <div>
-                        <h4 className="font-semibold mb-4">Get In Touch</h4>
+                        <h4 className="font-semibold mb-2 md:mb-4">Get In Touch</h4>
                         <ul className="space-y-3 text-sm">
                             <li className="flex items-start gap-2">
                                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-sai-pink)' }} />
@@ -99,7 +99,7 @@ export default function Footer() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="border-t border-gray-700 pt-6 text-center">
+                <div className="border-t border-gray-700 pt-4 md:pt-6 text-center">
                     <p className="text-sm text-gray-400">
                         © {currentYear} Sugar And Icing. All rights reserved. Made with 💕 in KL.
                     </p>

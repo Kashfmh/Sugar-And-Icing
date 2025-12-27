@@ -480,7 +480,7 @@ export default function CustomCakesPage() {
             </section>
 
             {/* How It Works Section */}
-            <section className="px-6 py-12 bg-sai-light-gray">
+            <section className="px-6 py-12 pb-0 md:pb-0 bg-sai-light-gray">
                 <div className="max-w-4xl mx-auto">
                     <h3 className="font-serif text-3xl text-center text-sai-charcoal mb-8">
                         How Custom Orders Work
