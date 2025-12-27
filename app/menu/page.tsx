@@ -48,7 +48,8 @@ export default function MenuPage() {
         try {
             const { data, error } = await supabase
                 .from('products')
-                .select('*');
+                .select('*')
+                .neq('category_name', 'Cakes'); // Exclude cakes - they're in the gallery
 
             if (error) throw error;
             setProducts(data || []);
