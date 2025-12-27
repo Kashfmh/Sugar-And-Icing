@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp } from '@/lib/auth';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { Eye, EyeOff, Check, X, ArrowLeft } from 'lucide-react';
 import './auth.css';
 
 export default function AuthPage() {
@@ -160,8 +160,25 @@ export default function AuthPage() {
 
     return (
         <div className="auth-page">
-            {/* Logo - Top Left */}
-            <div className="auth-logo">
+            {/* Mobile Header - Consistent with other pages */}
+            <header className="md:hidden fixed top-0 left-0 right-0 z-[1001] bg-white border-b border-gray-200">
+                <div className="flex items-center justify-between px-4 py-3">
+                    <Link href="/" className="flex items-center gap-2 text-sai-charcoal">
+                        <ArrowLeft size={24} />
+                        <span className="font-semibold text-lg">Login</span>
+                    </Link>
+                    <Image
+                        src="/images/logo/full-logo-pink.png"
+                        alt="Sugar And Icing"
+                        width={50}
+                        height={50}
+                        className="object-contain"
+                    />
+                </div>
+            </header>
+
+            {/* Desktop Logo - Top Left */}
+            <div className="auth-logo hidden md:block">
                 <Link href="/">
                     <Image
                         src="/images/logo/full-logo-pink.png"
@@ -171,27 +188,6 @@ export default function AuthPage() {
                         className="object-contain"
                     />
                 </Link>
-            </div>
-
-            {/* Tabs - Single Instance for Mobile */}
-            <div className="auth-tabs-mobile">
-                <div className="tabs-wrapper">
-                    <button
-                        type="button"
-                        className={`tab-button ${!isSignUp ? 'active' : ''}`}
-                        onClick={() => { setIsSignUp(false); setErrors({}); }}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        type="button"
-                        className={`tab-button ${isSignUp ? 'active' : ''}`}
-                        onClick={() => { setIsSignUp(true); setErrors({}); }}
-                    >
-                        Sign Up
-                    </button>
-                    <div className={`tab-indicator ${isSignUp ? 'right' : 'left'}`}></div>
-                </div>
             </div>
 
             <div className={`auth-container ${isSignUp ? 'right-panel-active' : ''}`}>
@@ -321,6 +317,14 @@ export default function AuthPage() {
                         <button type="submit" disabled={loading}>
                             {loading ? 'Creating...' : 'Sign Up'}
                         </button>
+
+                        {/* Mobile Bottom Link */}
+                        <div className="auth-bottom-link">
+                            <span>Already have an account? </span>
+                            <button type="button" onClick={() => { setIsSignUp(false); setErrors({}); }}>
+                                Log in
+                            </button>
+                        </div>
                     </form>
                 </div>
 
@@ -376,6 +380,14 @@ export default function AuthPage() {
                         <button type="submit" disabled={loading}>
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
+
+                        {/* Mobile Bottom Link */}
+                        <div className="auth-bottom-link">
+                            <span>Don't have an account? </span>
+                            <button type="button" onClick={() => { setIsSignUp(true); setErrors({}); }}>
+                                Sign up
+                            </button>
+                        </div>
                     </form>
                 </div>
 
