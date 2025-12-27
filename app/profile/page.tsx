@@ -134,13 +134,38 @@ export default function ProfilePage() {
                                     <p className="text-sm text-gray-500 mb-1">Phone</p>
                                     <p className="font-medium text-sai-charcoal">{profile.phone}</p>
                                 </div>
-                        <li>• Order history</li>
-                        <li>• Saved addresses</li>
-                        <li>• Favorite cakes</li>
-                        <li>• Track orders</li>
-                    </ul>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Quick Actions */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                        <h2 className="text-lg font-bold text-sai-charcoal mb-4">Quick Actions</h2>
+                        <div className="space-y-3">
+                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+                                <span className="font-medium text-sai-charcoal">Order History</span>
+                                <span className="block text-sm text-gray-500 mt-1">Coming soon</span>
+                            </button>
+                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+                                <span className="font-medium text-sai-charcoal">Saved Addresses</span>
+                                <span className="block text-sm text-gray-500 mt-1">Coming soon</span>
+                            </button>
+                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+                                <span className="font-medium text-sai-charcoal">Favorite Cakes</span>
+                                <span className="block text-sm text-gray-500 mt-1">Coming soon</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Logout Button */}
+                    <button
+                        onClick={handleLogout}
+                        className="w-full bg-sai-pink hover:bg-sai-pink-dark text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-sm"
+                    >
+                        Sign Out
+                    </button>
                 </div>
+            </div>
         </main>
     );
 }
