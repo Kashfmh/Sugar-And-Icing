@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, signOut } from '@/lib/auth';
+import { getCurrentUser, signOut, getUserProfile } from '@/lib/auth';
 import Image from 'next/image';
 import Link from 'next/link';
-import { User, Mail, LogOut, ArrowLeft } from 'lucide-react';
+import { User, Mail, LogOut, ArrowLeft, Phone } from 'lucide-react';
 import BottomNav from '@/app/components/BottomNav';
 
 interface UserData {
@@ -14,8 +14,14 @@ interface UserData {
     created_at: string;
 }
 
+interface ProfileData {
+    first_name: string;
+    phone: string;
+}
+
 export default function ProfilePage() {
     const [user, setUser] = useState<UserData | null>(null);
+    const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -27,13 +33,22 @@ export default function ProfilePage() {
         try {
             const currentUser = await getCurrentUser();
             if (!currentUser) {
-                router.push('/auth/login');
+                router.push('/auth');
                 return;
             }
             setUser(currentUser);
+
+            // Fetch profile data
+            const userProfile = await getUserProfile(currentUser.id);
+            if (userProfile) {
+                setProfile({
+                    first_name: userProfile.first_name,
+                    phone: userProfile.phone,
+                });
+            }
         } catch (error) {
             console.error('Error checking user:', error);
-            router.push('/auth/login');
+            router.push('/auth');
         } finally {
             setLoading(false);
         }
@@ -62,7 +77,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="min-h-screen bg-sai-white pb-24 md:pb-8">
+        <main className="min-h-screen bg-sai-white">
             {/* Brand Logo - Top Left */}
             <div className="absolute top-4 left-4 z-40 hidden md:block">
                 <Image
@@ -96,7 +111,7 @@ export default function ProfilePage() {
             </header>
 
             {/* Profile Content */}
-            <div className="max-w-2xl mx-auto px-6 pt-20 md:pt-28">
+            <div className="max-w-2xl mx-auto px-6 pt-20 md:pt-28 pb-32 md:pb-16">
                 <h1 className="hidden md:block font-serif text-4xl text-sai-charcoal mb-8">
                     My Profile
                 </h1>
@@ -104,9 +119,20 @@ export default function ProfilePage() {
                 {/* Profile Card */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-t-4 mb-6" style={{ borderTopColor: 'var(--color-sai-pink)' }}>
                     {/* User Icon */}
-                    <div className="flex items-center justify-center mb-6">
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
                             <User className="w-10 h-10" style={{ color: 'var(--color-sai-pink)' }} />
+                        </div>
+                        <div>
+                            <h2 className="font-serif text-2xl text-sai-charcoal">
+                                {profile?.first_name || 'User'}
+                            </h2>
+                            <p className="text-sm text-sai-gray">
+                                Member since {new Date(user.created_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    year: 'numeric'
+                                })}
+                            </p>
                         </div>
                     </div>
 
@@ -120,19 +146,15 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 p-4 bg-sai-light-gray rounded-lg">
-                            <User className="w-5 h-5 text-sai-gray flex-shrink-0" />
-                            <div className="flex-1">
-                                <p className="text-xs text-sai-gray mb-1">Member Since</p>
-                                <p className="text-sm font-semibold text-sai-charcoal">
-                                    {new Date(user.created_at).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
+                        {profile?.phone && (
+                            <div className="flex items-center gap-3 p-4 bg-sai-light-gray rounded-lg">
+                                <Phone className="w-5 h-5 text-sai-gray flex-shrink-0" />
+                                <div className="flex-1">
+                                    <p className="text-xs text-sai-gray mb-1">Phone</p>
+                                    <p className="text-sm font-semibold text-sai-charcoal">{profile.phone}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
@@ -150,6 +172,7 @@ export default function ProfilePage() {
                 <div className="mt-8 p-6 bg-sai-light-gray rounded-xl">
                     <h3 className="font-semibold text-sai-charcoal mb-3">Coming Soon</h3>
                     <ul className="space-y-2 text-sm text-sai-gray">
+                        <li>• Edit profile details</li>
                         <li>• Order history</li>
                         <li>• Saved addresses</li>
                         <li>• Favorite cakes</li>

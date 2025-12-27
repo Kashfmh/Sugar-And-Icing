@@ -6,29 +6,129 @@ export interface AuthUser {
     created_at: string;
 }
 
-/**
- * Sign up a new user with email and password
- */
-export async function signUp(email: string, password: string) {
-    const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-    });
+export interface UserProfile {
+    id: string;
+    user_id: string;
+    first_name: string;
+    phone: string;
+    created_at: string;
+    updated_at: string;
+}
 
-    if (error) {
-        throw new Error(error.message);
+/**
+ * Sanitize and trim input
+ */
+function sanitizeInput(input: string): string {
+    return input.trim().replace(/[<>]/g, '');
+}
+
+/**
+ * Validate email format
+ */
+function isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+/**
+ * Validate phone number (Malaysian format)
+ */
+function isValidPhone(phone: string): boolean {
+    // Accepts: 0123456789, +60123456789, 60123456789
+    const phoneRegex = /^(\+?6?01)[0-46-9]-*[0-9]{7,8}$/;
+    return phoneRegex.test(phone.replace(/[\s-]/g, ''));
+}
+
+/**
+ * Validate password strength
+ */
+function isStrongPassword(password: string): { valid: boolean; message?: string } {
+    if (password.length < 8) {
+        return { valid: false, message: 'Password must be at least 8 characters' };
+    }
+    if (!/[0-9]/.test(password)) {
+        return { valid: false, message: 'Password must contain at least one number' };
+    }
+    if (!/[a-zA-Z]/.test(password)) {
+        return { valid: false, message: 'Password must contain at least one letter' };
+    }
+    return { valid: true };
+}
+
+/**
+ * Sign up a new user with profile information
+ */
+export async function signUp(
+    email: string,
+    password: string,
+    firstName: string,
+    phone: string
+) {
+    // Sanitize inputs
+    const cleanEmail = sanitizeInput(email.toLowerCase());
+    const cleanFirstName = sanitizeInput(firstName);
+    const cleanPhone = sanitizeInput(phone.replace(/[\s-]/g, ''));
+
+    // Validate inputs
+    if (!isValidEmail(cleanEmail)) {
+        throw new Error('Please enter a valid email address');
     }
 
-    return data;
+    if (!isValidPhone(cleanPhone)) {
+        throw new Error('Please enter a valid Malaysian phone number (e.g., 0123456789)');
+    }
+
+    const passwordCheck = isStrongPassword(password);
+    if (!passwordCheck.valid) {
+        throw new Error(passwordCheck.message || 'Invalid password');
+    }
+
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: password,
+    });
+
+    if (authError) {
+        throw new Error(authError.message);
+    }
+
+    if (!authData.user) {
+        throw new Error('Failed to create account');
+    }
+
+    // Create profile record
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+            user_id: authData.user.id,
+            first_name: cleanFirstName,
+            phone: cleanPhone,
+        });
+
+    if (profileError) {
+        // If profile creation fails, we should ideally delete the auth user
+        // For now, log the error
+        console.error('Profile creation error:', profileError);
+        throw new Error('Failed to create profile. Please contact support.');
+    }
+
+    return authData;
 }
 
 /**
  * Sign in an existing user
  */
 export async function signIn(email: string, password: string) {
+    const cleanEmail = sanitizeInput(email.toLowerCase());
+
+    if (!isValidEmail(cleanEmail)) {
+        throw new Error('Please enter a valid email address');
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: cleanEmail,
+        password: password,
     });
 
     if (error) {
@@ -64,6 +164,23 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
         email: user.email || '',
         created_at: user.created_at,
     };
+}
+
+/**
+ * Get user profile
+ */
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+    if (error || !data) {
+        return null;
+    }
+
+    return data;
 }
 
 /**
