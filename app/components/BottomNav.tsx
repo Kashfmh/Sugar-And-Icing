@@ -16,7 +16,7 @@ export default function BottomNav() {
     ];
 
     return (
-        <nav className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 md:hidden">
+        <nav className="fixed bottom-6 left-0 right-0 z-[1000] flex justify-center px-4 md:hidden">
             <div className="bg-white/95 backdrop-blur-md border border-gray-200 shadow-lg rounded-2xl px-6 py-2 flex items-center relative max-w-md w-full">
                 {/* Left Group - Home and Menu */}
                 <div className="flex-1 flex justify-around gap-4">

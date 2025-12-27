@@ -21,7 +21,7 @@
     position: absolute;
     top: 20px;
     left: 20px;
-    z-index: 1000;
+    z-index: 10;
 }
 
 .auth-page .auth-container {
@@ -207,6 +207,13 @@
     width: 100%;
     font-size: 14px;
     transition: all 0.3s ease;
+}
+
+/* Exclude checkbox from input padding */
+.auth-page input[type="checkbox"] {
+    padding: 0;
+    margin: 0;
+    width: auto;
 }
 
 .auth-page input:focus,
@@ -489,7 +496,7 @@
     height: 100%;
     overflow: hidden;
     transition: transform 0.6s ease-in-out;
-    z-index: 100;
+    z-index: 10;
 }
 
 .auth-page .auth-container.right-panel-active .overlay-container {

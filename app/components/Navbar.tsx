@@ -15,7 +15,7 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className="fixed top-6 left-0 right-0 z-50 hidden md:flex justify-center w-full px-4">
+        <nav className="fixed top-6 left-0 right-0 z-[1000] hidden md:flex justify-center w-full px-4">
             <div className="glass-nav rounded-full px-8 py-3 flex items-center gap-6">
                 {/* Navigation Links */}
                 {navItems.map((item) => (
@@ -46,8 +46,8 @@ export default function Navbar() {
                 <Link href="/profile" className="group">
                     <User
                         className={`w-5 h-5 transition-colors ${pathname === '/profile' || pathname === '/login'
-                                ? 'text-sai-pink'
-                                : 'text-sai-charcoal group-hover:text-sai-pink'
+                            ? 'text-sai-pink'
+                            : 'text-sai-charcoal group-hover:text-sai-pink'
                             }`}
                         strokeWidth={pathname === '/profile' || pathname === '/login' ? 2.5 : 2}
                     />
