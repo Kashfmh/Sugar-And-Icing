@@ -179,7 +179,9 @@
 }
 
 .auth-page button.ghost:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #fff;
+    color: var(--color-sai-pink);
+    border-color: var(--color-sai-pink);
 }
 
 .auth-page form {
@@ -265,8 +267,13 @@
 }
 
 .auth-page .password-toggle:hover {
-    color: var(--color-sai-pink);
-    /* No transform or box-shadow to prevent movement */
+    color: #d1d5db;
+    /* Light gray instead of pink */
+}
+
+.auth-page .password-toggle:active {
+    transform: translateY(-50%);
+    /* Prevent downward movement on click */
 }
 
 /* Password Strength Indicator */
@@ -308,12 +315,19 @@
 }
 
 .auth-page .country-code-select {
-    width: 110px;
+    width: 115px;
     flex-shrink: 0;
     margin: 0;
     background-color: #f3f4f6;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px;
+    padding-right: 30px;
+    /* More space for dropdown arrow */
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 20px;
 }
 
 .auth-page .phone-input {

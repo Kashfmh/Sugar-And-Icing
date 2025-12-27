@@ -32,7 +32,7 @@ export default function ProfilePage() {
         try {
             const currentUser = await getCurrentUser();
             if (!currentUser) {
-                router.push('/auth');
+                router.push('/login');
                 return;
             }
             setUser(currentUser);
@@ -72,7 +72,11 @@ export default function ProfilePage() {
     }
 
     if (!user) {
-        return null;
+        return (
+            <main className="min-h-screen bg-sai-white flex items-center justify-center">
+                <div className="text-sai-charcoal">Redirecting...</div>
+            </main>
+        );
     }
 
     return (
