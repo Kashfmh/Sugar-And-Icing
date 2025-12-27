@@ -289,12 +289,6 @@ export default function MenuPage() {
                             <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {paginatedProducts.map((product, index) => (
                                     <div key={product.id} className="relative">
-                                        {/* Best Seller Badge on first product */}
-                                        {index === 0 && currentPage === 1 && !searchQuery && activeCategory === 'All' && (
-                                            <div className="absolute top-4 left-4 z-10">
-                                                <Badge>BEST SELLER</Badge>
-                                            </div>
-                                        )}
                                         <ProductCard
                                             name={product.name}
                                             price={product.price}

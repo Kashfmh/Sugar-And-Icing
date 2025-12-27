@@ -102,7 +102,7 @@ export default function CustomCakesPage() {
     }, [activeCategory, searchQuery, sortBy]);
 
     return (
-        <main className="min-h-screen bg-sai-white pb-24 md:pb-8 relative">
+        <main className="min-h-screen bg-sai-white relative">
             {/* Brand Logo */}
             <div className="absolute top-4 left-4 z-40 hidden md:block">
                 <Image

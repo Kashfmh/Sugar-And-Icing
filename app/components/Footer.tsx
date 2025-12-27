@@ -35,7 +35,7 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/menu" className="text-gray-300 hover:text-sai-pink transition-colors">
+                                <Link href="/other-treats" className="text-gray-300 hover:text-sai-pink transition-colors">
                                     Other Treats
                                 </Link>
                             </li>
