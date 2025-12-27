@@ -160,7 +160,7 @@
     box-shadow: 0 5px 15px rgba(244, 143, 177, 0.4);
 }
 
-.auth-page button:active:not(:disabled) {
+.auth-page button:active:not(:disabled):not(.password-toggle) {
     transform: scale(0.98);
 }
 
