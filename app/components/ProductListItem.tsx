@@ -12,10 +12,10 @@ interface Props {
 export default function ProductListItem({ name, price, description, category, image_url }: Props) {
     return (
         <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
-            {/* Compact Image */}
-            <div className="w-24 h-24 flex-shrink-0 bg-sai-white flex items-center justify-center">
+            {/* Compact Image - Full Height */}
+            <div className="w-24 flex-shrink-0 bg-sai-white flex items-center justify-center">
                 {image_url ? (
-                    <Image src={image_url} alt={name} width={96} height={96} className="object-cover w-full h-full" />
+                    <Image src={image_url} alt={name} width={96} height={200} className="object-cover w-full h-full" />
                 ) : (
                     <div className="text-xs text-gray-400">Image</div>
                 )}

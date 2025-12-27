@@ -47,8 +47,8 @@ export default function ProductCard({ name, price, description, category, image_
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            minHeight: '2.5em',
-            maxHeight: '2.5em'
+            minHeight: '3em',
+            maxHeight: '3em'
           }}
           title={description}
         >

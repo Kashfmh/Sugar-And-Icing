@@ -1,8 +1,8 @@
 export default function ProductListItemSkeleton() {
     return (
         <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm border-l-4 animate-pulse" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
-            {/* Image Skeleton */}
-            <div className="w-24 h-24 flex-shrink-0 bg-gray-200" />
+            {/* Image Skeleton - Full Height */}
+            <div className="w-24 flex-shrink-0 bg-gray-200" />
 
             {/* Content Skeleton */}
             <div className="flex-1 py-3 pr-3">
