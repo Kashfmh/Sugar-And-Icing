@@ -91,15 +91,28 @@ export async function signUp(
             return { success: false, error: 'First name must be at least 2 characters' };
         }
 
-        // Sign up the user
+        // Sign up the user with metadata
         const { data, error } = await supabase.auth.signUp({
             email: sanitizedEmail,
             password: password,
+            options: {
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/profile`,
+                data: {
+                    display_name: sanitizedFirstName,
+                    phone: phoneValidation.formatted,
+                    first_name: sanitizedFirstName,
+                }
+            }
         });
 
         if (error) {
+            console.error('Supabase signup error:', error);
+
             // Specific error messages based on Supabase error codes
-            if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+            if (error.message.includes('already registered') ||
+                error.message.includes('User already registered') ||
+                error.status === 422 ||
+                error.message.includes('duplicate')) {
                 return { success: false, error: 'This email is already registered. Please sign in instead.' };
             }
             if (error.message.includes('Invalid email')) {
@@ -116,6 +129,11 @@ export async function signUp(
 
         if (!data.user) {
             return { success: false, error: 'Account creation failed. Please try again.' };
+        }
+
+        // Check if user already exists (Supabase sometimes returns success for existing users)
+        if (data.user && !data.session) {
+            return { success: false, error: 'This email is already registered. Please sign in instead.' };
         }
 
         // Create user profile

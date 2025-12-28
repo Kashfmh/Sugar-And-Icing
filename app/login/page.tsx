@@ -148,7 +148,15 @@ export default function AuthPage() {
 
         try {
             const fullPhone = countryCode + signUpPhone;
-            await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone);
+            const result = await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone);
+
+            if (!result.success) {
+                // Show the specific error message
+                setErrors({ general: result.error || 'Failed to sign up' });
+                return;
+            }
+
+            // Success - redirect to profile
             router.push('/profile');
             router.refresh();
         } catch (err: any) {
