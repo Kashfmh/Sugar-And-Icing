@@ -106,6 +106,10 @@ export default function AuthPage() {
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // CRITICAL: Clear ALL previous errors before validation
+        setErrors({});
+
         const newErrors: { [key: string]: string } = {};
 
         // Validate first name
@@ -158,9 +162,16 @@ export default function AuthPage() {
                 return;
             }
 
-            // Success - show verification message instead of redirecting
+            // Success - show verification message and celebrate! 🎉
             setSignupEmail(signUpEmail);
             setSignupSuccess(true);
+
+            // Trigger confetti celebration
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
         } catch (err: any) {
             setErrors({ general: err.message || 'Failed to sign up' });
         } finally {
