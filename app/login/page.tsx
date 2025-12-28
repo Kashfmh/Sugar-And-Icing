@@ -90,7 +90,7 @@ export default function AuthPage() {
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
-        setErrors({});
+        setErrors({}); // Clear previous errors
         setLoading(true);
 
         try {
