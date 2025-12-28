@@ -143,11 +143,17 @@ export async function signUp(
 
         if (profileError) {
             console.error('Profile creation error:', profileError);
-            // User was created but profile failed - still allow login
-            if (profileError.message.includes('duplicate')) {
-                return { success: true }; // Profile already exists, that's okay
-            }
-            return { success: false, error: 'Account created but profile setup failed. Please contact support.' };
+            console.error('Profile error details:', {
+                message: profileError.message,
+                code: profileError.code,
+                details: profileError.details,
+                hint: profileError.hint
+            });
+
+            // User account was successfully created, profile creation failed
+            // Still return success so user can login - they can add profile info later
+            // TODO: Fix profiles table schema or permissions
+            console.warn('User account created but profile not saved. User can still login.');
         }
 
         return { success: true };

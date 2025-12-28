@@ -354,30 +354,36 @@
     padding: 0 40px;
 }
 
-/* Desktop Form Scrolling - ONLY for Sign-Up Form on DESKTOP */
+/* Desktop Sign-Up Form - Remove max-height so h1 and button never scroll off */
 @media (min-width: 769px) {
     .auth-page .sign-up-container form {
-        max-height: 600px;
-        overflow-y: auto;
-        padding-right: 10px;
+        /*max-height: removed - let it grow naturally */
+        overflow-y: visible;
+        padding-right: 0px;
     }
 
-    /* Custom scrollbar for sign-up form */
-    .auth-page .sign-up-container form::-webkit-scrollbar {
+    /* Instead, make the form container scrollable */
+    .auth-page .sign-up-container {
+        overflow-y: auto;
+        max-height: 100%;
+    }
+
+    /* Custom scrollbar for sign-up container */
+    .auth-page .sign-up-container::-webkit-scrollbar {
         width: 6px;
     }
 
-    .auth-page .sign-up-container form::-webkit-scrollbar-track {
+    .auth-page .sign-up-container::-webkit-scrollbar-track {
         background: #f1f1f1;
         border-radius: 10px;
     }
 
-    .auth-page .sign-up-container form::-webkit-scrollbar-thumb {
+    .auth-page .sign-up-container::-webkit-scrollbar-thumb {
         background: #d1d5db;
         border-radius: 10px;
     }
 
-    .auth-page .sign-up-container form::-webkit-scrollbar-thumb:hover {
+    .auth-page .sign-up-container::-webkit-scrollbar-thumb:hover {
         background: #9ca3af;
     }
 }
