@@ -95,11 +95,20 @@ export default function AuthPage() {
         setLoading(true);
 
         try {
-            await signIn(signInEmail, signInPassword, rememberMe);
+            const result = await signIn(signInEmail, signInPassword, rememberMe);
+
+            if (!result.success) {
+                // Show the specific error message
+                setErrors({ general: result.error || 'Failed to sign in' });
+                return;
+            }
+
+            // Success - redirect to profile
             router.push('/profile');
             router.refresh();
         } catch (err: any) {
-            setErrors({ general: err.message || 'Failed to sign in' });
+            // Generic server error
+            setErrors({ general: 'Server error. Please try again later.' });
         } finally {
             setLoading(false);
         }
