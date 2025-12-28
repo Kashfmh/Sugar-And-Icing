@@ -157,7 +157,7 @@
 .auth-page h1 {
     font-family: var(--font-serif);
     font-weight: bold;
-    margin: 0;
+    margin: 16px 0 8px 0;
     font-size: 2rem;
     color: var(--color-sai-charcoal);
 }
