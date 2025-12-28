@@ -91,6 +91,7 @@ export default function AuthPage() {
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('=== SIGN IN ATTEMPT ===');
         setErrors({}); // Clear previous errors
         setLoading(true);
 
