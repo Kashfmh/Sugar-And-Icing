@@ -6,6 +6,7 @@ import { signIn, signUp } from '@/lib/auth';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, Check, X, ArrowLeft } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import './auth.css';
 
 export default function AuthPage() {

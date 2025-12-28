@@ -131,11 +131,6 @@ export async function signUp(
             return { success: false, error: 'Account creation failed. Please try again.' };
         }
 
-        // Check if user already exists (Supabase sometimes returns success for existing users)
-        if (data.user && !data.session) {
-            return { success: false, error: 'This email is already registered. Please sign in instead.' };
-        }
-
         // Create user profile
         const { error: profileError } = await supabase
             .from('profiles')
