@@ -105,13 +105,24 @@ export async function signUp(
             }
         });
 
+        console.log('=== SIGNUP DEBUG ===');
+        console.log('Has user:', !!data?.user);
+        console.log('Has session:', !!data?.session);
+        console.log('Has error:', !!error);
+        console.log('User ID:', data?.user?.id);
+        if (error) {
+            console.log('Error:', error.message, error.status, error.code);
+        }
+        console.log('==================');
+
         if (error) {
             console.error('Supabase signup error:', error);
 
             // Specific error messages based on Supabase error codes
-            if (error.message.includes('already registered') ||
+            if (error.message.includes('already') ||
                 error.message.includes('User already registered') ||
                 error.status === 422 ||
+                error.code === 'user_already_exists' ||
                 error.message.includes('duplicate')) {
                 return { success: false, error: 'This email is already registered. Please sign in instead.' };
             }
