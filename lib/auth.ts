@@ -142,6 +142,15 @@ export async function signUp(
             return { success: false, error: 'Account creation failed. Please try again.' };
         }
 
+        // CRITICAL: When email confirmation is ON, Supabase returns success for duplicates
+        // The ONLY way to detect existing users is to check if identities is empty
+        // New user: identities array has entries
+        // Existing user: identities array is EMPTY
+        if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+            console.log('DUPLICATE DETECTED: identities array is empty');
+            return { success: false, error: 'This email is already registered. Please sign in instead.' };
+        }
+
         // Create user profile
         const { error: profileError } = await supabase
             .from('profiles')
