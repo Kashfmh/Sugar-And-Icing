@@ -573,7 +573,7 @@
 }
 
 .auth-page .error-message {
-    background-color: #fee;
+    background-color: #ffffff;
     border: 1px solid #fcc;
     color: #c33;
     padding: 10px;
@@ -581,6 +581,8 @@
     font-size: 13px;
     margin: 10px 0;
     width: 100%;
+    position: relative;
+    z-index: 10;
 }
 
 .auth-page .form-container {
