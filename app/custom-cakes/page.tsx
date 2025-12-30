@@ -479,9 +479,9 @@ export default function CustomCakesPage() {
                 </div>
             </section>
 
-            {/* How It Works Section */}
-            <section className="px-6 py-12 pb-0 md:pb-0 bg-sai-light-gray">
-                <div className="max-w-4xl mx-auto">
+            {/* How Custom Orders Work - More Compact with Better Mobile Spacing */}
+            <section className="bg-gradient-to-br from-pink-50 to-purple-50 py-16 px-4 md:px-8 pb-16">
+                <div className="max-w-6xl mx-auto">
                     <h3 className="font-serif text-3xl text-center text-sai-charcoal mb-8">
                         How Custom Orders Work
                     </h3>
