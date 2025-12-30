@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, Check, X, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { Select } from '../components/ui/select';
 import './auth.css';
 
 export default function AuthPage() {
@@ -296,15 +297,15 @@ export default function AuthPage() {
 
                         {/* Phone with Country Code */}
                         <div className="phone-input-group">
-                            <select
+                            <Select
                                 value={countryCode}
                                 onChange={(e) => setCountryCode(e.target.value)}
-                                className="country-code-select"
-                                disabled={loading}
-                            >
-                                <option value="+60">🇲🇾 +60</option>
-                                <option value="+91">🇮🇳 +91</option>
-                            </select>
+                                options={[
+                                    { value: '+60', label: '🇲🇾 +60' },
+                                    { value: '+91', label: '🇮🇳 +91' }
+                                ]}
+                                className="country-code-select-custom"
+                            />
                             <input
                                 type="tel"
                                 placeholder="123456789"
