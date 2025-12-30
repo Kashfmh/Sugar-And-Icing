@@ -13,27 +13,6 @@ export default async function Home() {
         style={{ backgroundImage: "url('/images/hero/baking.png')" }}
       />
 
-      {/* Brand Logo - Top Left Floating */}
-      <div className="absolute top-4 left-4 z-40 hidden md:block">
-        <Image
-          src="/images/logo/full-logo-white.png"
-          alt="Sugar And Icing"
-          width={80}
-          height={80}
-          className="object-contain hover:scale-105 transition-transform duration-300"
-          priority
-        />
-      </div>
-      <div className="absolute top-4 left-4 z-40 block md:hidden">
-        <Image
-          src="/images/logo/icon-white.png"
-          alt="Sugar And Icing"
-          width={50}
-          height={50}
-          className="object-contain"
-          priority
-        />
-      </div>
 
       {/* Hero Section - Right Aligned */}
       <section className="relative min-h-screen flex items-center justify-end px-6 md:px-16 pt-24 md:pt-32">
