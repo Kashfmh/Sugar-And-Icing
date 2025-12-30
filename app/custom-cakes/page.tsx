@@ -44,7 +44,7 @@ export default function CustomCakesPage() {
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .eq('product_type', 'Cake'); // Only custom cakes
+                .eq('product_type', 'cake'); // Only custom cakes
 
             if (error) throw error;
             setCakes(data || []);

@@ -51,7 +51,7 @@ export default function MenuPage() {
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .in('product_type', ['Cupcake', 'Brownie', 'Fruit Cake', 'Bread']);
+                .in('product_type', ['cupcake', 'brownie', 'fruitcake', 'bread', 'other']);
 
             if (error) throw error;
             setProducts(data || []);
