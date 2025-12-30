@@ -127,6 +127,10 @@ export default function AuthPage() {
         // Validate first name
         if (!signUpFirstName.trim()) {
             newErrors.firstName = 'First name is required';
+        } else if (signUpFirstName.length > 50) {
+            newErrors.firstName = 'First name must be less than 50 characters';
+        } else if (!/^[a-zA-Z\s]+$/.test(signUpFirstName)) {
+            newErrors.firstName = 'First name can only contain letters and spaces';
         }
 
         // Validate phone

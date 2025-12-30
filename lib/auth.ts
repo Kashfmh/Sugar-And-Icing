@@ -91,6 +91,14 @@ export async function signUp(
             return { success: false, error: 'First name must be at least 2 characters' };
         }
 
+        if (sanitizedFirstName.length > 50) {
+            return { success: false, error: 'First name must be less than 50 characters' };
+        }
+
+        if (!/^[a-zA-Z\s]+$/.test(sanitizedFirstName)) {
+            return { success: false, error: 'First name can only contain letters and spaces' };
+        }
+
         // Sign up the user with metadata
         const { data, error } = await supabase.auth.signUp({
             email: sanitizedEmail,
