@@ -160,14 +160,14 @@ export async function signUp(
         }
 
         // Create user profile
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([{
-                id: data.user.id,  // Changed from user_id to id
-                first_name: sanitizedFirstName,
-                phone: phoneValidation.formatted,
-            }]);
-
+        /*  const { error: profileError } = await supabase
+             .from('profiles')
+             .insert([{
+                 id: data.user.id,  // Changed from user_id to id
+                 first_name: sanitizedFirstName,
+                 phone: phoneValidation.formatted,
+             }]);
+         
         if (profileError) {
             console.error('Profile creation error:', profileError);
             console.error('Profile error details:', {
@@ -182,7 +182,7 @@ export async function signUp(
             // TODO: Fix profiles table schema or permissions
             console.warn('User account created but profile not saved. User can still login.');
         }
-
+        */
         return { success: true };
     } catch (error: any) {
         console.error('Sign up error:', error);
@@ -273,7 +273,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .single();
 
     if (error || !data) {
