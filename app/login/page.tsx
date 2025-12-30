@@ -252,35 +252,7 @@ export default function AuthPage() {
                 </div>
             )}
 
-            {/* Mobile Header - Consistent with other pages */}
-            <header className="md:hidden fixed top-0 left-0 right-0 z-[1001] bg-white border-b border-gray-200">
-                <div className="flex items-center justify-between px-4 py-3">
-                    <Link href="/" className="flex items-center gap-2 text-sai-charcoal">
-                        <ArrowLeft size={24} />
-                        <span className="font-semibold text-lg">Login</span>
-                    </Link>
-                    <Image
-                        src="/images/logo/full-logo-pink.png"
-                        alt="Sugar And Icing"
-                        width={50}
-                        height={50}
-                        className="object-contain"
-                    />
-                </div>
-            </header>
 
-            {/* Desktop Logo - Top Left */}
-            <div className="auth-logo hidden md:block">
-                <Link href="/">
-                    <Image
-                        src="/images/logo/full-logo-pink.png"
-                        alt="Sugar And Icing"
-                        width={80}
-                        height={80}
-                        className="object-contain"
-                    />
-                </Link>
-            </div>
 
             <div className={`auth-container ${isSignUp ? 'right-panel-active' : ''}`}>
                 {/* Sign Up Form */}

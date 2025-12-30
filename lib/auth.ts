@@ -163,10 +163,9 @@ export async function signUp(
         const { error: profileError } = await supabase
             .from('profiles')
             .insert([{
-                user_id: data.user.id,
+                id: data.user.id,  // Changed from user_id to id
                 first_name: sanitizedFirstName,
                 phone: phoneValidation.formatted,
-                created_at: new Date().toISOString(),
             }]);
 
         if (profileError) {

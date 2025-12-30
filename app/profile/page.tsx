@@ -2,29 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { getCurrentUser, signOut, getUserProfile } from '@/lib/auth';
-import type { AuthUser, UserProfile } from '@/lib/auth';
-import { ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
-import { User, Mail, LogOut, ArrowLeft, Phone } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-interface UserData {
-    id: string;
-    email: string;
-    created_at: string;
-}
-
-interface ProfileData {
-    first_name: string;
-    phone: string;
-}
+type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<UserData | null>(null);
-    const [profile, setProfile] = useState<ProfileData | null>(null);
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+    const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
         checkUser();
@@ -32,140 +19,249 @@ export default function ProfilePage() {
 
     async function checkUser() {
         try {
-            const currentUser = await getCurrentUser();
-            if (!currentUser) {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
                 router.push('/login');
                 return;
             }
-            setUser(currentUser);
 
-            // Fetch profile data
-            const userProfile = await getUserProfile(currentUser.id);
-            if (userProfile) {
-                setProfile({
-                    first_name: userProfile.first_name,
-                    phone: userProfile.phone,
-                });
-            }
+            setUser(session.user);
+
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+
+            setProfile(profileData);
         } catch (error) {
-            console.error('Error checking user:', error);
-            router.push('/auth');
+            console.error('Error:', error);
         } finally {
             setLoading(false);
         }
     }
 
-    async function handleLogout() {
-        try {
-            await signOut();
-            router.push('/');
-            router.refresh();
-        } catch (error) {
-            console.error('Logout failed:', error);
-        }
+    async function handleSignOut() {
+        await supabase.auth.signOut();
+        router.push('/login');
     }
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-sai-white flex items-center justify-center">
-                <div className="text-sai-charcoal">Loading...</div>
-            </main>
+            <div className="min-h-screen flex items-center justify-center bg-sai-white">
+                <div className="text-center">
+                    <div className="relative w-16 h-16 mx-auto mb-4">
+                        <div className="absolute inset-0 rounded-full border-4 border-pink-100 animate-pulse"></div>
+                        <div className="absolute inset-0 rounded-full border-t-4 border-sai-pink animate-spin"></div>
+                    </div>
+                    <p className="text-sai-charcoal/60">Loading your profile...</p>
+                </div>
+            </div>
         );
     }
 
-    if (!user) {
-        return (
-            <main className="min-h-screen bg-sai-white flex items-center justify-center">
-                <div className="text-sai-charcoal">Redirecting...</div>
-            </main>
-        );
-    }
+    // Use first_name from user metadata (Supabase auth), then profile table, then email fallback
+    const firstName = user?.user_metadata?.first_name || profile?.first_name || user?.email?.split('@')[0] || 'Guest';
 
     return (
-        <main className="min-h-screen bg-sai-white">
-            {/* Brand Logo - Top Left */}
-            {/* Mobile Header - Consistent with other pages */}
-            <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
-                <div className="flex items-center justify-between px-4 py-3">
-                    <button
-                        onClick={() => router.push('/')}
-                        className="flex items-center gap-2 text-sai-charcoal"
-                    >
-                        <ChevronLeft size={24} />
-                        <span className="font-semibold text-lg">Profile</span>
-                    </button>
-                    <Image
-                        src="/images/logo/full-logo-pink.png"
-                        alt="Sugar And Icing"
-                        width={50}
-                        height={50}
-                        className="object-contain"
-                    />
+        <div className="min-h-screen bg-sai-white pt-24">
+            {/* Hero Section */}
+            <div className="max-w-7xl mx-auto px-6 pb-6">
+                <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                        <h1 className="text-5xl font-bold text-sai-charcoal mb-2">
+                            Hey, {firstName}!
+                        </h1>
+                        <p className="text-xl text-sai-charcoal/80">
+                            Here's your bakery dashboard.
+                        </p>
+
+                        <p className="mt-4 text-sai-charcoal/70 max-w-2xl">
+                            Your account is active and all systems are running smoothly. Check out your order history and account stats below.
+                        </p>
+
+                        <div className="flex gap-3 mt-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 border border-pink-200 rounded-full">
+                                <span className="text-sm font-medium text-sai-charcoal">Active</span>
+                                <span className="text-sm font-semibold text-sai-pink">1</span>
+                            </div>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full">
+                                <span className="text-sm font-medium text-sai-charcoal">Verified</span>
+                                <span className="text-sm font-semibold text-sai-charcoal">✓</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Decorative illustration placeholder */}
+                    <div className="hidden lg:block w-80 h-56 bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl"></div>
                 </div>
-            </header>
+            </div>
 
-            {/* Profile Content */}
-            <div className="pt-16 md:pt-24 pb-24 md:pb-12 px-4">
-                <div className="max-w-2xl mx-auto">
-                    {/* Profile Header */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
-                        <div className="flex items-center gap-6 mb-6">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sai-pink to-sai-pink-dark flex items-center justify-center">
-                                <span className="text-3xl font-bold text-white">
-                                    {profile?.first_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
-                                </span>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-sai-charcoal mb-1">
-                                    {profile?.first_name || 'Welcome'}
-                                </h1>
-                                <p className="text-gray-500">Member since {new Date(user.created_at).toLocaleDateString()}</p>
-                            </div>
-                        </div>
-
-                        {/* User Info */}
-                        <div className="space-y-4">
-                            <div className="border-t pt-4">
-                                <p className="text-sm text-gray-500 mb-1">Email</p>
-                                <p className="font-medium text-sai-charcoal">{user.email}</p>
-                            </div>
-                            {profile?.phone && (
-                                <div className="border-t pt-4">
-                                    <p className="text-sm text-gray-500 mb-1">Phone</p>
-                                    <p className="font-medium text-sai-charcoal">{profile.phone}</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-                        <h2 className="text-lg font-bold text-sai-charcoal mb-4">Quick Actions</h2>
-                        <div className="space-y-3">
-                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
-                                <span className="font-medium text-sai-charcoal">Order History</span>
-                                <span className="block text-sm text-gray-500 mt-1">Coming soon</span>
-                            </button>
-                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
-                                <span className="font-medium text-sai-charcoal">Saved Addresses</span>
-                                <span className="block text-sm text-gray-500 mt-1">Coming soon</span>
-                            </button>
-                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
-                                <span className="font-medium text-sai-charcoal">Favorite Cakes</span>
-                                <span className="block text-sm text-gray-500 mt-1">Coming soon</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Logout Button */}
+            {/* Tabs */}
+            <div className="max-w-7xl mx-auto px-6 border-b border-gray-200">
+                <div className="flex gap-8">
                     <button
-                        onClick={handleLogout}
-                        className="w-full bg-sai-pink hover:bg-sai-pink-dark text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-sm"
+                        onClick={() => setActiveTab('dashboard')}
+                        className={`pb-4 font-medium transition-colors relative ${activeTab === 'dashboard' ? 'text-sai-charcoal' : 'text-gray-500'
+                            }`}
                     >
-                        Sign Out
+                        Dashboard
+                        {activeTab === 'dashboard' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sai-charcoal"></div>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('edit-profile')}
+                        className={`pb-4 font-medium transition-colors relative ${activeTab === 'edit-profile' ? 'text-sai-charcoal' : 'text-gray-500'
+                            }`}
+                    >
+                        Edit Profile
+                        {activeTab === 'edit-profile' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sai-charcoal"></div>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`pb-4 font-medium transition-colors relative ${activeTab === 'settings' ? 'text-sai-charcoal' : 'text-gray-500'
+                            }`}
+                    >
+                        Settings
+                        {activeTab === 'settings' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sai-charcoal"></div>
+                        )}
                     </button>
                 </div>
             </div>
-        </main>
+
+            {/* Content */}
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                {activeTab === 'dashboard' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Order History Card - Large */}
+                        <div className="bg-pink-50 rounded-3xl p-8 relative border border-pink-100">
+                            <div className="flex items-start justify-between mb-6">
+                                <h3 className="text-lg font-semibold text-sai-charcoal">Order History</h3>
+                                <span className="px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium text-sai-charcoal rounded-full border border-pink-200">
+                                    Active
+                                </span>
+                            </div>
+
+                            <div className="mb-6">
+                                <div className="text-5xl font-bold text-sai-charcoal mb-2">0</div>
+                                <div className="text-sm text-sai-charcoal/60">total orders</div>
+                            </div>
+
+                            {/* Placeholder for chart/visualization */}
+                            <div className="h-32 mb-6 relative">
+                                <div className="absolute bottom-0 left-0 right-0 flex items-end gap-1">
+                                    {[...Array(20)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="flex-1 bg-sai-pink/30 rounded-t"
+                                            style={{ height: `${Math.random() * 100}%` }}
+                                        ></div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-200">
+                                <span className="text-sm text-sai-charcoal/70">⟳ View all orders</span>
+                                <svg className="w-4 h-4 text-sai-charcoal/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Account Stats Card */}
+                        <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                            <div className="flex items-start justify-between mb-6">
+                                <h3 className="text-lg font-semibold text-sai-charcoal">Account Stats</h3>
+                                <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">
+                                    Overview
+                                </span>
+                            </div>
+
+                            <div className="mb-6">
+                                <div className="text-5xl font-bold text-sai-pink mb-2">
+                                    {new Date(user?.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                </div>
+                                <div className="text-sm text-sai-charcoal/60">member since</div>
+                            </div>
+
+                            <div className="space-y-4 mb-6">
+                                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                                    <span className="text-sm text-sai-charcoal/60">Email Verified</span>
+                                    <span className="font-semibold text-sai-pink">✓</span>
+                                </div>
+                                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                                    <span className="text-sm text-sai-charcoal/60">Phone</span>
+                                    <span className="font-semibold text-sai-charcoal">{profile?.phone || 'Not set'}</span>
+                                </div>
+                            </div>
+
+                            <button className="w-full py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors flex items-center justify-center gap-2">
+                                View Profile
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Quick Actions Card */}
+                        <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                            <div className="flex items-start justify-between mb-6">
+                                <h3 className="text-lg font-semibold text-sai-charcoal">Quick Actions</h3>
+                                <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">
+                                    Shortcuts
+                                </span>
+                            </div>
+
+                            <div className="mb-6">
+                                <div className="text-5xl font-bold text-sai-pink mb-2">⚡</div>
+                                <div className="text-sm text-sai-charcoal/60">get started quickly</div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => router.push('/custom-cakes')}
+                                    className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100"
+                                >
+                                    <div className="font-medium text-sai-charcoal">Order Custom Cake 🎂</div>
+                                    <div className="text-xs text-sai-charcoal/60 mt-1">Create your dream cake</div>
+                                </button>
+                                <button
+                                    onClick={() => router.push('/other-treats')}
+                                    className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100"
+                                >
+                                    <div className="font-medium text-sai-charcoal">Browse Treats 🧁</div>
+                                    <div className="text-xs text-sai-charcoal/60 mt-1">Explore our collection</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'edit-profile' && (
+                    <div className="bg-white rounded-3xl shadow-sm p-8 max-w-3xl border border-gray-200">
+                        <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Edit Profile</h2>
+                        <div className="text-gray-500 text-center py-12">
+                            <p className="text-lg mb-2">👷 Under Construction</p>
+                            <p>Profile editing coming soon!</p>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'settings' && (
+                    <div className="bg-white rounded-3xl shadow-sm p-8 max-w-3xl border border-gray-200">
+                        <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Settings</h2>
+                        <div className="text-gray-500 text-center py-12">
+                            <p className="text-lg mb-2">⚙️ Under Construction</p>
+                            <p>Settings panel coming soon!</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div >
     );
 }
