@@ -78,7 +78,7 @@ export default function ProductCard({ name, price, description, category, image_
               fontFamily: 'var(--font-serif)'
             }}
           >
-            RM {price.toFixed(2)}
+            RM {(price || 0).toFixed(2)}
           </div>
 
           <button

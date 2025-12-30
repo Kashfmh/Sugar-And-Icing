@@ -22,8 +22,10 @@ export default function Navbar() {
     const [user, setUser] = useState<any>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        setIsMounted(true);
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
 
         // Track scroll for text change
@@ -50,18 +52,17 @@ export default function Navbar() {
         <AceternityNavbar>
             {/* Desktop Navbar */}
             <NavBody>
-                {/* Logo */}
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
                     <AnimatePresence mode="wait">
                         <motion.div
-                            key={pathname === '/' && !scrolled ? 'white' : 'pink'}
+                            key={!isMounted || (pathname === '/' && !scrolled) ? 'white' : 'pink'}
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                             transition={{ duration: 0.2 }}
                         >
                             <Image
-                                src={pathname === '/' && !scrolled ? '/images/logo/icon-white.svg' : '/images/logo/icon-pink.svg'}
+                                src={(!isMounted || (pathname === '/' && !scrolled)) ? '/images/logo/icon-white.svg' : '/images/logo/icon-pink.svg'}
                                 alt="Sugar And Icing"
                                 width={35}
                                 height={35}
@@ -69,17 +70,17 @@ export default function Navbar() {
                             />
                         </motion.div>
                     </AnimatePresence>
-                    <span className={`font-semibold text-base relative overflow-hidden ${pathname === '/' && !scrolled ? 'text-white' : 'text-sai-charcoal'}`}>
+                    <span className={`font-semibold text-base relative overflow-hidden ${(!isMounted || (pathname === '/' && !scrolled)) ? 'text-white' : 'text-sai-charcoal'}`}>
                         <AnimatePresence mode="wait">
                             <motion.span
-                                key={scrolled ? 'sai' : 'full'}
+                                key={isMounted && scrolled ? 'sai' : 'full'}
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
                                 transition={{ duration: 0.2 }}
                                 className="inline-block"
                             >
-                                {scrolled ? 'SAI' : 'Sugar And Icing'}
+                                {isMounted && scrolled ? 'SAI' : 'Sugar And Icing'}
                             </motion.span>
                         </AnimatePresence>
                     </span>
@@ -125,14 +126,14 @@ export default function Navbar() {
                         <span className="font-semibold text-base text-sai-charcoal relative overflow-hidden">
                             <AnimatePresence mode="wait">
                                 <motion.span
-                                    key={scrolled ? 'sai' : 'full'}
+                                    key={isMounted && scrolled ? 'sai' : 'full'}
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
                                     className="inline-block"
                                 >
-                                    {scrolled ? 'SAI' : 'Sugar And Icing'}
+                                    {isMounted && scrolled ? 'SAI' : 'Sugar And Icing'}
                                 </motion.span>
                             </AnimatePresence>
                         </span>
