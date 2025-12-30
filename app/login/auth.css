@@ -645,6 +645,38 @@
     font-weight: 500 !important;
 }
 
+/* Mobile: Make dropdown and input scale proportionally */
+@media (max-width: 768px) {
+    .auth-page .phone-input-group {
+        gap: 6px;
+    }
+
+    /* Country code dropdown: 30% width */
+    .auth-page .country-code-select-custom {
+        flex: 0 0 30%;
+        max-width: 30%;
+    }
+
+    .auth-page .country-code-select-custom button {
+        width: 100% !important;
+        min-width: auto !important;
+        padding: 14px 8px !important;
+        font-size: 13px !important;
+    }
+
+    /* Phone input: 70% width */
+    .auth-page .phone-input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Dropdown menu scales with button */
+    .auth-page .country-code-select-custom>div {
+        width: 100% !important;
+        min-width: auto !important;
+    }
+}
+
 .auth-page .error-message {
     background-color: #ffffff;
     border: 1px solid #fcc;
