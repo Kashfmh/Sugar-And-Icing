@@ -15,10 +15,14 @@ import { Select } from '../components/ui/select';
 import { ArrowLeft, Search, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ProductDetailModal from '../components/ProductDetailModal';
+import { useRouter } from 'next/navigation';
+import { generateProductSlug } from '@/lib/slugify';
 
 interface Product {
     id: string;
     name: string;
+    base_price: number;
     price: number;
     description?: string | null;
     category_name: string;
@@ -37,12 +41,25 @@ export default function MenuPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'name'>('newest');
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const router = useRouter();
     const itemsPerPage = 12;
 
     const categories = ['All', 'Cupcakes', 'Brownies', 'Fruit Cakes', 'Bread'];
 
     useEffect(() => {
         fetchProducts();
+    }, []);
+
+    // Detect mobile screen size
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
     async function fetchProducts() {
@@ -62,6 +79,17 @@ export default function MenuPage() {
             setLoading(false);
         }
     }
+
+    const handleProductClick = (product: Product) => {
+        if (isMobile) {
+            // Navigate to dedicated product page on mobile
+            const slug = generateProductSlug({ id: product.id, name: product.name });
+            router.push(`/products/${slug}`);
+        } else {
+            // Show modal on desktop
+            setSelectedProductId(product.id);
+        }
+    };
 
     // Filter products by category and search
     const filteredProducts = products.filter(product => {
@@ -99,13 +127,19 @@ export default function MenuPage() {
         <main className="min-h-screen bg-sai-white pb-24 md:pb-8 relative">
             {/* Mobile Header - Simplified */}
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between">
                     <Link href="/" className="text-sai-charcoal">
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
-                    <h1 className="font-serif text-2xl text-sai-charcoal">
-                        Other Treats
-                    </h1>
+                    <Link href="/">
+                        <Image
+                            src="/sai-full-logo-pink.png"
+                            alt="Sugar And Icing"
+                            width={120}
+                            height={40}
+                            className="object-contain"
+                        />
+                    </Link>
                 </div>
             </header>
 
@@ -268,12 +302,14 @@ export default function MenuPage() {
                                 {paginatedProducts.map((product, index) => (
                                     <div key={product.id} className="relative">
                                         <ProductCard
+                                            productId={product.id}
                                             name={product.name}
-                                            price={product.price}
+                                            price={product.base_price}
                                             description={product.description || undefined}
                                             category={product.category_name}
                                             image_url={product.image_url || undefined}
                                             tags={product.tags}
+                                            onClick={() => handleProductClick(product)}
                                         />
                                     </div>
                                 ))}
@@ -284,12 +320,14 @@ export default function MenuPage() {
                                 {paginatedProducts.map((product) => (
                                     <ProductListItem
                                         key={product.id}
+                                        productId={product.id}
                                         name={product.name}
-                                        price={product.price}
+                                        price={product.base_price}
                                         description={product.description || undefined}
                                         category={product.category_name}
                                         image_url={product.image_url || undefined}
                                         tags={product.tags}
+                                        onClick={() => handleProductClick(product)}
                                     />
                                 ))}
                             </div>
@@ -336,6 +374,15 @@ export default function MenuPage() {
 
             {/* Mobile Bottom Navigation */}
             <BottomNav />
+
+            {/* Product Detail Modal */}
+            {selectedProductId && (
+                <ProductDetailModal
+                    productId={selectedProductId}
+                    isOpen={!!selectedProductId}
+                    onClose={() => setSelectedProductId(null)}
+                />
+            )}
         </main>
     );
 }

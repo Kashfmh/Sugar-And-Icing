@@ -3,18 +3,21 @@ import Image from 'next/image';
 import AllergenBadge from './AllergenBadge';
 
 interface Props {
+  productId: string;
   name: string;
   price: number;
   description?: string;
   category?: string;
   image_url?: string;
   tags?: string[];
+  onClick?: () => void;
 }
 
-export default function ProductCard({ name, price, description, category, image_url, tags }: Props) {
+export default function ProductCard({ productId, name, price, description, category, image_url, tags, onClick }: Props) {
   return (
     <article
-      className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow h-full"
+      onClick={onClick}
+      className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm hover:shadow-md transition-shadow h-full cursor-pointer"
       style={{ borderTop: `4px solid var(--color-sai-pink)` }}
     >
       {/* Image Placeholder - HEADER */}
@@ -82,11 +85,15 @@ export default function ProductCard({ name, price, description, category, image_
           </div>
 
           <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick?.();
+            }}
             className="px-6 py-2 rounded-full text-white font-semibold hover:opacity-90 transition-opacity"
             style={{ backgroundColor: '#F48FB1' }}
             aria-label={`Add ${name} to cart`}
           >
-            Add to Cart
+            View Details
           </button>
         </div>
       </div>

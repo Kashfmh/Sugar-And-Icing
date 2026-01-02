@@ -3,17 +3,23 @@ import Image from 'next/image';
 import AllergenBadge from './AllergenBadge';
 
 interface Props {
+    productId: string;
     name: string;
     price: number;
     description?: string;
     category?: string;
     image_url?: string;
     tags?: string[];
+    onClick?: () => void;
 }
 
-export default function ProductListItem({ name, price, description, category, image_url, tags }: Props) {
+export default function ProductListItem({ productId, name, price, description, category, image_url, tags, onClick }: Props) {
     return (
-        <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
+        <article
+            onClick={onClick}
+            className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4 cursor-pointer"
+            style={{ borderLeftColor: 'var(--color-sai-pink)' }}
+        >
             {/* Compact Image - Full Height */}
             <div className="w-24 flex-shrink-0 bg-sai-white flex items-center justify-center">
                 {image_url ? (
@@ -64,11 +70,15 @@ export default function ProductListItem({ name, price, description, category, im
                     </div>
 
                     <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick?.();
+                        }}
                         className="px-4 py-1.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                         style={{ backgroundColor: 'var(--color-sai-pink)' }}
-                        aria-label={`Add ${name} to cart`}
+                        aria-label={`View ${name} details`}
                     >
-                        Add
+                        View
                     </button>
                 </div>
             </div>

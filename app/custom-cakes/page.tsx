@@ -105,13 +105,19 @@ export default function CustomCakesPage() {
         <main className="min-h-screen bg-sai-white relative">
             {/* Mobile Header */}
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between">
                     <Link href="/" className="text-sai-charcoal">
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
-                    <h1 className="font-serif text-2xl text-sai-charcoal">
-                        Custom Cakes
-                    </h1>
+                    <Link href="/">
+                        <Image
+                            src="/sai-full-logo-pink.png"
+                            alt="Sugar And Icing"
+                            width={120}
+                            height={40}
+                            className="object-contain"
+                        />
+                    </Link>
                 </div>
             </header>
 
