@@ -1,4 +1,4 @@
-import BottomNav from './components/BottomNav';
+
 import DraggableText from './components/DraggableText';
 import Image from 'next/image';
 import { Instagram, Facebook, Twitter } from 'lucide-react';
@@ -89,7 +89,7 @@ export default async function Home() {
       </section>
 
       {/* Keep current bottom nav for mobile */}
-      <BottomNav />
+
     </main >
   );
 }
