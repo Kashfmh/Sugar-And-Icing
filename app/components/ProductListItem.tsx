@@ -17,7 +17,7 @@ export default function ProductListItem({ productId, name, price, description, c
     return (
         <article
             onClick={onClick}
-            className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4 cursor-pointer"
+            className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-l-4 cursor-pointer h-[140px]"
             style={{ borderLeftColor: 'var(--color-sai-pink)' }}
         >
             {/* Compact Image - Full Height */}
@@ -30,35 +30,37 @@ export default function ProductListItem({ productId, name, price, description, c
             </div>
 
             {/* Content */}
-            <div className="flex-1 py-3 pr-3">
-                {category && (
-                    <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--color-sai-pink)' }}>
-                        {category}
-                    </div>
-                )}
+            <div className="flex-1 py-3 pr-3 flex flex-col justify-between">
+                <div>
+                    {category && (
+                        <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--color-sai-pink)' }}>
+                            {category}
+                        </div>
+                    )}
 
-                <h3 className="text-base font-bold mb-1" style={{ color: 'var(--color-sai-pink-dark)', fontFamily: 'var(--font-serif)' }}>
-                    {name}
-                </h3>
+                    <h3 className="text-base font-bold mb-1" style={{ color: 'var(--color-sai-pink-dark)', fontFamily: 'var(--font-serif)' }}>
+                        {name}
+                    </h3>
 
-                <p className="text-xs text-gray-600 line-clamp-1 mb-2">
-                    {description}
-                </p>
+                    <p className="text-xs text-gray-600 line-clamp-1 mb-2">
+                        {description}
+                    </p>
 
-                {/* Compact Allergen Tags */}
-                {tags && tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-2">
-                        {tags.slice(0, 3).map((tag) => (
-                            <AllergenBadge key={tag} tag={tag} />
-                        ))}
-                        {tags.length > 3 && (
-                            <span className="text-xs text-gray-500">+{tags.length - 3}</span>
-                        )}
-                    </div>
-                )}
+                    {/* Compact Allergen Tags */}
+                    {tags && tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                            {tags.slice(0, 1).map((tag) => (
+                                <AllergenBadge key={tag} tag={tag} />
+                            ))}
+                            {tags.length > 1 && (
+                                <span className="text-xs text-gray-500">+{tags.length - 1}</span>
+                            )}
+                        </div>
+                    )}
+                </div>
 
-                {/* Price and Button - Compact */}
-                <div className="flex items-center justify-between">
+                {/* Price and Button - Always at Bottom */}
+                <div className="flex items-center justify-between mt-auto">
                     <div
                         className="text-lg font-bold"
                         style={{
