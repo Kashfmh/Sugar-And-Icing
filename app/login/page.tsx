@@ -5,9 +5,14 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp } from '@/lib/auth';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, EyeOff, Check, X, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Check, X, ArrowLeft, ChevronDown } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { Select } from '../components/ui/select';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import './auth.css';
 
 export default function AuthPage() {
@@ -273,15 +278,56 @@ export default function AuthPage() {
 
                         {/* Phone with Country Code */}
                         <div className="phone-input-group">
-                            <Select
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                options={[
-                                    { value: '+60', label: '🇲🇾 +60' },
-                                    { value: '+91', label: '🇮🇳 +91' }
-                                ]}
-                                className="country-code-select-custom"
-                            />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        style={{
+                                            backgroundColor: '#f3f4f6',
+                                            border: '2px solid transparent',
+                                            borderRadius: '10px',
+                                            padding: '14px 16px',
+                                            fontSize: '14px',
+                                            fontWeight: 'normal',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            minWidth: '110px',
+                                            width: 'auto',
+                                            color: '#2C3E50',
+                                            textTransform: 'none',
+                                            letterSpacing: 'normal',
+                                            marginTop: '0'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = '#F48FB1';
+                                            e.currentTarget.style.backgroundColor = '#ffffff';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = 'transparent';
+                                            e.currentTarget.style.backgroundColor = '#f3f4f6';
+                                        }}
+                                    >
+                                        <span>{countryCode === '+60' ? '🇲🇾 +60' : '🇮🇳 +91'}</span>
+                                        <ChevronDown className="w-3 h-3" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem
+                                        onSelect={() => setCountryCode('+60')}
+                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                    >
+                                        🇲🇾 +60
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => setCountryCode('+91')}
+                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                    >
+                                        🇮🇳 +91
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                             <input
                                 type="tel"
                                 placeholder="123456789"
