@@ -8,10 +8,15 @@ import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import CategoryTabs from '../components/CategoryTabs';
 import FilterModal from '../components/FilterModal';
 import { AnimatedText } from '../components/ui/animated-text';
-import { Select } from '../components/ui/select';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Search, SlidersHorizontal, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, MessageCircle, ChevronDown } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import BottomNav from '../components/BottomNav';
 
 interface CakeGalleryItem {
@@ -106,14 +111,12 @@ export default function CustomCakesPage() {
             {/* Mobile Header */}
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center justify-between">
-                    <Link href="/" className="text-sai-charcoal">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
+                    <h1 className="text-lg font-semibold text-sai-charcoal">Custom Cakes</h1>
                     <Link href="/">
                         <Image
-                            src="/sai-full-logo-pink.png"
+                            src="/images/logo/icon-pink.svg"
                             alt="Sugar And Icing"
-                            width={120}
+                            width={40}
                             height={40}
                             className="object-contain"
                         />
@@ -127,7 +130,7 @@ export default function CustomCakesPage() {
                     <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-sai-charcoal/70 mb-3">
                         Made Just For You
                     </p>
-                    <h2 className="font-serif text-4xl md:text-5xl font-normal text-sai-charcoal relative inline-block">
+                    <h2 className="font-serif text-3xl md:text-5xl font-normal text-sai-charcoal relative inline-block px-2">
                         <AnimatedText
                             words={['Custom Cake Creations', 'Baked With Love', 'Dream Cakes', 'Made to Order']}
                             className="text-sai-pink"
@@ -179,14 +182,31 @@ export default function CustomCakesPage() {
                         <p className="text-sm text-gray-600">
                             Showing <span className="font-semibold">{paginatedCakes.length}</span> of <span className="font-semibold">{sortedCakes.length}</span> designs
                         </p>
-                        <Select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as any)}
-                            options={[
-                                { value: 'newest', label: 'Newest First' },
-                                { value: 'name', label: 'Name: A-Z' },
-                            ]}
-                        />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-2">
+                                    <span className="text-sm">
+                                        {sortBy === 'newest' && 'Newest First'}
+                                        {sortBy === 'name' && 'Name: A-Z'}
+                                    </span>
+                                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                    onSelect={() => setSortBy('newest')}
+                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                >
+                                    Newest First
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={() => setSortBy('name')}
+                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                >
+                                    Name: A-Z
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </section>

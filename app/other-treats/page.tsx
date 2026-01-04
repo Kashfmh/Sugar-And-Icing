@@ -11,8 +11,13 @@ import Badge from '../components/Badge';
 import BottomNav from '../components/BottomNav';
 import FilterModal from '../components/FilterModal';
 import { AnimatedText } from '../components/ui/animated-text';
-import { Select } from '../components/ui/select';
-import { ArrowLeft, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Link from 'next/link';
 import Image from 'next/image';
 import ProductDetailModal from '../components/ProductDetailModal';
@@ -68,7 +73,7 @@ export default function MenuPage() {
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .in('product_type', ['cupcake', 'brownie', 'fruitcake', 'bread', 'other']);
+                .in('product_type', ['cupcake', 'cupcake_basic', 'cupcake_premium', 'brownie', 'fruitcake', 'bread', 'other']);
 
             if (error) throw error;
             setProducts(data || []);
@@ -93,7 +98,19 @@ export default function MenuPage() {
 
     // Filter products by category and search
     const filteredProducts = products.filter(product => {
-        const matchesCategory = activeCategory === 'All' || product.category_name === activeCategory;
+        // Map display category names to product_type values
+        let matchesCategory = true;
+        if (activeCategory !== 'All') {
+            const categoryMap: { [key: string]: string[] } = {
+                'Cupcakes': ['cupcake', 'cupcake_basic', 'cupcake_premium'],
+                'Brownies': ['brownie'],
+                'Fruit Cakes': ['fruitcake'],
+                'Bread': ['bread']
+            };
+            const productTypes = categoryMap[activeCategory];
+            matchesCategory = productTypes?.includes(product.product_type || '') || false;
+        }
+
         const matchesSearch = !searchQuery ||
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -102,9 +119,9 @@ export default function MenuPage() {
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         switch (sortBy) {
             case 'price-low':
-                return a.price - b.price;
+                return a.base_price - b.base_price;
             case 'price-high':
-                return b.price - a.price;
+                return b.base_price - a.base_price;
             case 'name':
                 return a.name.localeCompare(b.name);
             case 'newest':
@@ -128,14 +145,12 @@ export default function MenuPage() {
             {/* Mobile Header - Simplified */}
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center justify-between">
-                    <Link href="/" className="text-sai-charcoal">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
+                    <h1 className="text-lg font-semibold text-sai-charcoal">Other Treats</h1>
                     <Link href="/">
                         <Image
-                            src="/sai-full-logo-pink.png"
+                            src="/images/logo/icon-pink.svg"
                             alt="Sugar And Icing"
-                            width={120}
+                            width={40}
                             height={40}
                             className="object-contain"
                         />
@@ -201,16 +216,45 @@ export default function MenuPage() {
                         <p className="text-sm text-gray-600">
                             Showing <span className="font-semibold">{paginatedProducts.length}</span> of <span className="font-semibold">{sortedProducts.length}</span> products
                         </p>
-                        <Select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as any)}
-                            options={[
-                                { value: 'newest', label: 'Newest First' },
-                                { value: 'price-low', label: 'Price: Low to High' },
-                                { value: 'price-high', label: 'Price: High to Low' },
-                                { value: 'name', label: 'Name: A-Z' },
-                            ]}
-                        />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-2">
+                                    <span className="text-sm">
+                                        {sortBy === 'newest' && 'Newest First'}
+                                        {sortBy === 'price-low' && 'Price: Low to High'}
+                                        {sortBy === 'price-high' && 'Price: High to Low'}
+                                        {sortBy === 'name' && 'Name: A-Z'}
+                                    </span>
+                                    <ChevronDown className="w-4 h-4 text-gray-500 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                    onSelect={() => setSortBy('newest')}
+                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                >
+                                    Newest First
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={() => setSortBy('price-low')}
+                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                >
+                                    Price: Low to High
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={() => setSortBy('price-high')}
+                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                >
+                                    Price: High to Low
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={() => setSortBy('name')}
+                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                >
+                                    Name: A-Z
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </section>
