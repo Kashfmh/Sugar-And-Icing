@@ -1,24 +1,26 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function ProductListItemSkeleton() {
     return (
-        <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm border-l-4 animate-pulse" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
+        <article className="flex gap-4 bg-white rounded-lg overflow-hidden shadow-sm border-l-4" style={{ borderLeftColor: 'var(--color-sai-pink)' }}>
             {/* Image Skeleton - Full Height */}
-            <div className="w-24 flex-shrink-0 bg-gray-200" />
+            <Skeleton className="w-24 h-auto rounded-none bg-gray-200" />
 
             {/* Content Skeleton */}
             <div className="flex-1 py-3 pr-3">
                 {/* Category */}
-                <div className="h-3 bg-gray-300 rounded w-20 mb-2" />
+                <Skeleton className="h-3 w-20 mb-2 bg-gray-300" />
 
                 {/* Title */}
-                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-2 bg-gray-300" />
 
                 {/* Description */}
-                <div className="h-3 bg-gray-300 rounded w-full mb-3" />
+                <Skeleton className="h-3 w-full mb-3 bg-gray-300" />
 
                 {/* Price and Button */}
                 <div className="flex items-center justify-between">
-                    <div className="h-6 bg-gray-300 rounded w-20" />
-                    <div className="h-7 bg-gray-300 rounded-full w-16" />
+                    <Skeleton className="h-6 w-20 bg-gray-300" />
+                    <Skeleton className="h-7 w-16 rounded-full bg-gray-300" />
                 </div>
             </div>
         </article>

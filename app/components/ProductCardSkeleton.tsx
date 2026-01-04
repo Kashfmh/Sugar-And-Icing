@@ -1,28 +1,32 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function ProductCardSkeleton() {
     return (
         <article
-            className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm animate-pulse"
+            className="rounded-lg overflow-hidden bg-white flex flex-col shadow-sm"
             style={{ borderTop: `4px solid var(--color-sai-pink)` }}
         >
             {/* Image Skeleton */}
-            <div className="h-48 bg-gray-200" />
+            <Skeleton className="h-48 w-full rounded-none bg-gray-200" />
 
             {/* Content Skeleton */}
             <div className="p-6 flex-grow" style={{ backgroundColor: 'var(--color-sai-pink-light)' }}>
                 {/* Category */}
-                <div className="h-3 bg-gray-300 rounded w-24 mb-3" />
+                <Skeleton className="h-3 w-24 mb-3 bg-gray-300" />
 
                 {/* Title */}
-                <div className="h-6 bg-gray-300 rounded w-3/4 mb-3" />
+                <Skeleton className="h-6 w-3/4 mb-3 bg-gray-300" />
 
                 {/* Description lines */}
-                <div className="h-4 bg-gray-300 rounded w-full mb-2" />
-                <div className="h-4 bg-gray-300 rounded w-5/6 mb-4" />
+                <div className="space-y-2 mb-4">
+                    <Skeleton className="h-4 w-full bg-gray-300" />
+                    <Skeleton className="h-4 w-5/6 bg-gray-300" />
+                </div>
 
                 {/* Price and Button */}
                 <div className="flex items-center justify-between mt-4">
-                    <div className="h-8 bg-gray-300 rounded w-24" />
-                    <div className="h-10 bg-gray-300 rounded-full w-32" />
+                    <Skeleton className="h-8 w-24 bg-gray-300" />
+                    <Skeleton className="h-10 w-32 rounded-full bg-gray-300" />
                 </div>
             </div>
         </article>
