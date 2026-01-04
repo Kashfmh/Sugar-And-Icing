@@ -15,6 +15,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ProductSkeleton } from '@/app/components/skeletons/ProductSkeleton';
 
 interface ProductOption {
     id: string;
@@ -208,9 +209,17 @@ export default function ProductPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sai-pink"></div>
-            </div>
+            <main className="min-h-screen bg-white">
+                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
+                    <Link href="/other-treats" className="inline-flex items-center gap-2 text-sai-charcoal">
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="font-medium">Back</span>
+                    </Link>
+                </div>
+                <div className="max-w-4xl mx-auto p-4 pb-8">
+                    <ProductSkeleton />
+                </div>
+            </main>
         );
     }
 

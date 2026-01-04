@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
@@ -49,13 +50,84 @@ export default function ProfilePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-sai-white">
-                <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-4">
-                        <div className="absolute inset-0 rounded-full border-4 border-pink-100 animate-pulse"></div>
-                        <div className="absolute inset-0 rounded-full border-t-4 border-sai-pink animate-spin"></div>
+            <div className="min-h-screen bg-sai-white pt-24">
+                {/* Hero Skeleton */}
+                <div className="max-w-7xl mx-auto px-6 pb-6">
+                    <div className="flex items-start justify-between">
+                        <div className="flex-1 space-y-4">
+                            <Skeleton className="h-14 w-64 md:w-96 rounded-lg" />
+                            <Skeleton className="h-6 w-48 rounded-md" />
+                            <Skeleton className="h-16 w-full max-w-2xl rounded-lg mt-4" />
+
+                            <div className="flex gap-3 mt-4">
+                                <Skeleton className="h-8 w-24 rounded-full" />
+                                <Skeleton className="h-8 w-24 rounded-full" />
+                            </div>
+                        </div>
+                        <div className="hidden lg:block">
+                            <Skeleton className="w-80 h-56 rounded-2xl" />
+                        </div>
                     </div>
-                    <p className="text-sai-charcoal/60">Loading your profile...</p>
+                </div>
+
+                {/* Tabs Skeleton */}
+                <div className="max-w-7xl mx-auto px-6 border-b border-gray-200">
+                    <div className="flex gap-8 pb-4">
+                        <Skeleton className="h-6 w-24" />
+                        <Skeleton className="h-6 w-24" />
+                        <Skeleton className="h-6 w-24" />
+                    </div>
+                </div>
+
+                {/* Content Grid Skeleton */}
+                <div className="max-w-7xl mx-auto px-6 py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Card 1 */}
+                        <div className="rounded-3xl p-8 border border-gray-100 bg-white">
+                            <div className="flex justify-between mb-6">
+                                <Skeleton className="h-6 w-32" />
+                                <Skeleton className="h-6 w-16 rounded-full" />
+                            </div>
+                            <div className="mb-6 space-y-2">
+                                <Skeleton className="h-12 w-16" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                            <Skeleton className="h-32 w-full rounded-xl" />
+                        </div>
+
+                        {/* Card 2 */}
+                        <div className="rounded-3xl p-8 border border-gray-100 bg-white">
+                            <div className="flex justify-between mb-6">
+                                <Skeleton className="h-6 w-32" />
+                                <Skeleton className="h-6 w-16 rounded-full" />
+                            </div>
+                            <div className="mb-6 space-y-2">
+                                <Skeleton className="h-12 w-32" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                            <div className="space-y-4">
+                                <Skeleton className="h-8 w-full" />
+                                <Skeleton className="h-8 w-full" />
+                            </div>
+                            <Skeleton className="h-12 w-full mt-6 rounded-xl" />
+                        </div>
+
+                        {/* Card 3 */}
+                        <div className="rounded-3xl p-8 border border-gray-100 bg-white">
+                            <div className="flex justify-between mb-6">
+                                <Skeleton className="h-6 w-32" />
+                                <Skeleton className="h-6 w-16 rounded-full" />
+                            </div>
+                            <div className="mb-6 space-y-2">
+                                <Skeleton className="h-12 w-16" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                            <div className="space-y-3">
+                                <Skeleton className="h-20 w-full rounded-xl" />
+                                <Skeleton className="h-20 w-full rounded-xl" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
