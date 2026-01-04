@@ -4,10 +4,17 @@ import { useState, useEffect } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Star, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Star, ShoppingCart, ArrowLeft, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import AllergenBadge from '@/app/components/AllergenBadge';
 import Counter from '@/app/components/Counter';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProductOption {
     id: string;
@@ -42,10 +49,13 @@ export default function ProductPage() {
     const [options, setOptions] = useState<ProductOption[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedBase, setSelectedBase] = useState<string>('');
     const [selectedFrosting, setSelectedFrosting] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
+    const [designNotes, setDesignNotes] = useState('');
+    // Brownie options
+    const [selectedTopping, setSelectedTopping] = useState<string>('None');
+    const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
 
     useEffect(() => {
         if (productId) {
@@ -84,13 +94,13 @@ export default function ProductPage() {
             const { data: reviewsData } = await supabase
                 .from('reviews')
                 .select(`
-                    id,
-                    rating,
-                    comment,
-                    created_at,
-                    user_id,
-                    profiles(first_name)
-                `)
+        id,
+        rating,
+        comment,
+        created_at,
+        user_id,
+        profiles(first_name)
+        `)
                 .eq('product_id', productId)
                 .order('created_at', { ascending: false })
                 .limit(5);
@@ -116,9 +126,51 @@ export default function ProductPage() {
 
     const baseOptions = options.filter(opt => opt.option_category === 'base');
     const frostingOptions = options.filter(opt => opt.option_category === 'frosting');
+    const toppingOptions = options.filter(opt => opt.option_category === 'topping');
+    const dietaryOptions = options.filter(opt => opt.option_category === 'dietary');
 
     const calculatePrice = () => {
         if (!product) return 0;
+
+        // For cupcakes with tiered pricing (6pc and 12pc sets)
+        if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
+            // Quantity 1 = 6 pieces = base_price
+            // Quantity 2 = 12 pieces = premium_price (discounted)
+            if (quantity === 1) {
+                return product.base_price;
+            } else if (quantity === 2 && product.premium_price) {
+                return product.premium_price;
+            } else if (quantity > 2 && product.premium_price) {
+                // For quantities > 2, calculate proportionally from the 12pc price
+                return product.premium_price * (quantity / 2);
+            }
+            return product.base_price * quantity;
+        }
+
+        // For brownies (per piece pricing with toppings and dietary options)
+        if (product.product_type === 'brownie') {
+            let pricePerPiece = product.base_price; // RM 3
+
+            // Check if premium topping selected (any topping makes it RM 4)
+            if (selectedTopping && selectedTopping !== 'None') {
+                const toppingOption = toppingOptions.find(opt => opt.option_name === selectedTopping);
+                if (toppingOption?.is_premium) {
+                    pricePerPiece = product.premium_price; // RM 4
+                }
+            }
+
+            // Add dietary option costs (cumulative)
+            selectedDietaryOptions.forEach(dietaryName => {
+                const dietaryOption = dietaryOptions.find(
+                    opt => opt.option_name === dietaryName
+                );
+                if (dietaryOption) {
+                    pricePerPiece += dietaryOption.price_modifier;
+                }
+            });
+
+            return pricePerPiece * quantity;
+        }
 
         const selectedBaseOption = baseOptions.find(opt => opt.option_name === selectedBase);
         const selectedFrostingOption = frostingOptions.find(opt => opt.option_name === selectedFrosting);
@@ -127,14 +179,6 @@ export default function ProductPage() {
         const basePrice = isPremium && product.premium_price ? product.premium_price : product.base_price;
 
         return basePrice * quantity;
-    };
-
-    const nextImage = () => {
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    };
-
-    const prevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
     };
 
     if (loading) {
@@ -160,61 +204,38 @@ export default function ProductPage() {
             </div>
 
             <div className="max-w-4xl mx-auto p-4 pb-8">
-                {/* Image Gallery */}
+                {/* Image Gallery with Carousel */}
                 <div className="mb-6">
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg mb-3">
-                        {images.length > 0 ? (
-                            <>
-                                <Image
-                                    src={images[currentImageIndex]}
-                                    alt={product.name}
-                                    fill
-                                    className="object-cover"
-                                />
-                                {images.length > 1 && (
-                                    <>
-                                        <button
-                                            onClick={prevImage}
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all shadow-lg"
-                                        >
-                                            <ChevronLeft className="w-5 h-5 text-sai-charcoal" />
-                                        </button>
-                                        <button
-                                            onClick={nextImage}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all shadow-lg"
-                                        >
-                                            <ChevronRight className="w-5 h-5 text-sai-charcoal" />
-                                        </button>
-                                        <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-sm font-medium">
-                                            {currentImageIndex + 1} / {images.length}
+                    <Carousel className="w-full">
+                        <CarouselContent>
+                            {images.length > 0 ? (
+                                images.map((img, index) => (
+                                    <CarouselItem key={index}>
+                                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg">
+                                            <Image
+                                                src={img}
+                                                alt={`${product.name} - Image ${index + 1}`}
+                                                fill
+                                                className="object-cover"
+                                            />
                                         </div>
-                                    </>
-                                )}
+                                    </CarouselItem>
+                                ))
+                            ) : (
+                                <CarouselItem>
+                                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg flex items-center justify-center">
+                                        <span className="text-gray-400">No image</span>
+                                    </div>
+                                </CarouselItem>
+                            )}
+                        </CarouselContent>
+                        {images.length > 1 && (
+                            <>
+                                <CarouselPrevious className="left-3" />
+                                <CarouselNext className="right-3" />
                             </>
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                                No image
-                            </div>
                         )}
-                    </div>
-
-                    {/* Thumbnails */}
-                    {images.length > 1 && (
-                        <div className="grid grid-cols-4 gap-2">
-                            {images.map((img, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setCurrentImageIndex(idx)}
-                                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === idx
-                                        ? 'border-sai-pink'
-                                        : 'border-gray-200'
-                                        }`}
-                                >
-                                    <Image src={img} alt={`Gallery ${idx + 1}`} fill className="object-cover" />
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    </Carousel>
                 </div>
 
                 {/* Product Info */}
@@ -242,9 +263,14 @@ export default function ProductPage() {
                         {/* Tags */}
                         {product.tags && product.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-3">
-                                {product.tags.map((tag: string) => (
+                                {product.tags.slice(0, 2).map((tag: string) => (
                                     <AllergenBadge key={tag} tag={tag} />
                                 ))}
+                                {product.tags.length > 2 && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                        +{product.tags.length - 2} more
+                                    </span>
+                                )}
                             </div>
                         )}
 
@@ -262,38 +288,123 @@ export default function ProductPage() {
                             {baseOptions.length > 0 && (
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium mb-2">Base Flavor *</label>
-                                    <select
-                                        value={selectedBase}
-                                        onChange={(e) => setSelectedBase(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                    >
-                                        <option value="">Select flavor...</option>
-                                        {baseOptions.map((opt) => (
-                                            <option key={opt.id} value={opt.option_name}>
-                                                {opt.option_name} {opt.is_premium && '(Premium)'}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="w-full px-3 py-2 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex justify-between items-center text-left">
+                                                <span className="text-sm">{selectedBase || "Select flavor..."}</span>
+                                                <ChevronDown className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            {baseOptions.map((opt) => (
+                                                <DropdownMenuItem
+                                                    key={opt.id}
+                                                    onSelect={() => setSelectedBase(opt.option_name)}
+                                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                >
+                                                    {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1">(Premium)</span>}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             )}
 
                             {frostingOptions.length > 0 && (
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium mb-2">Frosting *</label>
-                                    <select
-                                        value={selectedFrosting}
-                                        onChange={(e) => setSelectedFrosting(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                    >
-                                        <option value="">Select frosting...</option>
-                                        {frostingOptions.map((opt) => (
-                                            <option key={opt.id} value={opt.option_name}>
-                                                {opt.option_name} {opt.is_premium && '(Premium)'}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="w-full px-3 py-2 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex justify-between items-center text-left">
+                                                <span className="text-sm">{selectedFrosting || "Select frosting..."}</span>
+                                                <ChevronDown className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            {frostingOptions.map((opt) => (
+                                                <DropdownMenuItem
+                                                    key={opt.id}
+                                                    onSelect={() => setSelectedFrosting(opt.option_name)}
+                                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                >
+                                                    {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1">(Premium)</span>}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             )}
+
+                            {/* Brownie Topping Selection */}
+                            {toppingOptions.length > 0 && (
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium mb-2">
+                                        Add Topping <span className="text-gray-400 font-normal">(Optional, +RM 1)</span>
+                                    </label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="w-full px-3 py-2 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex justify-between items-center text-left">
+                                                <span className="text-sm">
+                                                    {selectedTopping === 'None' ? 'No topping (RM 3/pc)' :
+                                                        selectedTopping ? `${selectedTopping} (+RM 1.00)` : 'Select topping...'}
+                                                </span>
+                                                <ChevronDown className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            <DropdownMenuItem
+                                                onSelect={() => setSelectedTopping('None')}
+                                                className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                            >
+                                                No topping (RM 3/pc)
+                                            </DropdownMenuItem>
+                                            {toppingOptions.map((opt) => (
+                                                <DropdownMenuItem
+                                                    key={opt.id}
+                                                    onSelect={() => setSelectedTopping(opt.option_name)}
+                                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                >
+                                                    {opt.option_name} <span className="text-sai-pink ml-1">(+RM {opt.price_modifier.toFixed(2)})</span>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            )}
+
+                            {/* Dietary Options (Checkboxes) */}
+                            {dietaryOptions.length > 0 && (
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium mb-2">Dietary Options</label>
+                                    <div className="space-y-2">
+                                        {dietaryOptions.map((opt) => (
+                                            <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedDietaryOptions.includes(opt.option_name)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedDietaryOptions([...selectedDietaryOptions, opt.option_name]);
+                                                        } else {
+                                                            setSelectedDietaryOptions(selectedDietaryOptions.filter(name => name !== opt.option_name));
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 text-sai-pink border-gray-300 rounded"
+                                                />
+                                                <span className="text-sm">
+                                                    {opt.option_name}
+                                                    {opt.is_premium ? (
+                                                        <span className="text-sai-pink ml-1">(+RM {opt.price_modifier.toFixed(2)})</span>
+                                                    ) : (
+                                                        <span className="text-green-600 ml-1">(Free)</span>
+                                                    )}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium mb-2">Quantity</label>
@@ -312,6 +423,23 @@ export default function ProductPage() {
                                         +
                                     </button>
                                 </div>
+                            </div>
+
+                            {/* Design Notes */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">
+                                    Design Notes <span className="text-gray-400 font-normal">(Optional)</span>
+                                </label>
+                                <textarea
+                                    value={designNotes}
+                                    onChange={(e) => setDesignNotes(e.target.value)}
+                                    placeholder="Describe your desired design, colors, themes, or any special requests..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink min-h-[100px] resize-none"
+                                    maxLength={500}
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {designNotes.length}/500 characters
+                                </p>
                             </div>
 
                             {/* Price and Add to Cart - Inline */}

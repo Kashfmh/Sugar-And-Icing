@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Star, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Star, ShoppingCart, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AllergenBadge from './AllergenBadge';
 import { motion, AnimatePresence } from 'motion/react';
 import Counter from './Counter';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProductOption {
     id: string;
@@ -42,6 +49,10 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     const [selectedBase, setSelectedBase] = useState<string>('');
     const [selectedFrosting, setSelectedFrosting] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
+    const [designNotes, setDesignNotes] = useState('');
+    // Brownie options
+    const [selectedTopping, setSelectedTopping] = useState<string>('None');
+    const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
 
     useEffect(() => {
         if (isOpen && productId) {
@@ -104,6 +115,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
         }
     }
 
+    // Support both gallery_images array and single image_url
     const images = [
         product?.image_url,
         ...(product?.gallery_images || [])
@@ -111,10 +123,53 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
     const baseOptions = options.filter(opt => opt.option_category === 'base');
     const frostingOptions = options.filter(opt => opt.option_category === 'frosting');
+    const toppingOptions = options.filter(opt => opt.option_category === 'topping');
+    const dietaryOptions = options.filter(opt => opt.option_category === 'dietary');
 
     const calculatePrice = () => {
         if (!product) return 0;
 
+        // For cupcakes with tiered pricing (6pc and 12pc sets)
+        if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
+            // Quantity 1 = 6 pieces = base_price
+            // Quantity 2 = 12 pieces = premium_price (discounted)
+            if (quantity === 1) {
+                return product.base_price;
+            } else if (quantity === 2 && product.premium_price) {
+                return product.premium_price;
+            } else if (quantity > 2 && product.premium_price) {
+                // For quantities > 2, calculate proportionally from the 12pc price
+                return product.premium_price * (quantity / 2);
+            }
+            return product.base_price * quantity;
+        }
+
+        // For brownies (per piece pricing with toppings and dietary options)
+        if (product.product_type === 'brownie') {
+            let pricePerPiece = product.base_price; // RM 3
+
+            // Check if premium topping selected (any topping makes it RM 4)
+            if (selectedTopping && selectedTopping !== 'None') {
+                const toppingOption = toppingOptions.find(opt => opt.option_name === selectedTopping);
+                if (toppingOption?.is_premium) {
+                    pricePerPiece = product.premium_price; // RM 4
+                }
+            }
+
+            // Add dietary option costs (cumulative)
+            selectedDietaryOptions.forEach(dietaryName => {
+                const dietaryOption = dietaryOptions.find(
+                    opt => opt.option_name === dietaryName
+                );
+                if (dietaryOption) {
+                    pricePerPiece += dietaryOption.price_modifier;
+                }
+            });
+
+            return pricePerPiece * quantity;
+        }
+
+        // For other products with regular pricing
         const selectedBaseOption = baseOptions.find(opt => opt.option_name === selectedBase);
         const selectedFrostingOption = frostingOptions.find(opt => opt.option_name === selectedFrosting);
 
@@ -271,59 +326,41 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                     {/* Left: Sticky Gallery - 40% width */}
                                     <div className="lg:w-2/5 flex-shrink-0">
                                         <div className="lg:sticky lg:top-6 space-y-4">
-                                            {/* Main Image */}
-                                            <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 mb-4">
-                                                {images.length > 0 ? (
+                                            {/* Carousel Gallery */}
+                                            <Carousel className="w-full">
+                                                <CarouselContent>
+                                                    {images.length > 0 ? (
+                                                        images.map((img, index) => (
+                                                            <CarouselItem key={index}>
+                                                                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
+                                                                    <Image
+                                                                        src={img}
+                                                                        alt={`${product?.name} - Image ${index + 1}`}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
+                                                                </div>
+                                                            </CarouselItem>
+                                                        ))
+                                                    ) : (
+                                                        <CarouselItem>
+                                                            <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                                <span className="text-gray-400">No image</span>
+                                                            </div>
+                                                        </CarouselItem>
+                                                    )}
+                                                </CarouselContent>
+                                                {images.length > 1 && (
                                                     <>
-                                                        <Image
-                                                            src={images[currentImageIndex]}
-                                                            alt={product?.name}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                        {images.length > 1 && (
-                                                            <>
-                                                                <button
-                                                                    onClick={prevImage}
-                                                                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-colors"
-                                                                >
-                                                                    <ChevronLeft className="w-5 h-5" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={nextImage}
-                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-colors"
-                                                                >
-                                                                    <ChevronRight className="w-5 h-5" />
-                                                                </button>
-                                                            </>
-                                                        )}
+                                                        <CarouselPrevious className="left-2" />
+                                                        <CarouselNext className="right-2" />
                                                     </>
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-full text-gray-400">
-                                                        No image
-                                                    </div>
                                                 )}
-                                            </div>
-
-                                            {/* Thumbnail Gallery */}
-                                            {images.length > 1 && (
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    {images.map((img, idx) => (
-                                                        <button
-                                                            key={idx}
-                                                            onClick={() => setCurrentImageIndex(idx)}
-                                                            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === idx ? 'border-sai-pink' : 'border-transparent'
-                                                                }`}
-                                                        >
-                                                            <Image src={img} alt={`Gallery ${idx + 1}`} fill className="object-cover" />
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            </Carousel>
 
                                             {/* Stats Card */}
                                             <div className="bg-gradient-to-br from-sai-pink/5 to-sai-pink/10 rounded-xl p-4 border border-sai-pink/20">
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex items-center justify-between mb-3">
                                                     <div className="flex items-center gap-2">
                                                         <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                                                         <span className="font-bold text-lg">{product?.average_rating.toFixed(1)}</span>
@@ -333,6 +370,13 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                         <div className="text-sm text-gray-500">Sold</div>
                                                         <div className="font-bold text-lg text-sai-charcoal">{product?.times_sold}</div>
                                                     </div>
+                                                </div>
+
+                                                {/* Customization Note */}
+                                                <div className="pt-3 border-t border-sai-pink/20">
+                                                    <p className="text-xs text-gray-600 leading-relaxed">
+                                                        💡 <span className="font-medium">These are reference images!</span> Feel free to customize the design however you like, or request the exact same style. Your creativity, your choice! 🎨
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -345,18 +389,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                             <h2 className="text-3xl font-serif font-bold text-sai-charcoal mb-2">
                                                 {product?.name}
                                             </h2>
-
-                                            {/* Rating & Stats */}
-                                            <div className="flex items-center gap-4 text-sm mb-3">
-                                                <div className="flex items-center gap-1">
-                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                                    <span className="font-semibold">{product?.average_rating.toFixed(1)}</span>
-                                                    <span className="text-gray-500">({product?.review_count} reviews)</span>
-                                                </div>
-                                                <div className="text-gray-500">
-                                                    {product?.times_sold} sold
-                                                </div>
-                                            </div>
 
                                             {/* Tags */}
                                             {product?.tags && product.tags.length > 0 && (
@@ -381,40 +413,142 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                 {/* Base Selection */}
                                                 {baseOptions.length > 0 && (
                                                     <div className="mb-4">
-                                                        <label className="block text-sm font-medium mb-2">Base Flavor</label>
-                                                        <select
-                                                            value={selectedBase}
-                                                            onChange={(e) => setSelectedBase(e.target.value)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink"
-                                                        >
-                                                            <option value="">Select flavor...</option>
-                                                            {baseOptions.map((opt) => (
-                                                                <option key={opt.id} value={opt.option_name}>
-                                                                    {opt.option_name} {opt.is_premium && '(Premium)'}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                        <label className="block text-sm font-medium mb-2">Base Flavor *</label>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-gray-400 transition-colors flex justify-between items-center text-left">
+                                                                    <span className="text-sm">{selectedBase || "Select flavor..."}</span>
+                                                                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                                                {baseOptions.map((opt) => (
+                                                                    <DropdownMenuItem
+                                                                        key={opt.id}
+                                                                        onSelect={() => setSelectedBase(opt.option_name)}
+                                                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                    >
+                                                                        {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1">(Premium)</span>}
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </div>
                                                 )}
 
                                                 {/* Frosting Selection */}
                                                 {frostingOptions.length > 0 && (
                                                     <div className="mb-4">
-                                                        <label className="block text-sm font-medium mb-2">Frosting</label>
-                                                        <select
-                                                            value={selectedFrosting}
-                                                            onChange={(e) => setSelectedFrosting(e.target.value)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink"
-                                                        >
-                                                            <option value="">Select frosting...</option>
-                                                            {frostingOptions.map((opt) => (
-                                                                <option key={opt.id} value={opt.option_name}>
-                                                                    {opt.option_name} {opt.is_premium && '(Premium)'}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                        <label className="block text-sm font-medium mb-2">Frosting *</label>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-gray-400 transition-colors flex justify-between items-center text-left">
+                                                                    <span className="text-sm">{selectedFrosting || "Select frosting..."}</span>
+                                                                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                                                {frostingOptions.map((opt) => (
+                                                                    <DropdownMenuItem
+                                                                        key={opt.id}
+                                                                        onSelect={() => setSelectedFrosting(opt.option_name)}
+                                                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                    >
+                                                                        {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1">(Premium)</span>}
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </div>
                                                 )}
+
+                                                {/* Brownie Topping Selection */}
+                                                {toppingOptions.length > 0 && (
+                                                    <div className="mb-4">
+                                                        <label className="block text-sm font-medium mb-2">
+                                                            Add Topping <span className="text-gray-400 font-normal">(Optional, +RM 1)</span>
+                                                        </label>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-gray-400 transition-colors flex justify-between items-center text-left">
+                                                                    <span className="text-sm">
+                                                                        {selectedTopping === 'None' ? 'No topping (RM 3/pc)' :
+                                                                            selectedTopping ? `${selectedTopping} (+RM 1.00)` : 'Select topping...'}
+                                                                    </span>
+                                                                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                                                <DropdownMenuItem
+                                                                    onSelect={() => setSelectedTopping('None')}
+                                                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                >
+                                                                    No topping (RM 3/pc)
+                                                                </DropdownMenuItem>
+                                                                {toppingOptions.map((opt) => (
+                                                                    <DropdownMenuItem
+                                                                        key={opt.id}
+                                                                        onSelect={() => setSelectedTopping(opt.option_name)}
+                                                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                    >
+                                                                        {opt.option_name} <span className="text-sai-pink ml-1">(+RM {opt.price_modifier.toFixed(2)})</span>
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                )}
+
+                                                {/* Dietary Options (Checkboxes) */}
+                                                {dietaryOptions.length > 0 && (
+                                                    <div className="mb-4">
+                                                        <label className="block text-sm font-medium mb-2">Dietary Options</label>
+                                                        <div className="space-y-2">
+                                                            {dietaryOptions.map((opt) => (
+                                                                <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedDietaryOptions.includes(opt.option_name)}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setSelectedDietaryOptions([...selectedDietaryOptions, opt.option_name]);
+                                                                            } else {
+                                                                                setSelectedDietaryOptions(selectedDietaryOptions.filter(name => name !== opt.option_name));
+                                                                            }
+                                                                        }}
+                                                                        className="w-4 h-4 text-sai-pink border-gray-300 rounded focus:ring-sai-pink"
+                                                                    />
+                                                                    <span className="text-sm">
+                                                                        {opt.option_name}
+                                                                        {opt.is_premium ? (
+                                                                            <span className="text-sai-pink ml-1">(+RM {opt.price_modifier.toFixed(2)})</span>
+                                                                        ) : (
+                                                                            <span className="text-green-600 ml-1">(Free)</span>
+                                                                        )}
+                                                                    </span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+
+                                                {/* Design Notes */}
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium mb-2">
+                                                        Design Notes <span className="text-gray-400 font-normal">(Optional)</span>
+                                                    </label>
+                                                    <textarea
+                                                        value={designNotes}
+                                                        onChange={(e) => setDesignNotes(e.target.value)}
+                                                        placeholder="Describe your desired design, colors, themes, or any special requests..."
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink min-h-[100px] resize-none"
+                                                        maxLength={500}
+                                                    />
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {designNotes.length}/500 characters
+                                                    </p>
+                                                </div>
 
                                                 {/* Quantity */}
                                                 <div className="mb-4">
@@ -459,7 +593,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button className="w-full bg-sai-pink text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                                            <button className="w-full bg-sai-pink text-white py-3 px-6 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
                                                 <ShoppingCart className="w-5 h-5" />
                                                 Add to Cart
                                             </button>
@@ -469,15 +603,15 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                         {reviews.length > 0 && (
                                             <div className="border-t border-gray-200 pt-4">
                                                 <h3 className="font-semibold text-lg mb-3">Customer Reviews</h3>
-                                                <div className="space-y-3 max-h-60 overflow-y-auto">
-                                                    {reviews.map((review: any) => (
+                                                <div className="space-y-3">
+                                                    {reviews.map((review) => (
                                                         <div key={review.id} className="bg-gray-50 rounded-lg p-3">
-                                                            <div className="flex items-center gap-2 mb-1">
+                                                            <div className="flex items-center gap-2 mb-2">
                                                                 <div className="flex">
                                                                     {[...Array(5)].map((_, i) => (
                                                                         <Star
                                                                             key={i}
-                                                                            className={`w-3 h-3 ${i < review.rating
+                                                                            className={`w-4 h-4 ${i < review.rating
                                                                                 ? 'fill-yellow-400 text-yellow-400'
                                                                                 : 'text-gray-300'
                                                                                 }`}
