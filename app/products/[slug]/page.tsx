@@ -134,17 +134,32 @@ export default function ProductPage() {
 
         // For cupcakes with tiered pricing (6pc and 12pc sets)
         if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
+            let baseTotal = 0;
             // Quantity 1 = 6 pieces = base_price
             // Quantity 2 = 12 pieces = premium_price (discounted)
             if (quantity === 1) {
-                return product.base_price;
+                baseTotal = product.base_price;
             } else if (quantity === 2 && product.premium_price) {
-                return product.premium_price;
+                baseTotal = product.premium_price;
             } else if (quantity > 2 && product.premium_price) {
                 // For quantities > 2, calculate proportionally from the 12pc price
-                return product.premium_price * (quantity / 2);
+                baseTotal = product.premium_price * (quantity / 2);
+            } else {
+                baseTotal = product.base_price * quantity;
             }
-            return product.base_price * quantity;
+
+            // Calculate dietary cost (per piece logic: 6 pieces per quantity unit)
+            const totalPieces = quantity * 6;
+            let dietaryCost = 0;
+
+            selectedDietaryOptions.forEach(dietaryName => {
+                const dietaryOption = dietaryOptions.find(opt => opt.option_name === dietaryName);
+                if (dietaryOption) {
+                    dietaryCost += (dietaryOption.price_modifier * totalPieces);
+                }
+            });
+
+            return baseTotal + dietaryCost;
         }
 
         // For brownies (per piece pricing with toppings and dietary options)
@@ -172,14 +187,24 @@ export default function ProductPage() {
             return pricePerPiece * quantity;
         }
 
-        const selectedBaseOption = baseOptions.find(opt => opt.option_name === selectedBase);
-        const selectedFrostingOption = frostingOptions.find(opt => opt.option_name === selectedFrosting);
+        // For other products (Fruitcake, Bread, Other)
+        // Pricing is per unit
+        let basePrice = product.base_price;
 
-        const isPremium = selectedBaseOption?.is_premium || selectedFrostingOption?.is_premium;
-        const basePrice = isPremium && product.premium_price ? product.premium_price : product.base_price;
+        let total = basePrice * quantity;
 
-        return basePrice * quantity;
+        // Add dietary costs per unit
+        selectedDietaryOptions.forEach(dietaryName => {
+            const dietaryOption = dietaryOptions.find(opt => opt.option_name === dietaryName);
+            if (dietaryOption) {
+                total += (dietaryOption.price_modifier * quantity);
+            }
+        });
+
+        return total;
     };
+
+
 
     if (loading) {
         return (
