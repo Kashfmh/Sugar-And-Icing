@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import GalleryCard from '../components/GalleryCard';
 import GalleryListItem from '../components/GalleryListItem';
@@ -10,101 +10,57 @@ import FilterModal from '../components/FilterModal';
 import { AnimatedText } from '../components/ui/animated-text';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Search, SlidersHorizontal, MessageCircle, ChevronDown } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import BottomNav from '../components/BottomNav';
+import { useProductFilters, Product } from '@/hooks/useProductFilters'; // Use hook
 
-interface CakeGalleryItem {
-    id: string;
-    name: string;
-    description?: string | null;
-    image_url?: string | null;
-    category_name: string;
-    product_type?: string;
+// Move fetch function outside component to prevent re-creation on every render
+const fetchCustomCakes = async () => {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('product_type', 'cake'); // Only custom cakes
+
+    if (error) throw error;
+    return data as Product[];
 }
 
 export default function CustomCakesPage() {
-    const [cakes, setCakes] = useState<CakeGalleryItem[]>([]);
-    const [activeCategory, setActiveCategory] = useState('All');
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [sortBy, setSortBy] = useState<'newest' | 'name'>('newest');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-    const itemsPerPage = 12;
-
     const categories = ['All', 'Birthday', 'Holiday', 'Wedding', 'Anniversary'];
 
-    useEffect(() => {
-        fetchCustomCakes();
-    }, []);
-
-    async function fetchCustomCakes() {
-        try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('product_type', 'cake'); // Only custom cakes
-
-            if (error) throw error;
-            setCakes(data || []);
-        } catch (error) {
-            console.error('Error fetching custom cakes:', error);
-        } finally {
-            setLoading(false);
-        }
-    }
+    const {
+        paginatedProducts: paginatedCakes,
+        sortedProducts: sortedCakes,
+        activeCategory,
+        setActiveCategory,
+        searchQuery,
+        setSearchQuery,
+        sortBy,
+        setSortBy,
+        currentPage,
+        setCurrentPage,
+        loading,
+        isFilterModalOpen,
+        setIsFilterModalOpen,
+        totalPages
+    } = useProductFilters({
+        initialCategory: 'All',
+        itemsPerPage: 12,
+        onFetch: fetchCustomCakes
+        // No categoryMap passed, so it uses the default logic (matching string in name/desc/category_name)
+        // This matches the original logic of Custom Cakes page
+    });
 
     const handleRequestQuote = (cakeName: string) => {
         const message = `Hi! I'm interested in a custom cake similar to your "${cakeName}". Can we discuss the size, design, and pricing?`;
         const whatsappUrl = `https://wa.me/60108091351?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
-
-    // Filter cakes by category and search
-    const filteredCakes = cakes.filter(cake => {
-        if (activeCategory === 'All') {
-            const matchesSearch = !searchQuery ||
-                cake.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                cake.description?.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesSearch;
-        }
-
-        // Check if category matches name or description
-        const categoryLower = activeCategory.toLowerCase();
-        const matchesCategory =
-            cake.name.toLowerCase().includes(categoryLower) ||
-            cake.description?.toLowerCase().includes(categoryLower) ||
-            false;
-
-        const matchesSearch = !searchQuery ||
-            cake.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cake.description?.toLowerCase().includes(searchQuery.toLowerCase());
-
-        return matchesCategory && matchesSearch;
-    });
-
-    const sortedCakes = [...filteredCakes].sort((a, b) => {
-        if (sortBy === 'name') {
-            return a.name.localeCompare(b.name);
-        }
-        return 0; // newest (default order)
-    });
-
-    // Pagination
-    const totalPages = Math.ceil(sortedCakes.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedCakes = sortedCakes.slice(startIndex, startIndex + itemsPerPage);
-
-    // Reset to page 1 when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [activeCategory, searchQuery, sortBy]);
 
     return (
         <main className="min-h-screen bg-sai-white relative">
@@ -260,12 +216,8 @@ export default function CustomCakesPage() {
             <FilterModal
                 isOpen={isFilterModalOpen}
                 onClose={() => setIsFilterModalOpen(false)}
-                sortBy={sortBy as any}
-                onSortChange={(newSort) => {
-                    if (newSort === 'newest' || newSort === 'name') {
-                        setSortBy(newSort);
-                    }
-                }}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
             />
 
             {/* Gallery Grid */}
@@ -553,8 +505,7 @@ export default function CustomCakesPage() {
                     </div>
                 </div>
             </section>
-
-            <BottomNav />
         </main>
     );
 }
+

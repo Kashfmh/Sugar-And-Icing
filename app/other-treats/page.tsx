@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import ProductListItem from '../components/ProductListItem';
 import ProductListItemSkeleton from '../components/ProductListItemSkeleton';
 import CategoryTabs from '../components/CategoryTabs';
-import Badge from '../components/Badge';
-import BottomNav from '../components/BottomNav';
 import FilterModal from '../components/FilterModal';
 import { AnimatedText } from '../components/ui/animated-text';
-import { ArrowLeft, Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,122 +21,62 @@ import Image from 'next/image';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { useRouter } from 'next/navigation';
 import { generateProductSlug } from '@/lib/slugify';
+import { useProductFilters, Product } from '@/hooks/useProductFilters'; // Use hook
 
-interface Product {
-    id: string;
-    name: string;
-    base_price: number;
-    price: number;
-    description?: string | null;
-    category_name: string;
-    image_url?: string | null;
-    is_available?: boolean;
-    is_best_seller?: boolean;
-    tags?: string[];
-    product_type?: string;
+
+const categories = ['All', 'Cupcakes', 'Brownies', 'Fruit Cakes', 'Bread'];
+const categoryMap: { [key: string]: string[] } = {
+    'Cupcakes': ['cupcake', 'cupcake_basic', 'cupcake_premium'],
+    'Brownies': ['brownie'],
+    'Fruit Cakes': ['fruitcake'],
+    'Bread': ['bread']
+};
+
+const fetchProducts = async () => {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .in('product_type', ['cupcake', 'cupcake_basic', 'cupcake_premium', 'brownie', 'fruitcake', 'bread', 'other']);
+    if (error) throw error;
+    return data as Product[];
 }
 
 export default function MenuPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [activeCategory, setActiveCategory] = useState('All');
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'name'>('newest');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+    const {
+        paginatedProducts,
+        sortedProducts, // for count
+        activeCategory,
+        setActiveCategory,
+        searchQuery,
+        setSearchQuery,
+        sortBy,
+        setSortBy,
+        currentPage,
+        setCurrentPage,
+        loading,
+        isFilterModalOpen,
+        setIsFilterModalOpen,
+        totalPages,
+        isMobile
+    } = useProductFilters({
+        initialCategory: 'All',
+        itemsPerPage: 12,
+        categoryMap,
+        onFetch: fetchProducts
+    });
+
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-    const [isMobile, setIsMobile] = useState(false);
     const router = useRouter();
-    const itemsPerPage = 12;
-
-    const categories = ['All', 'Cupcakes', 'Brownies', 'Fruit Cakes', 'Bread'];
-
-    useEffect(() => {
-        fetchProducts();
-    }, []);
-
-    // Detect mobile screen size
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1024);
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    async function fetchProducts() {
-        try {
-            // Get all treats (everything except custom cakes)
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .in('product_type', ['cupcake', 'cupcake_basic', 'cupcake_premium', 'brownie', 'fruitcake', 'bread', 'other']);
-
-            if (error) throw error;
-            setProducts(data || []);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            console.error('Error details:', JSON.stringify(error, null, 2));
-        } finally {
-            setLoading(false);
-        }
-    }
 
     const handleProductClick = (product: Product) => {
         if (isMobile) {
-            // Navigate to dedicated product page on mobile
             const slug = generateProductSlug({ id: product.id, name: product.name });
             router.push(`/products/${slug}`);
         } else {
-            // Show modal on desktop
             setSelectedProductId(product.id);
         }
     };
-
-    // Filter products by category and search
-    const filteredProducts = products.filter(product => {
-        // Map display category names to product_type values
-        let matchesCategory = true;
-        if (activeCategory !== 'All') {
-            const categoryMap: { [key: string]: string[] } = {
-                'Cupcakes': ['cupcake', 'cupcake_basic', 'cupcake_premium'],
-                'Brownies': ['brownie'],
-                'Fruit Cakes': ['fruitcake'],
-                'Bread': ['bread']
-            };
-            const productTypes = categoryMap[activeCategory];
-            matchesCategory = productTypes?.includes(product.product_type || '') || false;
-        }
-
-        const matchesSearch = !searchQuery ||
-            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.description?.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
-    const sortedProducts = [...filteredProducts].sort((a, b) => {
-        switch (sortBy) {
-            case 'price-low':
-                return a.base_price - b.base_price;
-            case 'price-high':
-                return b.base_price - a.base_price;
-            case 'name':
-                return a.name.localeCompare(b.name);
-            case 'newest':
-            default:
-                return 0;
-        }
-    });
-
-    // Pagination
-    const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
-
-    // Reset to page 1 when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [activeCategory, searchQuery, sortBy]);
 
     return (
         <main className="min-h-screen bg-sai-white pb-24 md:pb-8 relative">
@@ -298,6 +236,7 @@ export default function MenuPage() {
                 </div>
             </section>
 
+
             {/* Mobile: Category Tabs */}
             <section className="md:hidden px-6 pb-6">
                 <CategoryTabs
@@ -416,9 +355,6 @@ export default function MenuPage() {
                 </div>
             </section>
 
-            {/* Mobile Bottom Navigation */}
-            <BottomNav />
-
             {/* Product Detail Modal */}
             {selectedProductId && (
                 <ProductDetailModal
@@ -430,3 +366,4 @@ export default function MenuPage() {
         </main>
     );
 }
+
