@@ -3,9 +3,20 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, FileText, ShoppingCart, CakeSlice, User } from 'lucide-react';
+import { useCart } from '@/hooks/useCart';
+import { useEffect, useState } from 'react';
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const { totalItems } = useCart();
+
+    // Use state to avoid hydration mismatch for the badge
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const itemCount = mounted ? totalItems() : 0;
 
     const navItems = [
         { href: '/', label: 'Home', icon: Home },
@@ -48,11 +59,13 @@ export default function BottomNav() {
                         className="flex flex-col items-center gap-1"
                     >
                         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-                            <div className="w-14 h-14 rounded-full bg-sai-pink shadow-lg flex items-center justify-center relative">
+                            <div className="w-14 h-14 rounded-full bg-sai-pink shadow-lg flex items-center justify-center relative transition-transform active:scale-95">
                                 <ShoppingCart className="w-7 h-7 text-white" strokeWidth={2.5} />
-                                <span className="absolute -top-1 -right-1 bg-sai-charcoal text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center">
-                                    0
-                                </span>
+                                {itemCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-sai-charcoal text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                                        {itemCount}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="h-6"></div>

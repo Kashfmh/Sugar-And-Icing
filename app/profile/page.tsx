@@ -4,19 +4,85 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/skeleton';
+import AddressManager from '@/app/components/AddressManager';
+import OccasionsManager from '@/app/components/OccasionsManager';
 
 type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
 export default function ProfilePage() {
+    interface Address {
+        id: string;
+        label: string;
+        address_line1: string;
+        address_line2?: string;
+        city: string;
+        state: string;
+        postcode: string;
+        is_default: boolean;
+    }
+
+    interface SpecialOccasion {
+        id: string;
+        name: string;
+        date: string;
+        type: string;
+        reminder_enabled: boolean;
+    }
+
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<Tab>('dashboard');
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
+    const [updating, setUpdating] = useState(false);
+    const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [occasions, setOccasions] = useState<SpecialOccasion[]>([]);
+    const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
+
+    const [formData, setFormData] = useState({
+        first_name: '',
+        last_name: '',
+        phone: '',
+        dob: '',
+        preferred_contact_method: 'whatsapp',
+        favorite_flavors: [] as string[],
+        dietary_restrictions: [] as string[],
+        notification_preferences: {
+            order_updates: true,
+            marketing: false,
+            reminders: true
+        }
+    });
 
     useEffect(() => {
         checkUser();
+        // Load recently viewed
+        try {
+            const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            setRecentlyViewed(viewed);
+        } catch (e) {
+            console.error('Error loading history:', e);
+        }
     }, []);
+
+    useEffect(() => {
+        if (profile) {
+            setFormData({
+                first_name: profile.first_name || '',
+                last_name: profile.last_name || '',
+                phone: profile.phone || '',
+                dob: profile.dob || '',
+                preferred_contact_method: profile.preferred_contact_method || 'whatsapp',
+                favorite_flavors: profile.favorite_flavors || [],
+                dietary_restrictions: profile.dietary_restrictions || [],
+                notification_preferences: profile.notification_preferences || {
+                    order_updates: true,
+                    marketing: false,
+                    reminders: true
+                }
+            });
+        }
+    }, [profile]);
 
     async function checkUser() {
         try {
@@ -29,17 +95,71 @@ export default function ProfilePage() {
 
             setUser(session.user);
 
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
+            // Fetch Profile, Addresses, and Occasions in parallel
+            const [profileResult, addressesResult, occasionsResult] = await Promise.all([
+                supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .single(),
+                supabase
+                    .from('addresses')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .order('is_default', { ascending: false }),
+                supabase
+                    .from('special_occasions')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .order('date', { ascending: true })
+            ]);
 
-            setProfile(profileData);
+            if (profileResult.data) setProfile(profileResult.data);
+            if (addressesResult.data) setAddresses(addressesResult.data);
+            if (occasionsResult.data) setOccasions(occasionsResult.data);
+
         } catch (error) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function handleUpdateProfile(e: React.FormEvent) {
+        e.preventDefault();
+        setUpdating(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                    phone: formData.phone,
+                    dob: formData.dob || null,
+                    preferred_contact_method: formData.preferred_contact_method,
+                    favorite_flavors: formData.favorite_flavors,
+                    dietary_restrictions: formData.dietary_restrictions,
+                    notification_preferences: formData.notification_preferences,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+
+            // Refresh profile data
+            const { data: newProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            setProfile(newProfile);
+            alert('Settings updated successfully!');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Failed to update settings.');
+        } finally {
+            setUpdating(false);
         }
     }
 
@@ -51,86 +171,15 @@ export default function ProfilePage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-sai-white pt-24">
-                {/* Hero Skeleton */}
-                <div className="max-w-7xl mx-auto px-6 pb-6">
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1 space-y-4">
-                            <Skeleton className="h-14 w-64 md:w-96 rounded-lg" />
-                            <Skeleton className="h-6 w-48 rounded-md" />
-                            <Skeleton className="h-16 w-full max-w-2xl rounded-lg mt-4" />
-
-                            <div className="flex gap-3 mt-4">
-                                <Skeleton className="h-8 w-24 rounded-full" />
-                                <Skeleton className="h-8 w-24 rounded-full" />
-                            </div>
-                        </div>
-                        <div className="hidden lg:block">
-                            <Skeleton className="w-80 h-56 rounded-2xl" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tabs Skeleton */}
-                <div className="max-w-7xl mx-auto px-6 border-b border-gray-200">
-                    <div className="flex gap-8 pb-4">
-                        <Skeleton className="h-6 w-24" />
-                        <Skeleton className="h-6 w-24" />
-                        <Skeleton className="h-6 w-24" />
-                    </div>
-                </div>
-
-                {/* Content Grid Skeleton */}
                 <div className="max-w-7xl mx-auto px-6 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Card 1 */}
-                        <div className="rounded-3xl p-8 border border-gray-100 bg-white">
-                            <div className="flex justify-between mb-6">
-                                <Skeleton className="h-6 w-32" />
-                                <Skeleton className="h-6 w-16 rounded-full" />
-                            </div>
-                            <div className="mb-6 space-y-2">
-                                <Skeleton className="h-12 w-16" />
-                                <Skeleton className="h-4 w-24" />
-                            </div>
-                            <Skeleton className="h-32 w-full rounded-xl" />
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className="rounded-3xl p-8 border border-gray-100 bg-white">
-                            <div className="flex justify-between mb-6">
-                                <Skeleton className="h-6 w-32" />
-                                <Skeleton className="h-6 w-16 rounded-full" />
-                            </div>
-                            <div className="mb-6 space-y-2">
-                                <Skeleton className="h-12 w-32" />
-                                <Skeleton className="h-4 w-24" />
-                            </div>
-                            <div className="space-y-4">
-                                <Skeleton className="h-8 w-full" />
-                                <Skeleton className="h-8 w-full" />
-                            </div>
-                            <Skeleton className="h-12 w-full mt-6 rounded-xl" />
-                        </div>
-
-                        {/* Card 3 */}
-                        <div className="rounded-3xl p-8 border border-gray-100 bg-white">
-                            <div className="flex justify-between mb-6">
-                                <Skeleton className="h-6 w-32" />
-                                <Skeleton className="h-6 w-16 rounded-full" />
-                            </div>
-                            <div className="mb-6 space-y-2">
-                                <Skeleton className="h-12 w-16" />
-                                <Skeleton className="h-4 w-24" />
-                            </div>
-                            <div className="space-y-3">
-                                <Skeleton className="h-20 w-full rounded-xl" />
-                                <Skeleton className="h-20 w-full rounded-xl" />
-                            </div>
-                        </div>
+                    <Skeleton className="h-12 w-full max-w-md mb-8" />
+                    <div className="space-y-4">
+                        <Skeleton className="h-32 w-full rounded-3xl" />
+                        <Skeleton className="h-32 w-full rounded-3xl" />
                     </div>
                 </div>
             </div>
-        );
+        )
     }
 
     // Use first_name from user metadata (Supabase auth), then profile table, then email fallback
@@ -166,7 +215,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Decorative illustration placeholder */}
-                    <div className="hidden lg:block w-80 h-56 bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl"></div>
+                    <div className="hidden lg:block w-80 h-56 bg-contain bg-right bg-no-repeat" style={{ backgroundImage: "url('/cupcake-illustration.png')" }}></div>
                 </div>
             </div>
 
@@ -209,131 +258,533 @@ export default function ProfilePage() {
             {/* Content */}
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {activeTab === 'dashboard' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Order History Card - Large */}
-                        <div className="bg-pink-50 rounded-3xl p-8 relative border border-pink-100">
-                            <div className="flex items-start justify-between mb-6">
-                                <h3 className="text-lg font-semibold text-sai-charcoal">Order History</h3>
-                                <span className="px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium text-sai-charcoal rounded-full border border-pink-200">
-                                    Active
-                                </span>
-                            </div>
-
-                            <div className="mb-6">
-                                <div className="text-5xl font-bold text-sai-charcoal mb-2">0</div>
-                                <div className="text-sm text-sai-charcoal/60">total orders</div>
-                            </div>
-
-                            {/* Placeholder for chart/visualization */}
-                            <div className="h-32 mb-6 relative">
-                                <div className="absolute bottom-0 left-0 right-0 flex items-end gap-1">
-                                    {[...Array(20)].map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className="flex-1 bg-sai-pink/30 rounded-t"
-                                            style={{ height: `${Math.random() * 100}%` }}
-                                        ></div>
-                                    ))}
+                    <div className="space-y-6">
+                        {/* Top Row: History, Stats, Quick Actions */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Order History Card */}
+                            <div className="bg-pink-50 rounded-3xl p-8 relative border border-pink-100">
+                                <div className="flex items-start justify-between mb-6">
+                                    <h3 className="text-lg font-semibold text-sai-charcoal">Order History</h3>
+                                    <span className="px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium text-sai-charcoal rounded-full border border-pink-200">
+                                        Active
+                                    </span>
+                                </div>
+                                <div className="mb-6">
+                                    <div className="text-5xl font-bold text-sai-charcoal mb-2">0</div>
+                                    <div className="text-sm text-sai-charcoal/60">total orders</div>
+                                </div>
+                                {/* Placeholder chart */}
+                                <div className="h-32 mb-6 relative">
+                                    <div className="absolute bottom-0 left-0 right-0 flex items-end gap-1">
+                                        {[...Array(20)].map((_, i) => (
+                                            <div key={i} className="flex-1 bg-sai-pink/30 rounded-t" style={{ height: `${Math.random() * 100}%` }}></div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-200 cursor-pointer hover:bg-white/80 transition-colors">
+                                    <span className="text-sm text-sai-charcoal/70">⟳ View all orders</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-200">
-                                <span className="text-sm text-sai-charcoal/70">⟳ View all orders</span>
-                                <svg className="w-4 h-4 text-sai-charcoal/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* Account Stats Card */}
-                        <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
-                            <div className="flex items-start justify-between mb-6">
-                                <h3 className="text-lg font-semibold text-sai-charcoal">Account Stats</h3>
-                                <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">
-                                    Overview
-                                </span>
-                            </div>
-
-                            <div className="mb-6">
-                                <div className="text-5xl font-bold text-sai-pink mb-2">
-                                    {new Date(user?.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                            {/* Account Stats Card */}
+                            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-start justify-between mb-6">
+                                        <h3 className="text-lg font-semibold text-sai-charcoal">Account Stats</h3>
+                                        <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">Overview</span>
+                                    </div>
+                                    <div className="mb-6">
+                                        <div className="text-5xl font-bold text-sai-pink mb-2">
+                                            {new Date(user?.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                        </div>
+                                        <div className="text-sm text-sai-charcoal/60">member since</div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                                            <span className="text-sm text-sai-charcoal/60">Email Verified</span>
+                                            <span className="font-semibold text-sai-pink">✓</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                                            <span className="text-sm text-sai-charcoal/60">Phone</span>
+                                            <span className={`font-semibold ${profile?.phone ? 'text-sai-charcoal' : 'text-gray-400 italic'}`}>
+                                                {profile?.phone || 'Not set'}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="text-sm text-sai-charcoal/60">member since</div>
-                            </div>
-
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                                    <span className="text-sm text-sai-charcoal/60">Email Verified</span>
-                                    <span className="font-semibold text-sai-pink">✓</span>
-                                </div>
-                                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                                    <span className="text-sm text-sai-charcoal/60">Phone</span>
-                                    <span className="font-semibold text-sai-charcoal">{profile?.phone || 'Not set'}</span>
-                                </div>
-                            </div>
-
-                            <button className="w-full py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors flex items-center justify-center gap-2">
-                                View Profile
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Quick Actions Card */}
-                        <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
-                            <div className="flex items-start justify-between mb-6">
-                                <h3 className="text-lg font-semibold text-sai-charcoal">Quick Actions</h3>
-                                <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">
-                                    Shortcuts
-                                </span>
-                            </div>
-
-                            <div className="mb-6">
-                                <div className="text-5xl font-bold text-sai-pink mb-2">⚡</div>
-                                <div className="text-sm text-sai-charcoal/60">get started quickly</div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <button
-                                    onClick={() => router.push('/custom-cakes')}
-                                    className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100"
-                                >
-                                    <div className="font-medium text-sai-charcoal">Order Custom Cake 🎂</div>
-                                    <div className="text-xs text-sai-charcoal/60 mt-1">Create your dream cake</div>
-                                </button>
-                                <button
-                                    onClick={() => router.push('/other-treats')}
-                                    className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100"
-                                >
-                                    <div className="font-medium text-sai-charcoal">Browse Treats 🧁</div>
-                                    <div className="text-xs text-sai-charcoal/60 mt-1">Explore our collection</div>
+                                <button className="w-full mt-6 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors flex items-center justify-center gap-2">
+                                    View Profile
                                 </button>
                             </div>
+
+                            {/* Quick Actions Card */}
+                            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-start justify-between mb-6">
+                                        <h3 className="text-lg font-semibold text-sai-charcoal">Quick Actions</h3>
+                                        <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">Shortcuts</span>
+                                    </div>
+                                    <div className="mb-6">
+                                        <div className="text-5xl font-bold text-sai-pink mb-2">⚡</div>
+                                        <div className="text-sm text-sai-charcoal/60">get started quickly</div>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <button onClick={() => router.push('/custom-cakes')} className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100">
+                                        <div className="font-medium text-sai-charcoal">Order Custom Cake 🎂</div>
+                                    </button>
+                                    <button onClick={() => router.push('/other-treats')} className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100">
+                                        <div className="font-medium text-sai-charcoal">Browse Treats 🧁</div>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                )}
+
+                        {/* Bottom Row: Engagement Cards */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* The Cake Calendar Card */}
+                            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-sai-charcoal">The Cake Calendar 📅</h3>
+                                        {/* Logic for next occasion badge */}
+                                        {(() => {
+                                            const upcoming = occasions
+                                                .filter(o => {
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0);
+                                                    const occDate = new Date(o.date);
+                                                    occDate.setFullYear(today.getFullYear());
+                                                    if (occDate < today) occDate.setFullYear(today.getFullYear() + 1);
+                                                    return true;
+                                                })
+                                                .sort((a, b) => {
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0);
+                                                    const dateA = new Date(a.date);
+                                                    dateA.setFullYear(today.getFullYear());
+                                                    if (dateA < today) dateA.setFullYear(today.getFullYear() + 1);
+
+                                                    const dateB = new Date(b.date);
+                                                    dateB.setFullYear(today.getFullYear());
+                                                    if (dateB < today) dateB.setFullYear(today.getFullYear() + 1);
+
+                                                    return dateA.getTime() - dateB.getTime();
+                                                })[0];
+
+                                            if (upcoming) {
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+                                                const dateA = new Date(upcoming.date);
+                                                dateA.setFullYear(today.getFullYear());
+                                                if (dateA < today) dateA.setFullYear(today.getFullYear() + 1);
+                                                const diffTime = Math.abs(dateA.getTime() - today.getTime());
+                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                return <span className="px-3 py-1 bg-white/80 text-xs font-bold text-indigo-600 rounded-full border border-indigo-200">In {diffDays} Days!</span>;
+                                            }
+                                            return <span className="px-3 py-1 bg-white/80 text-xs font-medium text-gray-500 rounded-full border border-gray-200">No events</span>;
+                                        })()}
+                                    </div>
+
+                                    {(() => {
+                                        const upcoming = occasions
+                                            .filter(o => {
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+                                                const occDate = new Date(o.date);
+                                                occDate.setFullYear(today.getFullYear());
+                                                if (occDate < today) occDate.setFullYear(today.getFullYear() + 1);
+                                                return true;
+                                            })
+                                            .sort((a, b) => {
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+                                                const dateA = new Date(a.date);
+                                                dateA.setFullYear(today.getFullYear());
+                                                if (dateA < today) dateA.setFullYear(today.getFullYear() + 1);
+
+                                                const dateB = new Date(b.date);
+                                                dateB.setFullYear(today.getFullYear());
+                                                if (dateB < today) dateB.setFullYear(today.getFullYear() + 1);
+
+                                                return dateA.getTime() - dateB.getTime();
+                                            })[0];
+
+                                        if (upcoming) {
+                                            return (
+                                                <>
+                                                    <p className="text-2xl font-bold text-sai-charcoal mb-1">
+                                                        {upcoming.name}&apos;s {upcoming.type}
+                                                    </p>
+                                                    <p className="text-sm text-sai-charcoal/60 mb-6">
+                                                        Don&apos;t forget to order something sweet!
+                                                    </p>
+                                                    <button onClick={() => router.push('/products')} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                                                        Order a Cake Now
+                                                    </button>
+                                                </>
+                                            )
+                                        } else {
+                                            return (
+                                                <>
+                                                    <p className="text-xl font-bold text-sai-charcoal mb-1">
+                                                        No upcoming occasions
+                                                    </p>
+                                                    <p className="text-sm text-sai-charcoal/60 mb-6">
+                                                        Add birthdays & anniversaries to get reminders!
+                                                    </p>
+                                                    <button onClick={() => setActiveTab('edit-profile')} className="w-full py-3 bg-white text-indigo-600 border border-indigo-200 rounded-xl font-medium hover:bg-indigo-50 transition-colors">
+                                                        Add an Occasion
+                                                    </button>
+                                                </>
+                                            )
+                                        }
+                                    })()}
+                                </div>
+                            </div>
+
+                            {/* Your Sweet Preferences Card */}
+                            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-3xl p-8 border border-orange-100">
+                                <div className="flex items-start justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-sai-charcoal">Sweet Preferences 🍬</h3>
+                                    <button onClick={() => setActiveTab('edit-profile')} className="text-xs font-medium text-orange-600 hover:text-orange-700 underline">
+                                        Edit
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Dietary</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {profile?.dietary_restrictions && profile.dietary_restrictions.length > 0 ? (
+                                                profile.dietary_restrictions.map((tag: string) => (
+                                                    <span key={tag} className="px-2 py-1 bg-white border border-orange-200 rounded-md text-xs font-medium text-orange-800">
+                                                        {tag}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-sm text-gray-400 italic">None set</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Favorite Flavors</p>
+                                        <p className="text-sm text-sai-charcoal leading-relaxed">
+                                            {profile?.favorite_flavors && profile.favorite_flavors.length > 0
+                                                ? profile.favorite_flavors.join(', ')
+                                                : <span className="text-gray-400 italic">No favorites yet... (we recommend Dark Chocolate!)</span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* History */}
+                            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                                <h3 className="font-semibold text-sai-charcoal mb-4">Recently Viewed</h3>
+                                {recentlyViewed.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {recentlyViewed.slice(0, 3).map((item) => (
+                                            <div key={item.id} className="flex gap-3 items-center group cursor-pointer" onClick={() => router.push(`/products/${item.slug || item.id}`)}>
+                                                <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden relative flex-shrink-0">
+                                                    {item.image_url ? (
+                                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Img</div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-sai-charcoal truncate group-hover:text-sai-pink transition-colors">
+                                                        {item.name}
+                                                    </p>
+                                                    <p className="text-xs text-sai-charcoal/60">
+                                                        RM {item.price}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 text-gray-400 text-sm">
+                                        No existing history
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div >
+
+                )
+                }
 
                 {activeTab === 'edit-profile' && (
-                    <div className="bg-white rounded-3xl shadow-sm p-8 max-w-3xl border border-gray-200">
-                        <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Edit Profile</h2>
-                        <div className="text-gray-500 text-center py-12">
-                            <p className="text-lg mb-2">👷 Under Construction</p>
-                            <p>Profile editing coming soon!</p>
-                        </div>
-                    </div>
-                )}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Personal Details Section */}
+                        <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">
+                            <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Personal Details</h2>
+                            <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                        <input
+                                            type="text"
+                                            value={formData.first_name}
+                                            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-sai-pink focus:ring-2 focus:ring-sai-pink/20 transition-all outline-none"
+                                            placeholder="Enter first name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                        <input
+                                            type="text"
+                                            value={formData.last_name}
+                                            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-sai-pink focus:ring-2 focus:ring-sai-pink/20 transition-all outline-none"
+                                            placeholder="Enter last name"
+                                        />
+                                    </div>
+                                </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-sai-pink focus:ring-2 focus:ring-sai-pink/20 transition-all outline-none"
+                                            placeholder="+60 12-345 6789"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                        <input
+                                            type="date"
+                                            value={formData.dob}
+                                            onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-sai-pink focus:ring-2 focus:ring-sai-pink/20 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Contact Method</label>
+                                    <div className="flex gap-4">
+                                        {['whatsapp', 'email', 'phone'].map((method) => (
+                                            <label key={method} className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="contact_method"
+                                                    value={method}
+                                                    checked={formData.preferred_contact_method === method}
+                                                    onChange={(e) => setFormData({ ...formData, preferred_contact_method: e.target.value })}
+                                                    className="text-sai-pink focus:ring-sai-pink"
+                                                />
+                                                <span className="capitalize text-gray-700">{method}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 pt-6">
+                                    <button
+                                        type="submit"
+                                        disabled={updating}
+                                        className="w-full md:w-auto px-8 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {updating ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            'Save Personal Details'
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Address Book Section */}
+                        <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
+                            <AddressManager addresses={addresses} onUpdate={checkUser} userId={user?.id} />
+                        </div>
+
+                        {/* Special Occasions Section */}
+                        <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
+                            <OccasionsManager occasions={occasions} onUpdate={checkUser} userId={user?.id} />
+                        </div>
+
+                        {/* Preferences Section */}
+                        <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">
+                            <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Sweet Preferences</h2>
+                            <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Flavors</label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {['Chocolate', 'Vanilla', 'Red Velvet', 'Matcha', 'Salted Caramel', 'Fruity', 'Coffee', 'Cheese'].map((flavor) => (
+                                            <label key={flavor} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${formData.favorite_flavors.includes(flavor)
+                                                ? 'bg-sai-pink text-white border-sai-pink'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-sai-pink/50'
+                                                }`}>
+                                                <input
+                                                    type="checkbox"
+                                                    className="hidden"
+                                                    checked={formData.favorite_flavors.includes(flavor)}
+                                                    onChange={(e) => {
+                                                        const newFlavors = e.target.checked
+                                                            ? [...formData.favorite_flavors, flavor]
+                                                            : formData.favorite_flavors.filter(f => f !== flavor);
+                                                        setFormData({ ...formData, favorite_flavors: newFlavors });
+                                                    }}
+                                                />
+                                                {flavor}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Dietary Restrictions</label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {['Nut-Free', 'Gluten-Free', 'Egg-Free', 'Vegan', 'Halal', 'Less Sugar'].map((diet) => (
+                                            <label key={diet} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${formData.dietary_restrictions.includes(diet)
+                                                ? 'bg-orange-500 text-white border-orange-500'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-orange-500/50'
+                                                }`}>
+                                                <input
+                                                    type="checkbox"
+                                                    className="hidden"
+                                                    checked={formData.dietary_restrictions.includes(diet)}
+                                                    onChange={(e) => {
+                                                        const newDiet = e.target.checked
+                                                            ? [...formData.dietary_restrictions, diet]
+                                                            : formData.dietary_restrictions.filter(d => d !== diet);
+                                                        setFormData({ ...formData, dietary_restrictions: newDiet });
+                                                    }}
+                                                />
+                                                {diet}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 pt-6">
+                                    <button
+                                        type="submit"
+                                        disabled={updating}
+                                        className="w-full md:w-auto px-8 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {updating ? 'Saving...' : 'Save Preferences'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+                }
                 {activeTab === 'settings' && (
-                    <div className="bg-white rounded-3xl shadow-sm p-8 max-w-3xl border border-gray-200">
+                    <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200">
                         <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Settings</h2>
-                        <div className="text-gray-500 text-center py-12">
-                            <p className="text-lg mb-2">⚙️ Under Construction</p>
-                            <p>Settings panel coming soon!</p>
+
+                        <div className="space-y-8">
+                            {/* Notifications Section */}
+                            <div className="p-6 bg-pink-50/50 rounded-2xl border border-pink-100">
+                                <h3 className="font-semibold text-sai-charcoal mb-4">Notification Preferences</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium text-gray-700">Order Updates</p>
+                                            <p className="text-sm text-gray-500">Get notified when your order status changes.</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={formData.notification_preferences.order_updates}
+                                                onChange={(e) => {
+                                                    const newPrefs = { ...formData.notification_preferences, order_updates: e.target.checked };
+                                                    setFormData({ ...formData, notification_preferences: newPrefs });
+                                                }}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sai-pink"></div>
+                                        </label>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium text-gray-700">Special Occasion Reminders</p>
+                                            <p className="text-sm text-gray-500">Get reminders 1 week before your saved dates.</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={formData.notification_preferences.reminders}
+                                                onChange={(e) => {
+                                                    const newPrefs = { ...formData.notification_preferences, reminders: e.target.checked };
+                                                    setFormData({ ...formData, notification_preferences: newPrefs });
+                                                }}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sai-pink"></div>
+                                        </label>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium text-gray-700">Marketing & Promos</p>
+                                            <p className="text-sm text-gray-500">Receive exclusive offers and new flavor alerts.</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={formData.notification_preferences.marketing}
+                                                onChange={(e) => {
+                                                    const newPrefs = { ...formData.notification_preferences, marketing: e.target.checked };
+                                                    setFormData({ ...formData, notification_preferences: newPrefs });
+                                                }}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sai-pink"></div>
+                                        </label>
+                                    </div>
+
+                                    <button
+                                        onClick={handleUpdateProfile} // Reuse the update function
+                                        className="mt-4 px-4 py-2 bg-sai-charcoal text-white rounded-lg text-sm font-medium hover:bg-sai-charcoal/90"
+                                    >
+                                        Save Preferences
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Account Security Section */}
+                            <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                                <h3 className="font-semibold text-sai-charcoal mb-4">Account Security</h3>
+                                <div className="space-y-4">
+                                    <button className="w-full md:w-auto px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                        Change Password
+                                    </button>
+                                    <div className="pt-4 border-t border-gray-200">
+                                        <button className="text-sm text-red-600 font-medium hover:underline">
+                                            Delete Account
+                                        </button>
+                                        <p className="text-xs text-gray-500 mt-1">Permanently delete your account and all data.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-gray-100">
+                                <button
+                                    onClick={handleSignOut}
+                                    className="w-full px-6 py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    Log Out
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
-            </div>
+            </div >
         </div >
     );
 }

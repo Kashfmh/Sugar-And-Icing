@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import Footer from "./components/Footer";
+import AuthSync from "./components/AuthSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${dancingScript.variable} antialiased bg-sai-cream text-sai-charcoal`}
       >
+        <AuthSync />
+
         {/* Desktop Navbar - Fixed across all pages */}
         <div className="hidden md:block">
           <Navbar />

@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Star, ShoppingCart, ChevronDown } from 'lucide-react';
+import { X, Star, ShoppingCart, ChevronDown, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AllergenBadge from './AllergenBadge';
 import { motion, AnimatePresence } from 'motion/react';
 import Counter from './Counter';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import { useCart } from '@/hooks/useCart';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -53,6 +54,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     // Brownie options
     const [selectedTopping, setSelectedTopping] = useState<string>('None');
     const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
+    const [isAdded, setIsAdded] = useState(false);
 
     useEffect(() => {
         if (isOpen && productId) {
@@ -629,9 +631,68 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button className="w-full bg-sai-pink text-white py-3 px-6 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-                                                <ShoppingCart className="w-5 h-5" />
-                                                Add to Cart
+                                            <button
+                                                onClick={() => {
+                                                    // Construct metadata
+                                                    const metadata: Record<string, any> = {};
+                                                    if (selectedBase) metadata['Base'] = selectedBase;
+                                                    if (selectedFrosting) metadata['Frosting'] = selectedFrosting;
+                                                    if (selectedTopping && selectedTopping !== 'None') metadata['Topping'] = selectedTopping;
+                                                    if (selectedDietaryOptions.length > 0) metadata['Dietary'] = selectedDietaryOptions.join(', ');
+                                                    if (designNotes) metadata['Notes'] = designNotes;
+
+                                                    // Calculate final unit price (approximate since logic is complex)
+                                                    // We use the total price divided by quantity to get unit price effective
+                                                    const totalPrice = calculatePrice();
+                                                    const unitPrice = totalPrice / quantity;
+
+                                                    // Generate unique ID based on options to separate distinct items in cart
+                                                    const uniqueId = `${product.id}-${JSON.stringify(metadata)}`;
+
+                                                    useCart.getState().addItem({
+                                                        id: uniqueId,
+                                                        productId: product.id,
+                                                        name: product.name,
+                                                        price: unitPrice,
+                                                        image_url: images[0],
+                                                        quantity: quantity,
+                                                        description: product.description,
+                                                        category: product.product_type,
+                                                        metadata: metadata
+                                                    });
+
+                                                    // Visual feedback before closing (optional) or just close?
+                                                    // User complained about "No indicator". 
+                                                    // If we close immediately, they might miss it unless we show a toast.
+                                                    // But if we keep it open, we need to show "Added!".
+
+                                                    // Let's TRY showing "Added!" on the button for 1s then close?
+                                                    // Or just close and rely on the global toast (if we had one, but we don't yet).
+                                                    // The Main Page keeps the user there.
+                                                    // This is a Modal. Usually modals close.
+                                                    // BUT if user says "no indicator", keeping it open for a split second with "Green Check" is good.
+
+                                                    setIsAdded(true);
+                                                    setTimeout(() => {
+                                                        setIsAdded(false);
+                                                        onClose();
+                                                    }, 1000);
+                                                }}
+                                                disabled={isAdded}
+                                                className={`w-full py-3 px-6 rounded-lg font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 ${isAdded ? 'bg-green-600 text-white' : 'bg-sai-pink text-white'
+                                                    }`}
+                                            >
+                                                {isAdded ? (
+                                                    <>
+                                                        <Check className="w-5 h-5" />
+                                                        Added to Cart!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ShoppingCart className="w-5 h-5" />
+                                                        Add to Cart
+                                                    </>
+                                                )}
                                             </button>
                                         </div>
 

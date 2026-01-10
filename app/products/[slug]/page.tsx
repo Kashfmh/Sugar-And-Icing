@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useCart } from '@/hooks/useCart';
 import Image from 'next/image';
-import { Star, ShoppingCart, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Star, ShoppingCart, ArrowLeft, ChevronDown, Check } from 'lucide-react';
 import Link from 'next/link';
 import AllergenBadge from '@/app/components/AllergenBadge';
 import Counter from '@/app/components/Counter';
@@ -38,13 +39,14 @@ interface Review {
 
 export default function ProductPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params.slug as string;
 
-    // Extract product ID from slug (everything after last segment of name)
-    // Format: "cupcakes-12-pieces-uuid-goes-here" -> "uuid-goes-here" 
+    // Extract product ID from slug
     const parts = slug?.split('-') || [];
-    // UUID is always last 5 segments (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx split by hyphens)
     const productId = parts.length >= 5 ? parts.slice(-5).join('-') : '';
+
+    const { addItem, toggleCart } = useCart();
 
     const [product, setProduct] = useState<any>(null);
     const [options, setOptions] = useState<ProductOption[]>([]);
@@ -54,15 +56,16 @@ export default function ProductPage() {
     const [selectedFrosting, setSelectedFrosting] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
     const [designNotes, setDesignNotes] = useState('');
-    // Brownie options
     const [selectedTopping, setSelectedTopping] = useState<string>('None');
     const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
+    const [isAdded, setIsAdded] = useState(false);
 
     useEffect(() => {
         if (productId) {
             fetchProductDetails();
         }
     }, [productId]);
+
 
     async function fetchProductDetails() {
         setLoading(true);
@@ -81,6 +84,29 @@ export default function ProductPage() {
 
             setProduct(productData);
 
+            // Add to recently viewed (local storage)
+            try {
+                const viewedRaw = localStorage.getItem('recentlyViewed');
+                const viewed = viewedRaw ? JSON.parse(viewedRaw) : [];
+
+                // Remove duplicates of current product
+                const newViewed = viewed.filter((item: any) => item.id !== productData.id);
+
+                // Add current to front
+                newViewed.unshift({
+                    id: productData.id,
+                    name: productData.name,
+                    slug: slug,
+                    image_url: productData.image_url,
+                    price: productData.price
+                });
+
+                // Keep max 10
+                localStorage.setItem('recentlyViewed', JSON.stringify(newViewed.slice(0, 10)));
+            } catch (e) {
+                console.error('Error saving recently viewed:', e);
+            }
+
             // Fetch options if customizable
             if (productData.customizable) {
                 const { data: optionsData } = await supabase
@@ -95,12 +121,12 @@ export default function ProductPage() {
             const { data: reviewsData } = await supabase
                 .from('reviews')
                 .select(`
-        id,
-        rating,
-        comment,
-        created_at,
-        user_id,
-        profiles(first_name)
+id,
+    rating,
+    comment,
+    created_at,
+    user_id,
+    profiles(first_name)
         `)
                 .eq('product_id', productId)
                 .order('created_at', { ascending: false })
@@ -205,12 +231,56 @@ export default function ProductPage() {
         return total;
     };
 
+    const handleAddToCart = () => {
+        if (!product) return;
+
+        const finalPrice = calculatePrice();
+
+        // For individual items (not bulk sets like cupcakes 6/12), unit price needs to be derived
+        let unitPriceForCart = 0;
+
+        if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
+            // Basic unit price calculation
+            unitPriceForCart = finalPrice / quantity;
+        } else {
+            // Standard items
+            unitPriceForCart = finalPrice / quantity;
+        }
+
+        const metadata = {
+            base: selectedBase,
+            frosting: selectedFrosting,
+            topping: selectedTopping,
+            dietary: selectedDietaryOptions,
+            design_notes: designNotes
+        };
+
+        // Create a unique ID for this specific customization to separate it in the cart
+        const customId = `${product.id}-${JSON.stringify(metadata)}-${unitPriceForCart}`;
+
+        addItem({
+            id: customId,
+            productId: product.id,
+            name: product.name,
+            price: unitPriceForCart,
+            image_url: product.image_url,
+            quantity: quantity,
+            description: product.description,
+            category: product.category_name,
+            metadata: metadata
+        });
+
+        // Visual Feedback
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2000); // Reset after 2 seconds
+    };
+
 
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-white">
-                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
+            <main className="min-h-screen bg-white md:pt-28">
+                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
                     <Link href="/other-treats" className="inline-flex items-center gap-2 text-sai-charcoal">
                         <ArrowLeft className="w-5 h-5" />
                         <span className="font-medium">Back</span>
@@ -228,9 +298,9 @@ export default function ProductPage() {
     }
 
     return (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-white md:pt-28">
             {/* Mobile Header */}
-            <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
+            <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
                 <Link href="/other-treats" className="inline-flex items-center gap-2 text-sai-charcoal">
                     <ArrowLeft className="w-5 h-5" />
                     <span className="font-medium">Back</span>
@@ -499,18 +569,31 @@ export default function ProductPage() {
                                 <button
                                     disabled={
                                         (baseOptions.length > 0 && !selectedBase) ||
-                                        (frostingOptions.length > 0 && !selectedFrosting)
+                                        (frostingOptions.length > 0 && !selectedFrosting) ||
+                                        isAdded
                                     }
+                                    onClick={handleAddToCart}
                                     className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${(baseOptions.length > 0 && !selectedBase) ||
                                         (frostingOptions.length > 0 && !selectedFrosting)
                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        : 'bg-sai-pink text-white hover:opacity-90'
+                                        : isAdded
+                                            ? 'bg-green-600 text-white'
+                                            : 'bg-sai-pink text-white hover:opacity-90 active:scale-95'
                                         }`}
                                 >
-                                    <ShoppingCart className="w-5 h-5" />
-                                    {(baseOptions.length > 0 && !selectedBase) || (frostingOptions.length > 0 && !selectedFrosting)
-                                        ? 'Select Options First'
-                                        : 'Add to Cart'}
+                                    {isAdded ? (
+                                        <>
+                                            <Check className="w-5 h-5" />
+                                            <span>Added to Cart!</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShoppingCart className="w-5 h-5" />
+                                            {(baseOptions.length > 0 && !selectedBase) || (frostingOptions.length > 0 && !selectedFrosting)
+                                                ? 'Select Options First'
+                                                : 'Add to Cart'}
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

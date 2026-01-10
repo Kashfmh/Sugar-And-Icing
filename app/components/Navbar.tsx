@@ -16,6 +16,8 @@ import {
     MobileNavMenu,
     MobileNavToggle,
 } from '@/components/ui/resizable-navbar';
+import { useCart } from '@/hooks/useCart';
+// import CartDrawer from './CartDrawer';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -49,7 +51,7 @@ export default function Navbar() {
     ];
 
     return (
-        <AceternityNavbar>
+        <AceternityNavbar className="top-2 text-sai-charcoal">
             {/* Desktop Navbar */}
             <NavBody>
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
@@ -91,14 +93,13 @@ export default function Navbar() {
 
                 {/* CTA Buttons */}
                 <div className="relative z-20 flex items-center gap-4">
-                    <Link href="/cart" className="relative group">
-                        <ShoppingBag className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" strokeWidth={2} />
-                        <span className="absolute -top-2 -right-2 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
-                            0
-                        </span>
-                    </Link>
+                    {/* Cart Trigger */}
+                    <CartTriggerButton />
 
-                    {user ? (
+                    {!isMounted ? (
+                        /* Skeleton for Profile/Login */
+                        <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
+                    ) : user ? (
                         <Link href="/profile">
                             <div className="w-9 h-9 rounded-full bg-sai-pink flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-opacity">
                                 {firstName[0]?.toUpperCase()}
@@ -110,10 +111,10 @@ export default function Navbar() {
                         </Link>
                     )}
                 </div>
-            </NavBody>
+            </NavBody >
 
             {/* Mobile Navbar */}
-            <MobileNav>
+            < MobileNav >
                 <MobileNavHeader>
                     <Link href="/" className="flex items-center space-x-2 px-2 py-1">
                         <Image
@@ -138,7 +139,10 @@ export default function Navbar() {
                             </AnimatePresence>
                         </span>
                     </Link>
-                    <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
+                    <div className="flex items-center gap-4">
+                        <CartTriggerButton />
+                        <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
+                    </div>
                 </MobileNavHeader>
 
                 <MobileNavMenu isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -180,7 +184,43 @@ export default function Navbar() {
                         )}
                     </div>
                 </MobileNavMenu>
-            </MobileNav>
-        </AceternityNavbar>
+            </MobileNav >
+            {/* <CartDrawer /> */}
+        </AceternityNavbar >
+    );
+}
+
+// Separate component to avoid hydration issues if needed, or just cleaner code
+function CartTriggerButton() {
+    const { totalItems, isLoading } = useCart();
+
+    // During hydration or loading, don't show count badge to prevent flicker 0 -> N
+    // Or show a small skeleton dot if critical?
+    // User requested: "loses its number indicator... fix this"
+    // If we just hide the Badge until loaded, it won't "flash" 0 then N.
+    // It will be empty then pop N.
+
+    // Wait, useCart uses `persist`. If hydration is instant (localStorage), 
+    // `isLoading` goes false very fast.
+
+    // Issue: "loses its number indicator... for a split second"
+    // This happens because `isLoading` is likely FALSE initially (default state) -> Wait, I set default to TRUE in previous step.
+    // So now it should be consistent.
+
+    const count = totalItems();
+
+    // If loading, we might show a small pulse or just the icon without badge?
+    // If I show badge '0' while loading, that is the bug.
+    // So I only show badge if !isLoading.
+
+    return (
+        <Link href="/cart" className="relative group p-1" aria-label="Open cart">
+            <ShoppingBag className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" strokeWidth={2} />
+            {!isLoading && count > 0 && (
+                <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                    {count}
+                </span>
+            )}
+        </Link>
     );
 }
