@@ -57,14 +57,14 @@ export default function Navbar() {
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
                     <AnimatePresence mode="wait">
                         <motion.div
-                            key={!isMounted || (pathname === '/' && !scrolled) ? 'white' : 'pink'}
+                            key={'pink'}
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                             transition={{ duration: 0.2 }}
                         >
                             <Image
-                                src={(!isMounted || (pathname === '/' && !scrolled)) ? '/images/logo/icon-white.svg' : '/images/logo/icon-pink.svg'}
+                                src={'/images/logo/icon-pink.svg'}
                                 alt="Sugar And Icing"
                                 width={35}
                                 height={35}
@@ -72,7 +72,7 @@ export default function Navbar() {
                             />
                         </motion.div>
                     </AnimatePresence>
-                    <span className={`font-semibold text-base relative overflow-hidden ${(!isMounted || (pathname === '/' && !scrolled)) ? 'text-white' : 'text-sai-charcoal'}`}>
+                    <span className={`font-semibold text-base relative overflow-hidden text-sai-charcoal`}>
                         <AnimatePresence mode="wait">
                             <motion.span
                                 key={isMounted && scrolled ? 'sai' : 'full'}

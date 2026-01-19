@@ -49,6 +49,24 @@ export default async function Home() {
         {/* Decorative Strawberries/Fruits - Right Side (Optional) */}
         {/* You can add decorative elements here if you have images */}
 
+        {/* Shop Now CTA - Left Middle */}
+        <div className="absolute left-8 md:left-12 top-1/2 -translate-y-1/2 z-10">
+          <a
+            href="/other-treats"
+            className="group relative inline-flex items-center gap-3 bg-sai-charcoal hover:bg-sai-white text-sai-white hover:text-sai-charcoal px-8 py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg border-2 border-sai-charcoal"
+          >
+            <span className="relative z-10">Shop Now</span>
+            <svg
+              className="w-5 h-5 transition-transform group-hover:translate-x-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        </div>
+
         {/* Social Icons - Bottom Left */}
         <div className="absolute bottom-8 left-8 flex flex-col gap-4 hidden md:flex">
           {/* Socials Label */}
