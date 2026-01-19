@@ -2,51 +2,55 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { Skeleton } from '@/components/ui/skeleton';
 import AddressManager from '@/app/components/AddressManager';
 import OccasionsManager from '@/app/components/OccasionsManager';
+import LoadingScreen from '@/app/components/LoadingScreen';
+import {
+    validateSession,
+    loadAllUserData,
+    updateUserProfile,
+    signOut,
+    UserProfile,
+    Address,
+    SpecialOccasion,
+} from '@/lib/services/authService';
 
 type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
+interface FormData {
+    first_name: string;
+    last_name: string;
+    phone: string;
+    dob: string;
+    preferred_contact_method: string;
+    favorite_flavors: string[];
+    dietary_restrictions: string[];
+    notification_preferences: {
+        order_updates: boolean;
+        marketing: boolean;
+        reminders: boolean;
+    };
+}
+
 export default function ProfilePage() {
-    interface Address {
-        id: string;
-        label: string;
-        address_line1: string;
-        address_line2?: string;
-        city: string;
-        state: string;
-        postcode: string;
-        is_default: boolean;
-    }
-
-    interface SpecialOccasion {
-        id: string;
-        name: string;
-        date: string;
-        type: string;
-        reminder_enabled: boolean;
-    }
-
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
-    const [profile, setProfile] = useState<any>(null);
-    const [updating, setUpdating] = useState(false);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<Tab>('dashboard');
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [occasions, setOccasions] = useState<SpecialOccasion[]>([]);
     const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         first_name: '',
         last_name: '',
         phone: '',
         dob: '',
         preferred_contact_method: 'whatsapp',
-        favorite_flavors: [] as string[],
-        dietary_restrictions: [] as string[],
+        favorite_flavors: [],
+        dietary_restrictions: [],
         notification_preferences: {
             order_updates: true,
             marketing: false,
@@ -55,134 +59,102 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        checkUser();
-        // Load recently viewed
-        try {
-            const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-            setRecentlyViewed(viewed);
-        } catch (e) {
-            console.error('Error loading history:', e);
-        }
+        initializeProfile();
+        loadRecentlyViewed();
     }, []);
 
     useEffect(() => {
         if (profile) {
-            setFormData({
-                first_name: profile.first_name || '',
-                last_name: profile.last_name || '',
-                phone: profile.phone || '',
-                dob: profile.dob || '',
-                preferred_contact_method: profile.preferred_contact_method || 'whatsapp',
-                favorite_flavors: profile.favorite_flavors || [],
-                dietary_restrictions: profile.dietary_restrictions || [],
-                notification_preferences: profile.notification_preferences || {
-                    order_updates: true,
-                    marketing: false,
-                    reminders: true
-                }
-            });
+            populateFormData(profile);
         }
     }, [profile]);
 
-    async function checkUser() {
+    async function initializeProfile() {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
+            const session = await validateSession();
 
             if (!session) {
                 router.push('/login');
+                setIsLoading(false);
                 return;
             }
 
             setUser(session.user);
 
-            // Fetch Profile, Addresses, and Occasions in parallel
-            const [profileResult, addressesResult, occasionsResult] = await Promise.all([
-                supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .single(),
-                supabase
-                    .from('addresses')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .order('is_default', { ascending: false }),
-                supabase
-                    .from('special_occasions')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .order('date', { ascending: true })
-            ]);
+            const [profileData, addressesData, occasionsData] = await loadAllUserData(session.user.id);
 
-            if (profileResult.data) setProfile(profileResult.data);
-            if (addressesResult.data) setAddresses(addressesResult.data);
-            if (occasionsResult.data) setOccasions(occasionsResult.data);
-
+            setProfile(profileData);
+            setAddresses(addressesData);
+            setOccasions(occasionsData);
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Profile initialization failed:', error);
+            router.push('/login');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
+    }
+
+    function loadRecentlyViewed() {
+        try {
+            const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            setRecentlyViewed(viewed);
+        } catch (error) {
+            console.error('Recently viewed load error:', error);
+        }
+    }
+
+    function populateFormData(profileData: UserProfile) {
+        setFormData({
+            first_name: profileData.first_name || '',
+            last_name: profileData.last_name || '',
+            phone: profileData.phone || '',
+            dob: profileData.dob || '',
+            preferred_contact_method: profileData.preferred_contact_method || 'whatsapp',
+            favorite_flavors: profileData.favorite_flavors || [],
+            dietary_restrictions: profileData.dietary_restrictions || [],
+            notification_preferences: profileData.notification_preferences || {
+                order_updates: true,
+                marketing: false,
+                reminders: true
+            }
+        });
     }
 
     async function handleUpdateProfile(e: React.FormEvent) {
         e.preventDefault();
-        setUpdating(true);
+        setIsUpdating(true);
+
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    first_name: formData.first_name,
-                    last_name: formData.last_name,
-                    phone: formData.phone,
-                    dob: formData.dob || null,
-                    preferred_contact_method: formData.preferred_contact_method,
-                    favorite_flavors: formData.favorite_flavors,
-                    dietary_restrictions: formData.dietary_restrictions,
-                    notification_preferences: formData.notification_preferences,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('user_id', user.id);
+            await updateUserProfile(user.id, formData);
 
-            if (error) throw error;
+            const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);
 
-            // Refresh profile data
-            const { data: newProfile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
+            setProfile(updatedProfile);
+            setAddresses(updatedAddresses);
+            setOccasions(updatedOccasions);
 
-            setProfile(newProfile);
-            alert('Settings updated successfully!');
+            alert('Profile updated successfully!');
         } catch (error) {
-            console.error('Error updating profile:', error);
-            alert('Failed to update settings.');
+            console.error('Profile update failed:', error);
+            alert('Failed to update profile.');
         } finally {
-            setUpdating(false);
+            setIsUpdating(false);
         }
     }
 
     async function handleSignOut() {
-        await supabase.auth.signOut();
-        router.push('/login');
+        try {
+            await signOut();
+            router.push('/login');
+        } catch (error) {
+            console.error('Sign out failed:', error);
+        }
     }
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-sai-white pt-24">
-                <div className="max-w-7xl mx-auto px-6 py-8">
-                    <Skeleton className="h-12 w-full max-w-md mb-8" />
-                    <div className="space-y-4">
-                        <Skeleton className="h-32 w-full rounded-3xl" />
-                        <Skeleton className="h-32 w-full rounded-3xl" />
-                    </div>
-                </div>
-            </div>
-        )
+    if (isLoading || !user) {
+        return <LoadingScreen />;
     }
 
-    // Use first_name from user metadata (Supabase auth), then profile table, then email fallback
     const firstName = user?.user_metadata?.first_name || profile?.first_name || user?.email?.split('@')[0] || 'Guest';
 
     return (
@@ -588,10 +560,10 @@ export default function ProfilePage() {
                                 <div className="border-t border-gray-100 pt-6">
                                     <button
                                         type="submit"
-                                        disabled={updating}
+                                        disabled={isUpdating}
                                         className="w-full md:w-auto px-8 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        {updating ? (
+                                        {isUpdating ? (
                                             <>
                                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                 Saving...
@@ -606,12 +578,12 @@ export default function ProfilePage() {
 
                         {/* Address Book Section */}
                         <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
-                            <AddressManager addresses={addresses} onUpdate={checkUser} userId={user?.id} />
+                            <AddressManager addresses={addresses} onUpdate={initializeProfile} userId={user?.id} />
                         </div>
 
                         {/* Special Occasions Section */}
                         <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
-                            <OccasionsManager occasions={occasions} onUpdate={checkUser} userId={user?.id} />
+                            <OccasionsManager occasions={occasions} onUpdate={initializeProfile} userId={user?.id} />
                         </div>
 
                         {/* Preferences Section */}
@@ -671,10 +643,10 @@ export default function ProfilePage() {
                                 <div className="border-t border-gray-100 pt-6">
                                     <button
                                         type="submit"
-                                        disabled={updating}
+                                        disabled={isUpdating}
                                         className="w-full md:w-auto px-8 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        {updating ? 'Saving...' : 'Save Preferences'}
+                                        {isUpdating ? 'Saving...' : 'Save Preferences'}
                                     </button>
                                 </div>
                             </form>

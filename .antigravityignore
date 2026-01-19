@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+
+# Build & System
+.next/
+out/
+build/
+.vercel/
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+# Project Specific Assets (Large files that slow down indexing)
+public/images/
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.svg
+**/*.ico
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+coverage/
+
+# Environment
+.env*

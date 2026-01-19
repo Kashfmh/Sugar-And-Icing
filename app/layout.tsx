@@ -50,17 +50,21 @@ export default function RootLayout({
         <AuthSync />
 
         {/* Desktop Navbar - Fixed across all pages */}
-        <div className="hidden md:block">
+        <div className="hidden md:block" data-navbar>
           <Navbar />
         </div>
 
         {children}
 
         {/* Footer - All pages */}
-        <Footer />
+        <footer>
+          <Footer />
+        </footer>
 
         {/* Mobile Bottom Nav - Fixed across all pages */}
-        <BottomNav />
+        <div data-bottom-nav>
+          <BottomNav />
+        </div>
       </body>
     </html>
   );
