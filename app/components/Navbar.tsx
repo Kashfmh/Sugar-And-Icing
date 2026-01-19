@@ -89,25 +89,27 @@ export default function Navbar() {
                 </Link>
 
                 {/* Nav Items */}
-                <NavItems items={navItems} />
+                <NavItems items={navItems} pathname={pathname} />
 
                 {/* CTA Buttons */}
                 <div className="relative z-20 flex items-center gap-4">
                     {/* Cart Trigger */}
-                    <CartTriggerButton />
+                    <CartTriggerButton pathname={pathname} />
 
                     {!isMounted ? (
                         /* Skeleton for Profile/Login */
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
                         <Link href="/profile">
-                            <div className="w-9 h-9 rounded-full bg-sai-pink flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-opacity">
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all ${pathname === '/profile' ? 'bg-sai-pink ring-2 ring-sai-pink/30' : 'bg-sai-pink'
+                                }`}>
                                 {firstName[0]?.toUpperCase()}
                             </div>
                         </Link>
                     ) : (
                         <Link href="/login" className="group">
-                            <User className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" strokeWidth={2} />
+                            <User className={`w-5 h-5 transition-colors ${pathname === '/login' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'
+                                }`} strokeWidth={2} />
                         </Link>
                     )}
                 </div>
@@ -140,7 +142,7 @@ export default function Navbar() {
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <CartTriggerButton />
+                        <CartTriggerButton pathname={pathname} />
                         <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
                     </div>
                 </MobileNavHeader>
@@ -191,7 +193,7 @@ export default function Navbar() {
 }
 
 // Separate component to avoid hydration issues if needed, or just cleaner code
-function CartTriggerButton() {
+function CartTriggerButton({ pathname }: { pathname?: string }) {
     const { totalItems, isLoading } = useCart();
 
     // During hydration or loading, don't show count badge to prevent flicker 0 -> N
@@ -215,7 +217,8 @@ function CartTriggerButton() {
 
     return (
         <Link href="/cart" className="relative group p-1" aria-label="Open cart">
-            <ShoppingBag className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" strokeWidth={2} />
+            <ShoppingBag className={`w-5 h-5 transition-colors ${pathname === '/cart' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'
+                }`} strokeWidth={2} />
             {!isLoading && count > 0 && (
                 <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
                     {count}

@@ -98,7 +98,7 @@ export default function CartPage() {
                         asChild
                         className="mt-4 bg-sai-pink hover:bg-sai-pink/90 text-white rounded-full px-8"
                     >
-                        <Link href="/">Browse Menu</Link>
+                        <Link href="/other-treats">Browse Menu</Link>
                     </Button>
                 </div>
             </main>
