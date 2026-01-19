@@ -17,10 +17,10 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (isChecking) {
             document.body.style.overflow = 'hidden';
-            const navbar = document.querySelector('[data-navbar]');
-            const footer = document.querySelector('footer');
-            const bottomNav = document.querySelector('[data-bottom-nav]');
-            
+            const navbar = document.querySelector('[data-navbar]') as HTMLElement | null;
+            const footer = document.querySelector('footer') as HTMLElement | null;
+            const bottomNav = document.querySelector('[data-bottom-nav]') as HTMLElement | null;
+
             if (navbar) navbar.style.display = 'none';
             if (footer) footer.style.display = 'none';
             if (bottomNav) bottomNav.style.display = 'none';
