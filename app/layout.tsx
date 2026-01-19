@@ -54,7 +54,9 @@ export default function RootLayout({
           <Navbar />
         </div>
 
-        {children}
+        <main className="min-h-screen">
+          {children}
+        </main>
 
         {/* Footer - All pages */}
         <footer>
