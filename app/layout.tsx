@@ -37,6 +37,8 @@ export const metadata: Metadata = {
   },
 };
 
+import MainWrapper from "./components/MainWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,9 +56,9 @@ export default function RootLayout({
           <Navbar />
         </div>
 
-        <main className="min-h-screen">
+        <MainWrapper>
           {children}
-        </main>
+        </MainWrapper>
 
         {/* Footer - All pages */}
         <footer>
