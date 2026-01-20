@@ -24,12 +24,12 @@ export default function FilterModal({ isOpen, onClose, sortBy, onSortChange }: F
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 z-50 md:hidden"
+                className="fixed inset-0 bg-black/50 z-[1100] md:hidden"
                 onClick={onClose}
             />
 
             {/* Bottom Sheet */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 md:hidden animate-slide-up">
+            <div className="fixed bottom-0 left-0 right-0 bg-sai-white rounded-t-3xl z-[1100] md:hidden animate-slide-up">
                 <div className="p-6">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
@@ -54,7 +54,7 @@ export default function FilterModal({ isOpen, onClose, sortBy, onSortChange }: F
                         ].map((option) => (
                             <label
                                 key={option.value}
-                                className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                                className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-sai-pink/10 hover:border-sai-pink/50 transition-all"
                             >
                                 <input
                                     type="radio"

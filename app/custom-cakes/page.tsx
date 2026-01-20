@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import GalleryCard from '../components/GalleryCard';
 import GalleryListItem from '../components/GalleryListItem';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
+import GalleryListItemSkeleton from '../components/GalleryListItemSkeleton';
 import CategoryTabs from '../components/CategoryTabs';
 import FilterModal from '../components/FilterModal';
 import { AnimatedText } from '../components/ui/animated-text';
@@ -224,11 +225,20 @@ export default function CustomCakesPage() {
             <section className="px-6 py-4">
                 <div className="max-w-6xl mx-auto">
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {Array.from({ length: 6 }).map((_, i) => (
-                                <ProductCardSkeleton key={i} />
-                            ))}
-                        </div>
+                        <>
+                            {/* Desktop: Card Skeletons */}
+                            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <ProductCardSkeleton key={i} />
+                                ))}
+                            </div>
+                            {/* Mobile: List Skeletons */}
+                            <div className="flex flex-col gap-3 md:hidden">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <GalleryListItemSkeleton key={i} />
+                                ))}
+                            </div>
+                        </>
                     ) : paginatedCakes.length === 0 ? (
                         <div className="text-center py-12">
                             <p className="text-sai-charcoal/60">
