@@ -18,6 +18,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import NumberBadge from '@/components/ui/number-badge';
 import { useProductFilters, Product } from '@/hooks/useProductFilters'; // Use hook
 
 // Move fetch function outside component to prevent re-creation on every render
@@ -455,27 +456,21 @@ export default function CustomCakesPage() {
                     {/* Desktop: 3 columns */}
                     <div className="hidden md:grid md:grid-cols-3 gap-6">
                         <div className="text-center">
-                            <div className="w-12 h-12 rounded-full bg-sai-pink text-white flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                                1
-                            </div>
+                            <NumberBadge number={1} size="lg" className="mx-auto mb-4" />
                             <h4 className="font-semibold text-sai-charcoal mb-2">Share Your Vision</h4>
                             <p className="text-sm text-sai-gray">
                                 Message us on WhatsApp with your cake idea, occasion, and preferences
                             </p>
                         </div>
                         <div className="text-center">
-                            <div className="w-12 h-12 rounded-full bg-sai-pink text-white flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                                2
-                            </div>
+                            <NumberBadge number={2} size="lg" className="mx-auto mb-4" />
                             <h4 className="font-semibold text-sai-charcoal mb-2">Get a Quote</h4>
                             <p className="text-sm text-sai-gray">
                                 We'll discuss details like size, design, flavors, and provide pricing
                             </p>
                         </div>
                         <div className="text-center">
-                            <div className="w-12 h-12 rounded-full bg-sai-pink text-white flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                                3
-                            </div>
+                            <NumberBadge number={3} size="lg" className="mx-auto mb-4" />
                             <h4 className="font-semibold text-sai-charcoal mb-2">Enjoy Your Cake</h4>
                             <p className="text-sm text-sai-gray">
                                 We'll bake it fresh and deliver to your location in KL Sentral area
@@ -486,27 +481,21 @@ export default function CustomCakesPage() {
                     {/* Mobile: Compact list */}
                     <div className="md:hidden space-y-4">
                         <div className="flex gap-3 items-start">
-                            <div className="w-10 h-10 rounded-full bg-sai-pink text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
-                                1
-                            </div>
+                            <NumberBadge number={1} size="md" className="flex-shrink-0" />
                             <div>
                                 <h4 className="font-semibold text-sai-charcoal mb-1">Share Your Vision</h4>
                                 <p className="text-sm text-sai-gray">Message us on WhatsApp with your cake idea</p>
                             </div>
                         </div>
                         <div className="flex gap-3 items-start">
-                            <div className="w-10 h-10 rounded-full bg-sai-pink text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
-                                2
-                            </div>
+                            <NumberBadge number={2} size="md" className="flex-shrink-0" />
                             <div>
                                 <h4 className="font-semibold text-sai-charcoal mb-1">Get a Quote</h4>
                                 <p className="text-sm text-sai-gray">We'll discuss size, design, and pricing</p>
                             </div>
                         </div>
                         <div className="flex gap-3 items-start">
-                            <div className="w-10 h-10 rounded-full bg-sai-pink text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
-                                3
-                            </div>
+                            <NumberBadge number={3} size="md" className="flex-shrink-0" />
                             <div>
                                 <h4 className="font-semibold text-sai-charcoal mb-1">Enjoy Your Cake</h4>
                                 <p className="text-sm text-sai-gray">Fresh baked and delivered in KL Sentral</p>
