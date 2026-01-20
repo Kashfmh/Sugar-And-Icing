@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase';
 
 export interface UserProfile {
     id: string;
-    user_id: string;
     first_name: string;
     last_name: string;
     phone: string;
@@ -45,7 +44,7 @@ export async function fetchUserProfile(userId: string) {
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', userId)
+        .eq('id', userId)  // Changed from user_id to id
         .single();
 
     if (error) {
@@ -103,7 +102,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
             ...updates,
             updated_at: new Date().toISOString(),
         })
-        .eq('user_id', userId);
+        .eq('id', userId);  // Changed from user_id to id
 
     if (error) {
         console.error('Profile update error:', error.message || error.toString());
