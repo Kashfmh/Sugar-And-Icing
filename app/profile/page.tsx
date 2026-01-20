@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AddressManager from '@/app/components/AddressManager';
 import OccasionsManager from '@/app/components/OccasionsManager';
 import LoadingScreen from '@/app/components/LoadingScreen';
+import ProfileSkeleton from '@/app/components/ProfileSkeleton';
 import ToggleSwitch from '@/components/ui/toggle-switch';
 import {
     validateSession,
@@ -35,7 +36,8 @@ interface FormData {
 
 export default function ProfilePage() {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Checking if logged in
+    const [isLoadingData, setIsLoadingData] = useState(false); // Loading user data
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -72,14 +74,19 @@ export default function ProfilePage() {
 
     async function initializeProfile() {
         try {
+            // Step 1: Check authentication (show spinner)
+            setIsCheckingAuth(true);
             const session = await validateSession();
 
             if (!session) {
+                // Not logged in - redirect to login
                 router.push('/login');
-                setIsLoading(false);
                 return;
             }
 
+            // Step 2: User is logged in - now load data (show skeleton)
+            setIsCheckingAuth(false);
+            setIsLoadingData(true);
             setUser(session.user);
 
             const [profileData, addressesData, occasionsData] = await loadAllUserData(session.user.id);
@@ -89,11 +96,10 @@ export default function ProfilePage() {
             setOccasions(occasionsData);
         } catch (error: any) {
             console.error('Profile initialization failed:', error);
-            // Show a user-friendly error message
             alert(`Failed to load profile: ${error.message || 'Please try again or contact support.'}`);
-            // Don't redirect to login - let them try again
         } finally {
-            setIsLoading(false);
+            setIsCheckingAuth(false);
+            setIsLoadingData(false);
         }
     }
 
@@ -154,7 +160,18 @@ export default function ProfilePage() {
         }
     }
 
-    if (isLoading || !user) {
+    // Show spinner while checking if user is logged in
+    if (isCheckingAuth) {
+        return <LoadingScreen />;
+    }
+
+    // Show skeleton while loading user data (user is logged in)
+    if (isLoadingData) {
+        return <ProfileSkeleton />;
+    }
+
+    // If no user after auth check, shouldn't reach here (redirected to login)
+    if (!user) {
         return <LoadingScreen />;
     }
 
