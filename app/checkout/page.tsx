@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, Upload, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import NumberBadge from '@/components/ui/number-badge';
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -193,7 +194,7 @@ export default function CheckoutPage() {
                     {/* 1. Contact Info */}
                     <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-lg font-bold text-sai-charcoal mb-4 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-sai-pink text-white flex items-center justify-center text-xs">1</span>
+                            <NumberBadge number={1} size="sm" />
                             Contact Details
                         </h2>
                         <div className="space-y-4">
@@ -248,7 +249,7 @@ export default function CheckoutPage() {
                     {/* 2. Delivery Slot */}
                     <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-lg font-bold text-sai-charcoal mb-4 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-sai-pink text-white flex items-center justify-center text-xs">2</span>
+                            <NumberBadge number={2} size="sm" />
                             Delivery Slot
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
@@ -296,7 +297,7 @@ export default function CheckoutPage() {
                     {/* 3. Payment */}
                     <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-lg font-bold text-sai-charcoal mb-4 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-sai-pink text-white flex items-center justify-center text-xs">3</span>
+                            <NumberBadge number={3} size="sm" />
                             Payment
                         </h2>
 
