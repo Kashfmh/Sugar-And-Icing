@@ -95,14 +95,27 @@ export default function AuthPage() {
         return emailRegex.test(email);
     };
 
-    const handleSignIn = async (e: React.FormEvent) => {
+    const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log('=== SIGN IN ATTEMPT ===');
-        setErrors({}); // Clear previous errors
         setLoading(true);
+        setErrors({});
+
+        // Use FormData to capture autofilled values that React state might miss
+        const formData = new FormData(e.currentTarget);
+        const email = (formData.get('email') as string) || signInEmail;
+        const password = (formData.get('password') as string) || signInPassword;
+
+        console.log('Form submission data:', { email, password: password ? '***' : 'missing' });
+
+        if (!email || !password) {
+            setErrors({ general: 'Please enter both email and password' });
+            setLoading(false);
+            return;
+        }
 
         try {
-            const result = await signIn(signInEmail, signInPassword, rememberMe);
+            const result = await signIn(email, password, rememberMe);
 
             if (!result.success) {
                 // Show the specific error message
@@ -445,23 +458,27 @@ export default function AuthPage() {
                         <span className="auth-subtitle">Sign in to your account</span>
 
                         <input
+                            name="email"
                             type="email"
                             placeholder="Email"
                             value={signInEmail}
                             onChange={(e) => setSignInEmail(e.target.value)}
                             required
                             disabled={loading}
+                            autoComplete="email"
                         />
 
                         {/* Password with Eye Toggle */}
                         <div className="password-input-group">
                             <input
+                                name="password"
                                 type={showSignInPassword ? 'text' : 'password'}
                                 placeholder="Password"
                                 value={signInPassword}
                                 onChange={(e) => setSignInPassword(e.target.value)}
                                 required
                                 disabled={loading}
+                                autoComplete="current-password"
                             />
                             <button
                                 type="button"

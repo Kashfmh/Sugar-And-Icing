@@ -89,14 +89,19 @@ export default function ProductPage() {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
 
+                console.log('[Product View] User:', user?.id, 'Product:', productData.id);
+
                 if (user) {
                     // Logged-in user: track in database
                     const { trackProductView } = await import('@/lib/services/recentlyViewedService');
                     await trackProductView(user.id, productData.id);
+                    console.log('[Product View] Tracked successfully');
+                } else {
+                    console.log('[Product View] Guest user - not tracking');
                 }
                 // Guests: no tracking (as requested)
             } catch (e) {
-                console.error('Error tracking product view:', e);
+                console.error('[Product View] Error tracking:', e);
             }
 
             // Fetch options if customizable

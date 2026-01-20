@@ -110,11 +110,18 @@ export default function ProfilePage() {
 
     async function loadRecentlyViewed() {
         try {
-            if (!user) return;
+            if (!user) {
+                console.log('[Recently Viewed] No user, skipping');
+                return;
+            }
+
+            console.log('[Recently Viewed] Fetching for user:', user.id);
 
             // Fetch from database (MVC - using service layer)
             const { getRecentlyViewed } = await import('@/lib/services/recentlyViewedService');
             const data = await getRecentlyViewed(user.id, 10);
+
+            console.log('[Recently Viewed] Fetched data:', data);
 
             // Transform to format expected by UI
             const formatted = data.map(item => ({
@@ -125,9 +132,10 @@ export default function ProfilePage() {
                 viewed_at: item.viewed_at
             }));
 
+            console.log('[Recently Viewed] Formatted:', formatted);
             setRecentlyViewed(formatted);
         } catch (error) {
-            console.error('Recently viewed load error:', error);
+            console.error('[Recently Viewed] Load error:', error);
         }
     }
 

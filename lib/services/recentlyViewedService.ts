@@ -18,39 +18,63 @@ export interface RecentlyViewedProduct {
  * Following MVC - Controller layer for business logic
  */
 export async function trackProductView(userId: string, productId: string): Promise<void> {
+    console.log('[trackProductView] START - userId:', userId, 'productId:', productId);
+
     try {
         // Upsert to recently_viewed (update timestamp if already exists)
-        const { error: upsertError } = await supabase
+        const dataToInsert = {
+            user_id: userId,
+            product_id: productId,
+            viewed_at: new Date().toISOString()
+        };
+
+        console.log('[trackProductView] Attempting upsert with data:', dataToInsert);
+
+        const { data: upsertData, error: upsertError } = await supabase
             .from('recently_viewed')
-            .upsert({
-                user_id: userId,
-                product_id: productId,
-                viewed_at: new Date().toISOString()
-            }, {
+            .upsert(dataToInsert, {
                 onConflict: 'user_id,product_id'
-            });
+            })
+            .select();
 
         if (upsertError) {
-            console.error('Error tracking product view:', upsertError);
+            console.error('[trackProductView] UPSERT ERROR:', upsertError);
             return;
         }
 
+        console.log('[trackProductView] Upsert successful, result:', upsertData);
+
         // Keep only last 10 items
-        const { data: allViewed } = await supabase
+        const { data: allViewed, error: fetchError } = await supabase
             .from('recently_viewed')
             .select('id')
             .eq('user_id', userId)
             .order('viewed_at', { ascending: false });
 
+        console.log('[trackProductView] Current count:', allViewed?.length);
+
+        if (fetchError) {
+            console.error('[trackProductView] FETCH ERROR:', fetchError);
+            return;
+        }
+
         if (allViewed && allViewed.length > 10) {
             const toDelete = allViewed.slice(10).map(item => item.id);
-            await supabase
+            console.log('[trackProductView] Deleting old items:', toDelete.length);
+
+            const { error: deleteError } = await supabase
                 .from('recently_viewed')
                 .delete()
                 .in('id', toDelete);
+
+            if (deleteError) {
+                console.error('[trackProductView] DELETE ERROR:', deleteError);
+            }
         }
+
+        console.log('[trackProductView] COMPLETE');
     } catch (error) {
-        console.error('Error in trackProductView:', error);
+        console.error('[trackProductView] EXCEPTION:', error);
     }
 }
 
