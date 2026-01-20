@@ -84,27 +84,19 @@ export default function ProductPage() {
 
             setProduct(productData);
 
-            // Add to recently viewed (local storage)
+            // Track product view for logged-in users (database)
+            // Following MVC - using service layer
             try {
-                const viewedRaw = localStorage.getItem('recentlyViewed');
-                const viewed = viewedRaw ? JSON.parse(viewedRaw) : [];
+                const { data: { user } } = await supabase.auth.getUser();
 
-                // Remove duplicates of current product
-                const newViewed = viewed.filter((item: any) => item.id !== productData.id);
-
-                // Add current to front
-                newViewed.unshift({
-                    id: productData.id,
-                    name: productData.name,
-                    slug: slug,
-                    image_url: productData.image_url,
-                    price: productData.price
-                });
-
-                // Keep max 10
-                localStorage.setItem('recentlyViewed', JSON.stringify(newViewed.slice(0, 10)));
+                if (user) {
+                    // Logged-in user: track in database
+                    const { trackProductView } = await import('@/lib/services/recentlyViewedService');
+                    await trackProductView(user.id, productData.id);
+                }
+                // Guests: no tracking (as requested)
             } catch (e) {
-                console.error('Error saving recently viewed:', e);
+                console.error('Error tracking product view:', e);
             }
 
             // Fetch options if customizable

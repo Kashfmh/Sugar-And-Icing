@@ -63,8 +63,13 @@ export default function ProfilePage() {
 
     useEffect(() => {
         initializeProfile();
-        loadRecentlyViewed();
     }, []);
+
+    useEffect(() => {
+        if (user) {
+            loadRecentlyViewed();
+        }
+    }, [user]);
 
     useEffect(() => {
         if (profile) {
@@ -103,10 +108,24 @@ export default function ProfilePage() {
         }
     }
 
-    function loadRecentlyViewed() {
+    async function loadRecentlyViewed() {
         try {
-            const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-            setRecentlyViewed(viewed);
+            if (!user) return;
+
+            // Fetch from database (MVC - using service layer)
+            const { getRecentlyViewed } = await import('@/lib/services/recentlyViewedService');
+            const data = await getRecentlyViewed(user.id, 10);
+
+            // Transform to format expected by UI
+            const formatted = data.map(item => ({
+                id: item.product_id,
+                name: item.products?.name || 'Unknown Product',
+                image_url: item.products?.image_url || '',
+                price: item.products?.base_price || 0,
+                viewed_at: item.viewed_at
+            }));
+
+            setRecentlyViewed(formatted);
         } catch (error) {
             console.error('Recently viewed load error:', error);
         }

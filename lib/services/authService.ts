@@ -5,6 +5,7 @@ export interface UserProfile {
     first_name: string;
     last_name: string;
     phone: string;
+    avatar_url: string | null;  // Profile picture URL
     dob: string;
     preferred_contact_method: string;
     favorite_flavors: string[];
