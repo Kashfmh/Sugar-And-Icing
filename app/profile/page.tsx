@@ -86,9 +86,11 @@ export default function ProfilePage() {
             setProfile(profileData);
             setAddresses(addressesData);
             setOccasions(occasionsData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Profile initialization failed:', error);
-            router.push('/login');
+            // Show a user-friendly error message
+            alert(`Failed to load profile: ${error.message || 'Please try again or contact support.'}`);
+            // Don't redirect to login - let them try again
         } finally {
             setIsLoading(false);
         }

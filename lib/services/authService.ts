@@ -48,7 +48,15 @@ export async function fetchUserProfile(userId: string) {
         .eq('user_id', userId)
         .single();
 
-    if (error) throw error;
+    if (error) {
+        // Handle PGRST116 error - no rows returned (user profile not created yet)
+        if (error.code === 'PGRST116') {
+            console.log('Profile not found for user', userId);
+            return null; // Return null instead of throwing for missing profiles
+        }
+        console.error('Profile fetch error:', error.message || error.toString());
+        throw new Error(error.message || 'Failed to load profile');
+    }
     return data as UserProfile;
 }
 
@@ -59,7 +67,10 @@ export async function fetchUserAddresses(userId: string) {
         .eq('user_id', userId)
         .order('is_default', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+        console.error('Address fetch error:', error.message || error.toString());
+        throw new Error(error.message || 'Failed to load addresses');
+    }
     return data as Address[];
 }
 
@@ -70,15 +81,18 @@ export async function fetchUserOccasions(userId: string) {
         .eq('user_id', userId)
         .order('date', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+        console.error('Occasions fetch error:', error.message || error.toString());
+        throw new Error(error.message || 'Failed to load special occasions');
+    }
     return data as SpecialOccasion[];
 }
 
 export async function loadAllUserData(userId: string) {
     return Promise.all([
-        fetchUserProfile(userId),
-        fetchUserAddresses(userId),
-        fetchUserOccasions(userId)
+        fetchUserProfile(userId).catch(() => null), // Don't fail if profile doesn't exist
+        fetchUserAddresses(userId).catch(() => []), // Return empty array on error
+        fetchUserOccasions(userId).catch(() => [])  // Return empty array on error
     ]);
 }
 
@@ -91,7 +105,10 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
         })
         .eq('user_id', userId);
 
-    if (error) throw error;
+    if (error) {
+        console.error('Profile update error:', error.message || error.toString());
+        throw new Error(error.message || 'Failed to update profile');
+    }
 }
 
 export async function signOut() {
