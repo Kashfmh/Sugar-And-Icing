@@ -26,14 +26,44 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+    // Fetch user and profile data
+    const refreshUser = async () => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        setUser(currentUser);
+
+        if (currentUser) {
+            // Fetch avatar from profiles table
+            const { data } = await supabase
+                .from('profiles')
+                .select('avatar_url')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (data) {
+                setAvatarUrl(data.avatar_url);
+            }
+        } else {
+            setAvatarUrl(null);
+        }
+    };
+
     useEffect(() => {
         setIsMounted(true);
-        supabase.auth.getUser().then(({ data }) => setUser(data.user));
+        refreshUser();
 
-        // Track scroll for text change
+        // Listen for profile updates (e.g. from AvatarUpload)
+        window.addEventListener('profile-updated', refreshUser);
+
+        // Track scroll
         const handleScroll = () => setScrolled(window.scrollY > 100);
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('profile-updated', refreshUser);
+        };
     }, []);
 
     const handleSignOut = async () => {
@@ -101,9 +131,18 @@ export default function Navbar() {
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
                         <Link href="/profile">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all ${pathname === '/profile' ? 'bg-sai-pink ring-2 ring-sai-pink/30' : 'bg-sai-pink'
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${pathname === '/profile' ? 'bg-sai-pink ring-2 ring-sai-pink/30' : 'bg-sai-pink'
                                 }`}>
-                                {firstName[0]?.toUpperCase()}
+                                {avatarUrl ? (
+                                    <Image
+                                        src={avatarUrl}
+                                        alt="Profile"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    firstName[0]?.toUpperCase()
+                                )}
                             </div>
                         </Link>
                     ) : (

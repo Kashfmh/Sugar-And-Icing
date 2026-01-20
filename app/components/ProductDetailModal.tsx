@@ -110,6 +110,21 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 }));
                 setReviews(transformedReviews);
             }
+
+            // Track product view for logged-in users (database)
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (user) {
+                    console.log('[Modal View] Tracking for user:', user.id);
+                    // Logged-in user: track in database
+                    const { trackProductView } = await import('@/lib/services/recentlyViewedService');
+                    await trackProductView(user.id, productData.id);
+                }
+            } catch (e) {
+                console.error('[Modal View] Error tracking:', e);
+            }
+
         } catch (error) {
             console.error('Error fetching product details:', error);
         } finally {

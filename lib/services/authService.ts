@@ -6,7 +6,7 @@ export interface UserProfile {
     last_name: string;
     phone: string;
     avatar_url: string | null;  // Profile picture URL
-    dob: string;
+    dob: string | null;         // Changed: allow null for empty dates
     preferred_contact_method: string;
     favorite_flavors: string[];
     dietary_restrictions: string[];

@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import AddressManager from '@/app/components/AddressManager';
 import OccasionsManager from '@/app/components/OccasionsManager';
 import LoadingScreen from '@/app/components/LoadingScreen';
 import ProfileSkeleton from '@/app/components/ProfileSkeleton';
 import ToggleSwitch from '@/components/ui/toggle-switch';
+import AvatarUpload from '@/app/components/AvatarUpload';
+import { Check, AlertCircle } from 'lucide-react';
 import {
     validateSession,
     loadAllUserData,
@@ -34,6 +37,11 @@ interface FormData {
     };
 }
 
+interface Status {
+    type: 'success' | 'error';
+    message: string;
+}
+
 export default function ProfilePage() {
     const router = useRouter();
     const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Checking if logged in
@@ -45,6 +53,7 @@ export default function ProfilePage() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [occasions, setOccasions] = useState<SpecialOccasion[]>([]);
     const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
+    const [status, setStatus] = useState<Status | null>(null);
 
     const [formData, setFormData] = useState<FormData>({
         first_name: '',
@@ -77,6 +86,16 @@ export default function ProfilePage() {
         }
     }, [profile]);
 
+    // Clear status after 3 seconds
+    useEffect(() => {
+        if (status) {
+            const timer = setTimeout(() => {
+                setStatus(null);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [status]);
+
     async function initializeProfile() {
         try {
             // Step 1: Check authentication (show spinner)
@@ -101,7 +120,7 @@ export default function ProfilePage() {
             setOccasions(occasionsData);
         } catch (error: any) {
             console.error('Profile initialization failed:', error);
-            alert(`Failed to load profile: ${error.message || 'Please try again or contact support.'}`);
+            // Non-intrusive error log only, dont block UI
         } finally {
             setIsCheckingAuth(false);
             setIsLoadingData(false);
@@ -159,9 +178,17 @@ export default function ProfilePage() {
     async function handleUpdateProfile(e: React.FormEvent) {
         e.preventDefault();
         setIsUpdating(true);
+        setStatus(null);
 
         try {
-            await updateUserProfile(user.id, formData);
+            // Sanitize data before sending (Postgres doesn't like empty strings for dates)
+            const updates = {
+                ...formData,
+                dob: formData.dob === '' ? null : formData.dob,
+            };
+
+            // @ts-ignore - Supabase expects null for empty dates, but our strictly typed interface might complain
+            await updateUserProfile(user.id, updates);
 
             const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);
 
@@ -169,10 +196,15 @@ export default function ProfilePage() {
             setAddresses(updatedAddresses);
             setOccasions(updatedOccasions);
 
-            alert('Profile updated successfully!');
-        } catch (error) {
+            setStatus({ type: 'success', message: 'Profile updated successfully!' });
+        } catch (error: any) {
             console.error('Profile update failed:', error);
-            alert('Failed to update profile.');
+            // Show more specific error if possible
+            const msg = error.message?.includes('date')
+                ? 'Invalid date format provided.'
+                : 'Failed to update profile. Please try again.';
+
+            setStatus({ type: 'error', message: msg });
         } finally {
             setIsUpdating(false);
         }
@@ -187,19 +219,15 @@ export default function ProfilePage() {
         }
     }
 
-    // Show spinner while checking if user is logged in
-    if (isCheckingAuth) {
-        return <LoadingScreen />;
-    }
-
-    // Show skeleton while loading user data (user is logged in)
-    if (isLoadingData) {
+    // Show skeleton while checking auth OR loading data
+    // This prevents the "Spinner -> Skeleton" jump
+    if (isCheckingAuth || isLoadingData) {
         return <ProfileSkeleton />;
     }
 
     // If no user after auth check, shouldn't reach here (redirected to login)
     if (!user) {
-        return <LoadingScreen />;
+        return <ProfileSkeleton />; // Keep showing skeleton while redirecting
     }
 
     const firstName = user?.user_metadata?.first_name || profile?.first_name || user?.email?.split('@')[0] || 'Guest';
@@ -539,6 +567,35 @@ export default function ProfilePage() {
                         {/* Personal Details Section */}
                         <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">
                             <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Personal Details</h2>
+
+                            {/* Status Banner */}
+                            {status && (
+                                <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${status.type === 'success'
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}>
+                                    {status.type === 'success' ? (
+                                        <Check className="w-5 h-5 flex-shrink-0" />
+                                    ) : (
+                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                    )}
+                                    <p className="font-medium">{status.message}</p>
+                                </div>
+                            )}
+
+                            {/* Avatar Upload */}
+                            <div className="mb-8 pb-8 border-b border-gray-100 flex justify-center">
+                                <AvatarUpload
+                                    userId={user?.id}
+                                    currentAvatarUrl={profile?.avatar_url || null}
+                                    onAvatarUpdate={(newUrl) => {
+                                        if (profile) {
+                                            setProfile({ ...profile, avatar_url: newUrl });
+                                        }
+                                    }}
+                                />
+                            </div>
+
                             <form onSubmit={handleUpdateProfile} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
