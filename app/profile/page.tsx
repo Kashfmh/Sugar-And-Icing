@@ -3,22 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import AddressManager from '@/app/components/AddressManager';
-import OccasionsManager from '@/app/components/OccasionsManager';
-import LoadingScreen from '@/app/components/LoadingScreen';
-import ProfileSkeleton from '@/app/components/ProfileSkeleton';
+import AddressManager from '../components/AddressManager';
+import OccasionsManager from '../components/OccasionsManager';
+import { User, MapPin, Gift, Settings, Camera, LogOut, Check, AlertCircle } from 'lucide-react';
 import ToggleSwitch from '@/components/ui/toggle-switch';
 import AvatarUpload from '@/app/components/AvatarUpload';
-import { Check, AlertCircle } from 'lucide-react';
 import {
     validateSession,
+    signOut,
     loadAllUserData,
     updateUserProfile,
-    signOut,
     UserProfile,
     Address,
     SpecialOccasion,
 } from '@/lib/services/authService';
+import ProfileSkeleton from '@/app/components/ProfileSkeleton';
 
 type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
@@ -175,6 +174,13 @@ export default function ProfilePage() {
         });
     }
 
+    function handleReset() {
+        if (profile) {
+            populateFormData(profile);
+            setStatus(null);
+        }
+    }
+
     async function handleUpdateProfile(e: React.FormEvent) {
         e.preventDefault();
         setIsUpdating(true);
@@ -289,6 +295,7 @@ export default function ProfilePage() {
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sai-charcoal"></div>
                         )}
                     </button>
+
                     <button
                         onClick={() => setActiveTab('settings')}
                         className={`pb-4 font-medium transition-colors relative ${activeTab === 'settings' ? 'text-sai-charcoal' : 'text-gray-500'
@@ -306,10 +313,11 @@ export default function ProfilePage() {
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {activeTab === 'dashboard' && (
                     <div className="space-y-6">
-                        {/* Top Row: History, Stats, Quick Actions */}
+                        {/* Top Row: User Stats & Quick Actions */}
+                        {/* Top Row: User Stats & Quick Actions */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Order History Card */}
-                            <div className="bg-pink-50 rounded-3xl p-8 relative border border-pink-100">
+                            {/* Member Card */}
+                            <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm relative overflow-hidden group">
                                 <div className="flex items-start justify-between mb-6">
                                     <h3 className="text-lg font-semibold text-sai-charcoal">Order History</h3>
                                     <span className="px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium text-sai-charcoal rounded-full border border-pink-200">
@@ -334,7 +342,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Account Stats Card */}
-                            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
+                            <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
                                 <div>
                                     <div className="flex items-start justify-between mb-6">
                                         <h3 className="text-lg font-semibold text-sai-charcoal">Account Stats</h3>
@@ -365,7 +373,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Quick Actions Card */}
-                            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
+                            <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
                                 <div>
                                     <div className="flex items-start justify-between mb-6">
                                         <h3 className="text-lg font-semibold text-sai-charcoal">Quick Actions</h3>
@@ -390,7 +398,7 @@ export default function ProfilePage() {
                         {/* Bottom Row: Engagement Cards */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* The Cake Calendar Card */}
-                            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 relative overflow-hidden">
+                            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-6 lg:p-8 border border-indigo-100 relative overflow-hidden">
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between mb-4">
                                         <h3 className="text-lg font-semibold text-sai-charcoal">The Cake Calendar 📅</h3>
@@ -491,7 +499,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Your Sweet Preferences Card */}
-                            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-3xl p-8 border border-orange-100">
+                            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-3xl p-6 lg:p-8 border border-orange-100">
                                 <div className="flex items-start justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-sai-charcoal">Sweet Preferences 🍬</h3>
                                     <button onClick={() => setActiveTab('edit-profile')} className="text-xs font-medium text-orange-600 hover:text-orange-700 underline">
@@ -526,7 +534,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* History */}
-                            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                            <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm">
                                 <h3 className="font-semibold text-sai-charcoal mb-4">Recently Viewed</h3>
                                 {recentlyViewed.length > 0 ? (
                                     <div className="space-y-4">
@@ -661,19 +669,27 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="border-t border-gray-100 pt-6">
+                                <div className="border-t border-gray-100 pt-6 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={handleReset}
+                                        disabled={isUpdating}
+                                        className="flex-1 md:flex-none px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                    >
+                                        Discard
+                                    </button>
                                     <button
                                         type="submit"
                                         disabled={isUpdating}
-                                        className="w-full md:w-auto px-8 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-[2] md:flex-none px-6 py-2 bg-sai-charcoal text-white rounded-lg text-sm font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {isUpdating ? (
                                             <>
-                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                 Saving...
                                             </>
                                         ) : (
-                                            'Save Personal Details'
+                                            'Save Details'
                                         )}
                                     </button>
                                 </div>
@@ -693,6 +709,22 @@ export default function ProfilePage() {
                         {/* Preferences Section */}
                         <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">
                             <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Sweet Preferences</h2>
+
+                            {/* Status Banner */}
+                            {status && (
+                                <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${status.type === 'success'
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}>
+                                    {status.type === 'success' ? (
+                                        <Check className="w-5 h-5 flex-shrink-0" />
+                                    ) : (
+                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                    )}
+                                    <p className="font-medium">{status.message}</p>
+                                </div>
+                            )}
+
                             <form onSubmit={handleUpdateProfile} className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Flavors</label>
@@ -744,11 +776,19 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="border-t border-gray-100 pt-6">
+                                <div className="border-t border-gray-100 pt-6 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={handleReset}
+                                        disabled={isUpdating}
+                                        className="flex-1 md:flex-none px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                    >
+                                        Discard
+                                    </button>
                                     <button
                                         type="submit"
                                         disabled={isUpdating}
-                                        className="w-full md:w-auto px-8 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-[2] md:flex-none px-6 py-2 bg-sai-charcoal text-white rounded-lg text-sm font-medium hover:bg-sai-charcoal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {isUpdating ? 'Saving...' : 'Save Preferences'}
                                     </button>
@@ -758,66 +798,12 @@ export default function ProfilePage() {
                     </div>
                 )
                 }
+
                 {activeTab === 'settings' && (
                     <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200">
                         <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Settings</h2>
 
                         <div className="space-y-8">
-                            {/* Notifications Section */}
-                            <div className="p-6 bg-pink-50/50 rounded-2xl border border-pink-100">
-                                <h3 className="font-semibold text-sai-charcoal mb-4">Notification Preferences</h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-gray-700">Order Updates</p>
-                                            <p className="text-sm text-gray-500">Get notified when your order status changes.</p>
-                                        </div>
-                                        <ToggleSwitch
-                                            checked={formData.notification_preferences.order_updates}
-                                            onChange={(checked) => {
-                                                const newPrefs = { ...formData.notification_preferences, order_updates: checked };
-                                                setFormData({ ...formData, notification_preferences: newPrefs });
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-gray-700">Special Occasion Reminders</p>
-                                            <p className="text-sm text-gray-500">Get reminders 1 week before your saved dates.</p>
-                                        </div>
-                                        <ToggleSwitch
-                                            checked={formData.notification_preferences.reminders}
-                                            onChange={(checked) => {
-                                                const newPrefs = { ...formData.notification_preferences, reminders: checked };
-                                                setFormData({ ...formData, notification_preferences: newPrefs });
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-gray-700">Marketing & Promos</p>
-                                            <p className="text-sm text-gray-500">Receive exclusive offers and new flavor alerts.</p>
-                                        </div>
-                                        <ToggleSwitch
-                                            checked={formData.notification_preferences.marketing}
-                                            onChange={(checked) => {
-                                                const newPrefs = { ...formData.notification_preferences, marketing: checked };
-                                                setFormData({ ...formData, notification_preferences: newPrefs });
-                                            }}
-                                        />
-                                    </div>
-
-                                    <button
-                                        onClick={handleUpdateProfile} // Reuse the update function
-                                        className="mt-4 px-4 py-2 bg-sai-charcoal text-white rounded-lg text-sm font-medium hover:bg-sai-charcoal/90"
-                                    >
-                                        Save Preferences
-                                    </button>
-                                </div>
-                            </div>
-
                             {/* Account Security Section */}
                             <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
                                 <h3 className="font-semibold text-sai-charcoal mb-4">Account Security</h3>

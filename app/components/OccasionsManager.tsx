@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Trash2, Calendar, Plus, Bell } from 'lucide-react';
+import { Trash2, Calendar, Plus, Bell, Pencil } from 'lucide-react';
 
 interface SpecialOccasion {
     id: string;
@@ -20,6 +20,8 @@ interface OccasionsManagerProps {
 
 export default function OccasionsManager({ occasions, onUpdate, userId }: OccasionsManagerProps) {
     const [isAdding, setIsAdding] = useState(false);
+    const formRef = useRef<HTMLDivElement>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -33,12 +35,28 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
         setLoading(true);
 
         try {
-            const { error } = await supabase
-                .from('special_occasions')
-                .insert([{
-                    user_id: userId,
-                    ...formData
-                }]);
+            let error;
+
+            if (editingId) {
+                // Update existing
+                const { error: updateError } = await supabase
+                    .from('special_occasions')
+                    .update({
+                        ...formData
+                    })
+                    .eq('id', editingId)
+                    .eq('user_id', userId);
+                error = updateError;
+            } else {
+                // Insert new
+                const { error: insertError } = await supabase
+                    .from('special_occasions')
+                    .insert([{
+                        user_id: userId,
+                        ...formData
+                    }]);
+                error = insertError;
+            }
 
             if (error) throw error;
 
@@ -48,14 +66,29 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                 type: 'Birthday',
                 reminder_enabled: true
             });
+            setEditingId(null);
             setIsAdding(false);
             onUpdate();
         } catch (error) {
-            console.error('Error adding occasion:', error);
-            alert('Failed to add occasion');
+            console.error('Error saving occasion:', error);
+            alert('Failed to save occasion');
         } finally {
             setLoading(false);
         }
+    }
+
+    function handleEdit(occ: SpecialOccasion) {
+        setFormData({
+            name: occ.name,
+            date: occ.date,
+            type: occ.type,
+            reminder_enabled: occ.reminder_enabled
+        });
+        setEditingId(occ.id);
+        setIsAdding(true);
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
     }
 
     async function handleDelete(id: string) {
@@ -80,7 +113,16 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-sai-charcoal">Special Occasions</h3>
                 <button
-                    onClick={() => setIsAdding(!isAdding)}
+                    onClick={() => {
+                        setEditingId(null);
+                        setFormData({
+                            name: '',
+                            date: '',
+                            type: 'Birthday',
+                            reminder_enabled: true
+                        });
+                        setIsAdding(!isAdding);
+                    }}
                     className="flex items-center gap-2 text-sm font-medium text-sai-pink hover:text-sai-pink/80"
                 >
                     <Plus className="w-4 h-4" />
@@ -117,6 +159,12 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                                 <Bell className="w-4 h-4 text-sai-pink/60" />
                             )}
                             <button
+                                onClick={() => handleEdit(occ)}
+                                className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+                            >
+                                <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
                                 onClick={() => handleDelete(occ.id)}
                                 className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                             >
@@ -135,8 +183,11 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
 
             {/* Add Occasion Form */}
             {isAdding && (
-                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 animate-in fade-in slide-in-from-top-4">
-                    <h4 className="font-medium text-sai-charcoal mb-4">Add Special Occasion</h4>
+                <div
+                    ref={formRef}
+                    className="bg-gray-50 rounded-xl p-6 border border-gray-200 animate-in fade-in slide-in-from-top-4"
+                >
+                    <h4 className="font-medium text-sai-charcoal mb-4">{editingId ? 'Edit Special Occasion' : 'Add Special Occasion'}</h4>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Occasion Type</label>
@@ -189,7 +240,16 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                         <div className="flex justify-end gap-3 pt-2">
                             <button
                                 type="button"
-                                onClick={() => setIsAdding(false)}
+                                onClick={() => {
+                                    setIsAdding(false);
+                                    setEditingId(null);
+                                    setFormData({
+                                        name: '',
+                                        date: '',
+                                        type: 'Birthday',
+                                        reminder_enabled: true
+                                    });
+                                }}
                                 className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
                             >
                                 Cancel
@@ -199,7 +259,7 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                                 disabled={loading}
                                 className="px-4 py-2 bg-sai-charcoal text-white rounded-lg text-sm font-medium hover:bg-sai-charcoal/90 disabled:opacity-50"
                             >
-                                {loading ? 'Saving...' : 'Save Occasion'}
+                                {loading ? 'Saving...' : (editingId ? 'Update Occasion' : 'Save Occasion')}
                             </button>
                         </div>
                     </form>

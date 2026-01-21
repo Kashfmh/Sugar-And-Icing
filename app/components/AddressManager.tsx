@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Trash2, MapPin, Plus, Star } from 'lucide-react';
+import { Trash2, MapPin, Plus, Star, Pencil } from 'lucide-react';
 
 interface Address {
     id: string;
@@ -23,6 +23,8 @@ interface AddressManagerProps {
 
 export default function AddressManager({ addresses, onUpdate, userId }: AddressManagerProps) {
     const [isAdding, setIsAdding] = useState(false);
+    const formRef = useRef<HTMLDivElement>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         label: 'Home',
@@ -50,12 +52,28 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                 formData.is_default = true;
             }
 
-            const { error } = await supabase
-                .from('addresses')
-                .insert([{
-                    user_id: userId,
-                    ...formData
-                }]);
+            let error;
+
+            if (editingId) {
+                // Update existing address
+                const { error: updateError } = await supabase
+                    .from('addresses')
+                    .update({
+                        ...formData
+                    })
+                    .eq('id', editingId)
+                    .eq('user_id', userId); // Extra safety
+                error = updateError;
+            } else {
+                // Create new address
+                const { error: insertError } = await supabase
+                    .from('addresses')
+                    .insert([{
+                        user_id: userId,
+                        ...formData
+                    }]);
+                error = insertError;
+            }
 
             if (error) throw error;
 
@@ -68,11 +86,12 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                 postcode: '',
                 is_default: false
             });
+            setEditingId(null);
             setIsAdding(false);
             onUpdate();
         } catch (error) {
-            console.error('Error adding address:', error);
-            alert('Failed to add address');
+            console.error('Error saving address:', error);
+            alert('Failed to save address');
         } finally {
             setLoading(false);
         }
@@ -93,6 +112,24 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
             console.error('Error deleting address:', error);
             alert('Failed to delete address');
         }
+    }
+
+    function handleEdit(addr: Address) {
+        setFormData({
+            label: addr.label,
+            address_line1: addr.address_line1,
+            address_line2: addr.address_line2 || '',
+            city: addr.city,
+            state: addr.state,
+            postcode: addr.postcode,
+            is_default: addr.is_default
+        });
+        setEditingId(addr.id);
+        setIsAdding(true);
+        // Scroll to form
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
     }
 
     async function handleSetDefault(id: string) {
@@ -122,7 +159,19 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-sai-charcoal">Address Book</h3>
                 <button
-                    onClick={() => setIsAdding(!isAdding)}
+                    onClick={() => {
+                        setEditingId(null);
+                        setFormData({
+                            label: 'Home',
+                            address_line1: '',
+                            address_line2: '',
+                            city: '',
+                            state: '',
+                            postcode: '',
+                            is_default: false
+                        });
+                        setIsAdding(!isAdding);
+                    }}
                     className="flex items-center gap-2 text-sm font-medium text-sai-pink hover:text-sai-pink/80"
                 >
                     <Plus className="w-4 h-4" />
@@ -136,12 +185,12 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                     <div
                         key={addr.id}
                         className={`p-4 rounded-xl border transition-all ${addr.is_default
-                                ? 'border-sai-pink bg-pink-50/30'
-                                : 'border-gray-200 bg-white hover:border-sai-pink/30'
+                            ? 'border-sai-pink bg-pink-50/30'
+                            : 'border-gray-200 bg-white hover:border-sai-pink/30'
                             }`}
                     >
                         <div className="flex justify-between items-start">
-                            <div className="flex gap-3">
+                            <div className="flex gap-3 items-start">
                                 <div className={`p-2 rounded-lg ${addr.is_default ? 'bg-pink-100 text-sai-pink' : 'bg-gray-100 text-gray-500'}`}>
                                     <MapPin className="w-5 h-5" />
                                 </div>
@@ -175,6 +224,13 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                                     </button>
                                 )}
                                 <button
+                                    onClick={() => handleEdit(addr)}
+                                    className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+                                    title="Edit"
+                                >
+                                    <Pencil className="w-4 h-4" />
+                                </button>
+                                <button
                                     onClick={() => handleDelete(addr.id)}
                                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                                     title="Delete"
@@ -195,8 +251,11 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
 
             {/* Add Address Form */}
             {isAdding && (
-                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 animate-in fade-in slide-in-from-top-4">
-                    <h4 className="font-medium text-sai-charcoal mb-4">Add New Address</h4>
+                <div
+                    ref={formRef}
+                    className="bg-gray-50 rounded-xl p-6 border border-gray-200 animate-in fade-in slide-in-from-top-4"
+                >
+                    <h4 className="font-medium text-sai-charcoal mb-4">{editingId ? 'Edit Address' : 'Add New Address'}</h4>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -288,7 +347,19 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                         <div className="flex justify-end gap-3 pt-2">
                             <button
                                 type="button"
-                                onClick={() => setIsAdding(false)}
+                                onClick={() => {
+                                    setIsAdding(false);
+                                    setEditingId(null);
+                                    setFormData({
+                                        label: 'Home',
+                                        address_line1: '',
+                                        address_line2: '',
+                                        city: '',
+                                        state: '',
+                                        postcode: '',
+                                        is_default: false
+                                    });
+                                }}
                                 className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
                             >
                                 Cancel
@@ -298,7 +369,7 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                                 disabled={loading}
                                 className="px-4 py-2 bg-sai-charcoal text-white rounded-lg text-sm font-medium hover:bg-sai-charcoal/90 disabled:opacity-50"
                             >
-                                {loading ? 'Saving...' : 'Save Address'}
+                                {loading ? 'Saving...' : (editingId ? 'Update Address' : 'Save Address')}
                             </button>
                         </div>
                     </form>
