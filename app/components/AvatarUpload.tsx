@@ -206,17 +206,23 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                             </button>
                         </div>
 
-                        <div className="relative h-64 w-full bg-gray-100 overflow-hidden rounded-lg">
+                        <div className="relative h-64 w-full bg-gray-100 overflow-hidden rounded-lg touch-none">
                             <Cropper
                                 image={imageSrc}
                                 crop={crop}
                                 zoom={zoom}
                                 aspect={1}
-                                onCropChange={(location) => setCrop(location)}
+                                onCropChange={setCrop}
                                 onCropComplete={onCropComplete}
-                                onZoomChange={(zoom) => setZoom(zoom)}
+                                onZoomChange={setZoom}
                                 cropShape="round"
                                 showGrid={true}
+                                objectFit="cover"
+                                restrictPosition={true}
+                                style={{
+                                    containerStyle: { width: '100%', height: '100%', touchAction: 'none' },
+                                    cropAreaStyle: { border: '2px solid white' }
+                                }}
                             />
                         </div>
 
@@ -228,10 +234,10 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                                     value={zoom}
                                     min={1}
                                     max={3}
-                                    step={0.1}
+                                    step={0.01}
                                     aria-labelledby="Zoom"
                                     onChange={(e) => setZoom(Number(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sai-pink"
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sai-pink touch-none"
                                 />
                                 <ZoomIn className="w-5 h-5 text-gray-400" />
                             </div>
