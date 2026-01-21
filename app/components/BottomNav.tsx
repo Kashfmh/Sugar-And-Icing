@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, ShoppingCart, CakeSlice, User } from 'lucide-react';
+import { Home, FileText, ShoppingCart, CakeSlice, User, Bell, Package } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 
 export default function BottomNav() {
@@ -12,8 +14,59 @@ export default function BottomNav() {
 
     // Use state to avoid hydration mismatch for the badge
     const [mounted, setMounted] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [user, setUser] = useState<any>(null);
+
     useEffect(() => {
         setMounted(true);
+
+        const fetchData = async () => {
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            setUser(currentUser);
+
+            if (currentUser) {
+                // Fetch unread count
+                const { count } = await supabase
+                    .from('notifications')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id)
+                    .eq('read', false);
+                setUnreadCount(count || 0);
+
+                // Fetch avatar
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('avatar_url')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (data) setAvatarUrl(data.avatar_url);
+            } else {
+                setUnreadCount(0);
+                setAvatarUrl(null);
+            }
+        };
+
+        fetchData();
+
+        // Listen for auth changes to reset count immediately
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') fetchData();
+            if (event === 'SIGNED_OUT') {
+                setUnreadCount(0);
+                setUser(null);
+                setAvatarUrl(null);
+            }
+        });
+
+        // Listen for profile updates
+        window.addEventListener('profile-updated', fetchData);
+
+        return () => {
+            subscription.unsubscribe();
+            window.removeEventListener('profile-updated', fetchData);
+        };
     }, []);
 
     const itemCount = mounted ? totalItems() : 0;
@@ -75,21 +128,40 @@ export default function BottomNav() {
                     </Link>
                 </div>
 
-                {/* Right Group - Favorites and Profile */}
+                {/* Right Group - Treats, Profile */}
                 <div className="flex-1 flex justify-around gap-4">
                     {navItems.slice(3, 5).map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href || (item.href === '/profile' && pathname === '/login');
+
+                        // Checking if this is the profile item AND we have an avatar
+                        const isProfileItem = item.label === 'Profile';
+
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="flex flex-col items-center gap-1 transition-colors"
+                                className="flex flex-col items-center gap-1 transition-colors relative"
                             >
-                                <Icon
-                                    className={`w-5 h-5 ${isActive ? 'text-sai-pink' : 'text-gray-400'}`}
-                                    strokeWidth={isActive ? 2.5 : 2}
-                                />
+                                {isProfileItem && avatarUrl ? (
+                                    <div className={`w-6 h-6 rounded-full relative overflow-hidden ${isActive ? 'ring-2 ring-sai-pink' : ''}`}>
+                                        <Image
+                                            src={avatarUrl}
+                                            alt="Profile"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                ) : (
+                                    <Icon
+                                        className={`w-5 h-5 ${isActive ? 'text-sai-pink' : 'text-gray-400'}`}
+                                        strokeWidth={isActive ? 2.5 : 2}
+                                    />
+                                )}
+
+                                {mounted && (item as any).hasBadge && unreadCount > 0 && (
+                                    <span className="absolute top-0 right-2 w-2.5 h-2.5 bg-sai-pink border-2 border-white rounded-full"></span>
+                                )}
                                 <span className={`text-[10px] font-medium ${isActive ? 'text-sai-pink' : 'text-gray-500'}`}>
                                     {item.label}
                                 </span>

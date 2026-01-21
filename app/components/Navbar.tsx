@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, User } from 'lucide-react';
+import { ShoppingBag, User, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AnimatePresence, motion } from 'motion/react';
@@ -53,6 +53,16 @@ export default function Navbar() {
         setIsMounted(true);
         refreshUser();
 
+        // Listen for auth state changes (LOGIN/LOGOUT)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                refreshUser();
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setAvatarUrl(null);
+            }
+        });
+
         // Listen for profile updates (e.g. from AvatarUpload)
         window.addEventListener('profile-updated', refreshUser);
 
@@ -61,6 +71,7 @@ export default function Navbar() {
         window.addEventListener('scroll', handleScroll);
 
         return () => {
+            subscription.unsubscribe();
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('profile-updated', refreshUser);
         };
@@ -123,6 +134,9 @@ export default function Navbar() {
 
                 {/* CTA Buttons */}
                 <div className="relative z-20 flex items-center gap-4">
+                    {/* Inbox Trigger */}
+                    {user && <InboxTriggerButton pathname={pathname} userId={user.id} />}
+
                     {/* Cart Trigger */}
                     <CartTriggerButton pathname={pathname} />
 
@@ -181,6 +195,8 @@ export default function Navbar() {
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">
+                        {/* Inbox Trigger for Mobile */}
+                        {user && <InboxTriggerButton pathname={pathname} userId={user.id} />}
                         <CartTriggerButton pathname={pathname} />
                         <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
                     </div>
@@ -261,6 +277,50 @@ function CartTriggerButton({ pathname }: { pathname?: string }) {
             {!isLoading && count > 0 && (
                 <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
                     {count}
+                </span>
+            )}
+        </Link>
+    );
+}
+
+function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId: string }) {
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            const { count } = await supabase
+                .from('notifications')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .eq('read', false);
+
+            setUnreadCount(count || 0);
+        };
+
+        fetchUnread();
+
+        // Optional: Subscribe to changes for real-time updates
+        const channel = supabase
+            .channel('public:notifications')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+                () => fetchUnread()
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [userId]);
+
+    return (
+        <Link href="/inbox" className="relative group p-1" aria-label="Open inbox">
+            <Bell className={`w-5 h-5 transition-colors ${pathname === '/inbox' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'
+                }`} strokeWidth={2} />
+            {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                    {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
             )}
         </Link>
