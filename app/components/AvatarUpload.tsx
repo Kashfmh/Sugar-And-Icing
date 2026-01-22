@@ -24,7 +24,11 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
     const [showCropModal, setShowCropModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const cropperRef = useRef<ReactCropperElement>(null);
+    // Zoom scale: 0.1 (min) to 3 (max)
+    const ZOOM_MIN = 0.1;
+    const ZOOM_MAX = 3;
     const [zoom, setZoom] = useState(1);
+    const [isSliderActive, setIsSliderActive] = useState(false);
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -49,27 +53,37 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
     };
 
     // Sync zoom state with cropper (Cropper v1.x)
+    // Map zoom scale to slider (0-100)
+    const zoomToSlider = (z: number) => ((z - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN)) * 100;
+    const sliderToZoom = (s: number) => ZOOM_MIN + ((ZOOM_MAX - ZOOM_MIN) * s) / 100;
+
     const handleCropperZoom = useCallback(() => {
+        if (isSliderActive) return;
         const cropper = cropperRef.current?.cropper;
         if (cropper && cropper.getData && cropper.getData()) {
-            setZoom(cropper.getData().scaleX || 1);
+            const newZoom = cropper.getData().scaleX || 1;
+            setZoom((prev) => (Math.abs(prev - newZoom) > 0.001 ? newZoom : prev));
         }
-    }, []);
+    }, [isSliderActive]);
 
     const handleZoomSlider = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.target.value);
-        setZoom(value);
+        const sliderValue = parseFloat(e.target.value);
+        const newZoom = sliderToZoom(sliderValue);
+        setZoom(newZoom);
         const cropper = cropperRef.current?.cropper;
         if (cropper && cropper.zoomTo && cropper.getCanvasData && cropper.getCanvasData()) {
-            cropper.zoomTo(value);
+            cropper.zoomTo(newZoom);
         }
     };
+
+    const handleSliderStart = () => setIsSliderActive(true);
+    const handleSliderEnd = () => setIsSliderActive(false);
 
     const handleZoomIn = () => {
         const cropper = cropperRef.current?.cropper;
         if (cropper && cropper.zoomTo && cropper.getData && cropper.getCanvasData && cropper.getCanvasData()) {
             const currentZoom = cropper.getData().scaleX || 1;
-            const newZoom = Math.min(currentZoom + 0.1, 3);
+            const newZoom = Math.min(currentZoom + 0.1, ZOOM_MAX);
             cropper.zoomTo(newZoom);
             setZoom(newZoom);
         }
@@ -79,7 +93,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
         const cropper = cropperRef.current?.cropper;
         if (cropper && cropper.zoomTo && cropper.getData && cropper.getCanvasData && cropper.getCanvasData()) {
             const currentZoom = cropper.getData().scaleX || 1;
-            const newZoom = Math.max(currentZoom - 0.1, 0.1);
+            const newZoom = Math.max(currentZoom - 0.1, ZOOM_MIN);
             cropper.zoomTo(newZoom);
             setZoom(newZoom);
         }
@@ -174,22 +188,19 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-sai-pink/20 to-sai-pink/10">
                             <Camera className="w-12 h-12 text-sai-pink" />
-                        </div>
-                    )}
-                </div>
-                {!uploading && (
-                    <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white z-10">
-                        <Upload className="w-6 h-6" />
-                    </button>
-                )}
-                {uploading && (
-                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center z-20">
-                        <Loader2 className="w-8 h-8 text-white animate-spin" />
-                    </div>
-                )}
-            </div>
-
-            {/* Buttons */}
+                                        <input
+                                            type="range"
+                                            min={0}
+                                            max={100}
+                                            step={1}
+                                            value={zoomToSlider(zoom)}
+                                            onChange={handleZoomSlider}
+                                            onMouseDown={handleSliderStart}
+                                            onMouseUp={handleSliderEnd}
+                                            onTouchStart={handleSliderStart}
+                                            onTouchEnd={handleSliderEnd}
+                                            className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"
+                                        />
             <div className="flex gap-2">
                 <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="px-4 py-2 bg-sai-pink text-white rounded-lg text-sm font-medium hover:bg-sai-pink/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {preview ? 'Change Photo' : 'Upload Photo'}
@@ -272,7 +283,14 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                                             step={0.01}
                                             value={zoom}
                                             onChange={handleZoomSlider}
-                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sai-pink [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sai-pink [&::-webkit-slider-thumb]:cursor-pointer"
+                                            onMouseDown={handleSliderStart}
+                                            onMouseUp={handleSliderEnd}
+                                            onTouchStart={handleSliderStart}
+                                            onTouchEnd={handleSliderEnd}
+                                            className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer accent-sai-pink"
+                                            style={{
+                                                accentColor: '#e11d48', // fallback for browsers that support accent-color
+                                            }}
                                         />
                                         <ZoomIn
                                             className="w-5 h-5 text-gray-400 flex-shrink-0 cursor-pointer hover:text-gray-600 transition-colors"
@@ -332,4 +350,3 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
             )}
         </div>
     );
-}
