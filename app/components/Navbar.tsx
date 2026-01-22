@@ -25,27 +25,39 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [isAuthChecking, setIsAuthChecking] = useState(true);
 
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     // Fetch user and profile data
     const refreshUser = async () => {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        setUser(currentUser);
+        try {
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            setUser(currentUser);
 
-        if (currentUser) {
-            // Fetch avatar from profiles table
-            const { data } = await supabase
-                .from('profiles')
-                .select('avatar_url')
-                .eq('id', currentUser.id)
-                .single();
+            if (currentUser) {
+                // Fetch avatar from profiles table
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('avatar_url')
+                    .eq('id', currentUser.id)
+                    .single();
 
-            if (data) {
-                setAvatarUrl(data.avatar_url);
+                if (data) {
+                    setAvatarUrl(data.avatar_url);
+                }
+            } else {
+                setAvatarUrl(null);
             }
-        } else {
-            setAvatarUrl(null);
+        } catch (error: any) {
+            // Provide a graceful fallback for "refresh token not found" errors which are common in dev/bad state
+            if (error?.message?.includes('refresh_token_not_found') || error?.code === 'refresh_token_not_found') {
+                console.warn('Supabase Auth: Refresh token not found, session might remain invalid until re-login.');
+            } else {
+                console.error('Navbar Auth Check Error:', error);
+            }
+        } finally {
+            setIsAuthChecking(false);
         }
     };
 
@@ -134,13 +146,13 @@ export default function Navbar() {
 
                 {/* CTA Buttons */}
                 <div className="relative z-20 flex items-center gap-4">
-                    {/* Inbox Trigger */}
-                    {user && <InboxTriggerButton pathname={pathname} userId={user.id} />}
+                    {/* Inbox Trigger (Always Visible) */}
+                    <InboxTriggerButton pathname={pathname} userId={user?.id} />
 
                     {/* Cart Trigger */}
                     <CartTriggerButton pathname={pathname} />
 
-                    {!isMounted ? (
+                    {(!isMounted || isAuthChecking) ? (
                         /* Skeleton for Profile/Login */
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
@@ -196,7 +208,7 @@ export default function Navbar() {
                     </Link>
                     <div className="flex items-center gap-4">
                         {/* Inbox Trigger for Mobile */}
-                        {user && <InboxTriggerButton pathname={pathname} userId={user.id} />}
+                        <InboxTriggerButton pathname={pathname} userId={user?.id} />
                         <CartTriggerButton pathname={pathname} />
                         <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
                     </div>
@@ -283,10 +295,15 @@ function CartTriggerButton({ pathname }: { pathname?: string }) {
     );
 }
 
-function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId: string }) {
+function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: string }) {
     const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
+        if (!userId) {
+            setUnreadCount(0);
+            return;
+        }
+
         const fetchUnread = async () => {
             const { count } = await supabase
                 .from('notifications')
