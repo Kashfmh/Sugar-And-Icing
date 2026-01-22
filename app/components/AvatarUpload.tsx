@@ -51,18 +51,23 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
     // Sync zoom state with cropper (Cropper v1.x)
     const handleCropperZoom = useCallback(() => {
         const cropper = cropperRef.current?.cropper;
-        if (cropper) setZoom(cropper.getData().scaleX || 1);
+        if (cropper && cropper.getData && cropper.getData()) {
+            setZoom(cropper.getData().scaleX || 1);
+        }
     }, []);
 
     const handleZoomSlider = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseFloat(e.target.value);
         setZoom(value);
-        cropperRef.current?.cropper.zoomTo(value);
+        const cropper = cropperRef.current?.cropper;
+        if (cropper && cropper.zoomTo && cropper.getCanvasData && cropper.getCanvasData()) {
+            cropper.zoomTo(value);
+        }
     };
 
     const handleZoomIn = () => {
         const cropper = cropperRef.current?.cropper;
-        if (cropper) {
+        if (cropper && cropper.zoomTo && cropper.getData && cropper.getCanvasData && cropper.getCanvasData()) {
             const currentZoom = cropper.getData().scaleX || 1;
             const newZoom = Math.min(currentZoom + 0.1, 3);
             cropper.zoomTo(newZoom);
@@ -72,7 +77,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
 
     const handleZoomOut = () => {
         const cropper = cropperRef.current?.cropper;
-        if (cropper) {
+        if (cropper && cropper.zoomTo && cropper.getData && cropper.getCanvasData && cropper.getCanvasData()) {
             const currentZoom = cropper.getData().scaleX || 1;
             const newZoom = Math.max(currentZoom - 0.1, 0.1);
             cropper.zoomTo(newZoom);
@@ -245,8 +250,9 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                                     checkOrientation={true}
                                     responsive={true}
                                     ref={cropperRef}
-                                    zoomTo={zoom}
                                     crop={handleCropperZoom}
+                                    // Only set zoomTo if cropper is ready
+                                    {...(imageSrc && zoom && cropperRef.current?.cropper && cropperRef.current.cropper.getCanvasData() ? { zoomTo: zoom } : {})}
                                 />
                             </div>
 
