@@ -1,3 +1,7 @@
+/* Always show pointer cursor for all buttons and clickable elements */
+button, [role="button"], a[href], input[type="button"], input[type="submit"], input[type="reset"] {
+  cursor: pointer;
+}
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";

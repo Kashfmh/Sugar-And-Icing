@@ -28,6 +28,9 @@ export default function CheckoutPage() {
     const [addressError, setAddressError] = useState<string | null>(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [showAddressManager, setShowAddressManager] = useState(false);
+    // State for pay button on desktop
+    const [payButtonLoading, setPayButtonLoading] = useState(false);
+    const [payButtonDisabled, setPayButtonDisabled] = useState(true);
 
     // Fetch user profile and addresses if signed in
     useEffect(() => {
@@ -79,8 +82,9 @@ export default function CheckoutPage() {
 
     return (
         <main className="min-h-screen bg-sai-white pb-12">
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-                <div className="max-w-4xl mx-auto px-4 h-16 flex items-center">
+            {/* Mobile Only Top Bar */}
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-30 block lg:hidden">
+                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center">
                     <Link href="/other-treats" className="flex items-center text-gray-500 hover:text-sai-pink transition-colors">
                         <ChevronLeft className="w-5 h-5 mr-1" />
                         Back to Menu
@@ -89,9 +93,9 @@ export default function CheckoutPage() {
                 </div>
             </header>
 
-            <div className="max-w-4xl mx-auto px-4 py-8 grid md:grid-cols-12 gap-8">
+            <div className="max-w-7xl mx-auto px-4 py-8 lg:mt-16 lg:grid lg:grid-cols-12 lg:gap-8">
                 {/* LEFT COLUMN: Payment Form */}
-                <div className="md:col-span-7 space-y-8">
+                <div className="lg:col-span-8 space-y-8">
                     {/* Contact Info Section */}
                     <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
                         <h2 className="text-lg font-bold text-sai-charcoal mb-4 flex items-center gap-2">
@@ -163,11 +167,11 @@ export default function CheckoutPage() {
                         </h2>
                         <div className="flex gap-4 mb-4">
                             <button
-                                className={`px-6 py-2 rounded-lg font-semibold border transition-all ${deliveryType === 'pickup' ? 'bg-sai-pink text-white border-sai-pink' : 'bg-white border-gray-300 text-sai-charcoal'}`}
+                                className={`px-6 py-2 rounded-lg font-semibold border transition-all ${deliveryType === 'pickup' ? 'bg-sai-pink text-white border-sai-pink' : 'bg-white border-gray-300 text-sai-charcoal'} cursor-pointer`}
                                 onClick={() => setDeliveryType('pickup')}
                             >Pickup</button>
                             <button
-                                className={`px-6 py-2 rounded-lg font-semibold border transition-all ${deliveryType === 'delivery' ? 'bg-sai-pink text-white border-sai-pink' : 'bg-white border-gray-300 text-sai-charcoal'}`}
+                                className={`px-6 py-2 rounded-lg font-semibold border transition-all ${deliveryType === 'delivery' ? 'bg-sai-pink text-white border-sai-pink' : 'bg-white border-gray-300 text-sai-charcoal'} cursor-pointer`}
                                 onClick={() => setDeliveryType('delivery')}
                             >Delivery</button>
                         </div>
@@ -175,7 +179,7 @@ export default function CheckoutPage() {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Select Address</label>
                                 {addresses.length === 0 ? (
-                                    <div className="text-gray-500 text-sm mb-2">No addresses found. <button className="text-sai-pink underline" onClick={() => setShowAddressManager(true)}>Add Address</button></div>
+                                    <div className="text-gray-500 text-sm mb-2">No addresses found. <button className="text-sai-pink underline cursor-pointer" onClick={() => setShowAddressManager(true)}>Add Address</button></div>
                                 ) : (
                                     <select
                                         className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink outline-none transition-all"
@@ -191,10 +195,29 @@ export default function CheckoutPage() {
                                     </select>
                                 )}
                                 {addressError && <div className="text-red-600 text-xs mt-1">{addressError}</div>}
-                                <button className="text-xs text-sai-pink underline mt-2" onClick={() => setShowAddressManager(true)}>Manage Addresses</button>
+                                <button className="text-xs text-sai-pink underline mt-2 cursor-pointer" onClick={() => setShowAddressManager(true)}>Manage Addresses</button>
                                 {showAddressManager && (
                                     <div className="mt-4"><AddressManager addresses={addresses} onUpdate={() => {}} userId={user?.id} /></div>
                                 )}
+                            </div>
+                        )}
+                        {deliveryType === 'pickup' && (
+                            <div className="bg-sai-pink/10 border border-sai-pink/30 rounded-xl p-4 text-sai-charcoal text-sm space-y-2 mb-2">
+                                <div><span className="font-bold">Pickup Address:</span> Lot 633, Jalan Tebing, Brickfields, 50470 Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur</div>
+                                <div><span className="font-bold">Floor/Unit:</span> 09-08</div>
+                                <div className="w-full h-48 rounded-lg overflow-hidden my-2">
+                                    <iframe
+                                        title="Google Maps - Lot 633, Jalan Tebing"
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.8539772419504!2d101.68806847923217!3d3.1332604451309667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc49c2f127bec1%3A0xbd153c0952983f28!2s633%20Residency!5e0!3m2!1sen!2sus!4v1769099212891!5m2!1sen!2sus" 
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0 }}
+                                        allowFullScreen
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                    ></iframe>
+                                </div>
+                                <div className="text-xs text-gray-500">Timing details will be sent to your preferred contact method after payment.</div>
                             </div>
                         )}
                     </section>
@@ -202,7 +225,11 @@ export default function CheckoutPage() {
                     {/* Payment Section */}
                     {clientSecret ? (
                         <Elements stripe={stripePromise} options={{ clientSecret }}>
-                            <CheckoutForm clientSecret={clientSecret} />
+                            <CheckoutForm 
+                                clientSecret={clientSecret}
+                                setPayButtonLoading={setPayButtonLoading}
+                                setPayButtonDisabled={setPayButtonDisabled}
+                            />
                         </Elements>
                     ) : (
                         <div className="flex justify-center p-12">
@@ -212,7 +239,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* RIGHT COLUMN: Order Summary */}
-                <div className="md:col-span-5">
+                <div className="lg:col-span-4 mt-8 lg:mt-0">
                     <div className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 sticky top-24">
                         <h2 className="text-lg font-bold text-sai-charcoal mb-4">Order Summary</h2>
                         <div className="space-y-4 mb-6">
@@ -233,6 +260,17 @@ export default function CheckoutPage() {
                             <span>Total</span>
                             <span>RM {subtotal().toFixed(2)}</span>
                         </div>
+                        {/* Pay button below order summary on desktop only */}
+                        <div className="hidden lg:block mt-6">
+                            <button
+                                type="submit"
+                                form="checkout-form"
+                                disabled={payButtonDisabled || payButtonLoading}
+                                className="w-full bg-sai-pink text-white py-4 rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-sai-white hover:text-sai-pink hover:border-sai-pink border border-transparent hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {payButtonLoading ? <Loader2 className="animate-spin" /> : <><Lock className="w-4 h-4" /> Pay RM {subtotal().toFixed(2)}</>}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -241,9 +279,14 @@ export default function CheckoutPage() {
 }
 
 // Sub-component for the actual form logic
-function CheckoutForm({ clientSecret }: { clientSecret: string }) {
+function CheckoutForm({ clientSecret, setPayButtonLoading, setPayButtonDisabled }: { clientSecret: string, setPayButtonLoading: (b: boolean) => void, setPayButtonDisabled: (b: boolean) => void }) {
     const stripe = useStripe();
     const elements = useElements();
+
+    // Sync pay button state to parent for desktop button
+    useEffect(() => {
+        setPayButtonDisabled(!stripe || !elements);
+    }, [stripe, elements, setPayButtonDisabled]);
     const router = useRouter();
     const { items, subtotal, clearCart } = useCart();
     
@@ -261,6 +304,7 @@ function CheckoutForm({ clientSecret }: { clientSecret: string }) {
         if (!stripe || !elements) return;
 
         setLoading(true);
+        setPayButtonLoading(true);
         setErrorMessage(null);
 
         try {
@@ -325,44 +369,16 @@ function CheckoutForm({ clientSecret }: { clientSecret: string }) {
             setErrorMessage(err.message || "An unexpected error occurred.");
         } finally {
             setLoading(false);
+            setPayButtonLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Contact Info Section */}
-            <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-                <h2 className="text-lg font-bold text-sai-charcoal flex items-center gap-2">
-                    <NumberBadge number={1} size="sm" /> Contact Info
-                </h2>
-                <input
-                    required
-                    placeholder="Full Name"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-                <input
-                    required
-                    type="email"
-                    placeholder="Email"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-                <textarea
-                    required
-                    placeholder="Delivery Address"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 h-24 resize-none"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                />
-            </section>
-
+        <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Stripe Payment Section */}
             <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                 <h2 className="text-lg font-bold text-sai-charcoal flex items-center gap-2">
-                    <NumberBadge number={2} size="sm" /> Card Details
+                    <NumberBadge number={3} size="sm" /> Card Details
                 </h2>
                 <div className="border border-gray-200 rounded-xl p-4">
                     <PaymentElement />
@@ -375,13 +391,16 @@ function CheckoutForm({ clientSecret }: { clientSecret: string }) {
                 </div>
             )}
 
-            <button
-                type="submit"
-                disabled={!stripe || loading}
-                className="w-full bg-sai-pink text-white py-4 rounded-xl font-bold shadow-lg shadow-pink-200 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-                {loading ? <Loader2 className="animate-spin" /> : <><Lock className="w-4 h-4" /> Pay RM {subtotal().toFixed(2)}</>}
-            </button>
+            {/* Pay button for mobile only */}
+            <div className="block lg:hidden">
+                <button
+                    type="submit"
+                    disabled={!stripe || loading}
+                    className="w-full bg-sai-pink text-white py-4 rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-sai-white hover:text-sai-pink hover:border-sai-pink border border-transparent hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                    {loading ? <Loader2 className="animate-spin" /> : <><Lock className="w-4 h-4" /> Pay RM {subtotal().toFixed(2)}</>}
+                </button>
+            </div>
         </form>
     );
 }
