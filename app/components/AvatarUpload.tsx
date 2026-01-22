@@ -33,6 +33,15 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
+    const handleCropChange = (location: { x: number; y: number }) => {
+        // Manual clamp to prevent "infinite" panning (losing the image)
+        // while allowing smooth "loose" movement.
+        const LIMIT = 250;
+        const x = Math.max(-LIMIT, Math.min(LIMIT, location.x));
+        const y = Math.max(-LIMIT, Math.min(LIMIT, location.y));
+        setCrop({ x, y });
+    };
+
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -212,17 +221,15 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                                 crop={crop}
                                 zoom={zoom}
                                 aspect={1}
-                                onCropChange={setCrop}
+                                onCropChange={handleCropChange}
                                 onCropComplete={onCropComplete}
                                 onZoomChange={setZoom}
                                 cropShape="round"
                                 showGrid={true}
-                                objectFit="cover"
-                                restrictPosition={true}
-                                style={{
-                                    containerStyle: { width: '100%', height: '100%', touchAction: 'none' },
-                                    cropAreaStyle: { border: '2px solid white' }
-                                }}
+                                objectFit="contain"
+                                restrictPosition={false}
+                                minZoom={1}
+                                maxZoom={3}
                             />
                         </div>
 
