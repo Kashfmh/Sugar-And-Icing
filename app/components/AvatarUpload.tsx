@@ -1,11 +1,22 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { Camera, Upload, X, Loader2, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { uploadAvatar, deleteAvatar } from '@/lib/services/profileService';
 import Cropper, { ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import { Camera, Upload, X, Loader2, ZoomIn, ZoomOut } from 'lucide-react';
-import { uploadAvatar, deleteAvatar } from '@/lib/services/profileService';
+
+// CSS to make the square crop box look circular to the user
+const circleCropStyle = `
+  .cropper-view-box, .cropper-face {
+    border-radius: 50%;
+  }
+  .cropper-view-box {
+    outline: 0;
+    box-shadow: 0 0 0 1px #39f;
+  }
+`;
 
 interface AvatarUploadProps {
     userId: string;
@@ -17,129 +28,79 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
     const [preview, setPreview] = useState<string | null>(currentAvatarUrl);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cropperRef = useRef<ReactCropperElement>(null);
 
-    // Cropping State
+    // State
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [showCropModal, setShowCropModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const cropperRef = useRef<ReactCropperElement>(null);
-    // Zoom scale: 0.1 (min) to 3 (max)
-    const ZOOM_MIN = 0.1;
-    const ZOOM_MAX = 3;
-    const [zoom, setZoom] = useState(1);
-    const [isSliderActive, setIsSliderActive] = useState(false);
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
+
+            // 1. Validation
             if (file.size > 5 * 1024 * 1024) {
                 setError('File size too large. Maximum 5MB allowed.');
                 return;
             }
+
             const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!allowedTypes.includes(file.type)) {
                 setError('Invalid file type. Only JPEG, PNG, and WebP are allowed.');
                 return;
             }
+
+            // 2. Read File
             const reader = new FileReader();
-            reader.addEventListener('load', () => {
-                setImageSrc(reader.result?.toString() || '');
+            reader.onload = () => {
+                setImageSrc(reader.result as string);
                 setShowCropModal(true);
-            });
+            };
             reader.readAsDataURL(file);
-            e.target.value = ''; // Reset input
-        }
-    };
-
-    // Sync zoom state with cropper (Cropper v1.x)
-    // Map zoom scale to slider (0-100)
-    const zoomToSlider = (z: number) => ((z - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN)) * 100;
-    const sliderToZoom = (s: number) => ZOOM_MIN + ((ZOOM_MAX - ZOOM_MIN) * s) / 100;
-
-    const handleCropperZoom = useCallback(() => {
-        if (isSliderActive) return;
-        const cropper = cropperRef.current?.cropper;
-        if (cropper && cropper.getData && cropper.getData()) {
-            const newZoom = cropper.getData().scaleX || 1;
-            setZoom((prev) => (Math.abs(prev - newZoom) > 0.001 ? newZoom : prev));
-        }
-    }, [isSliderActive]);
-
-    const handleZoomSlider = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const sliderValue = parseFloat(e.target.value);
-        const newZoom = sliderToZoom(sliderValue);
-        setZoom(newZoom);
-        const cropper = cropperRef.current?.cropper;
-        if (cropper && cropper.zoomTo && cropper.getCanvasData && cropper.getCanvasData()) {
-            cropper.zoomTo(newZoom);
-        }
-    };
-
-    const handleSliderStart = () => setIsSliderActive(true);
-    const handleSliderEnd = () => setIsSliderActive(false);
-
-    const handleZoomIn = () => {
-        const cropper = cropperRef.current?.cropper;
-        if (cropper && cropper.zoomTo && cropper.getData && cropper.getCanvasData && cropper.getCanvasData()) {
-            const currentZoom = cropper.getData().scaleX || 1;
-            const newZoom = Math.min(currentZoom + 0.1, ZOOM_MAX);
-            cropper.zoomTo(newZoom);
-            setZoom(newZoom);
-        }
-    };
-
-    const handleZoomOut = () => {
-        const cropper = cropperRef.current?.cropper;
-        if (cropper && cropper.zoomTo && cropper.getData && cropper.getCanvasData && cropper.getCanvasData()) {
-            const currentZoom = cropper.getData().scaleX || 1;
-            const newZoom = Math.max(currentZoom - 0.1, ZOOM_MIN);
-            cropper.zoomTo(newZoom);
-            setZoom(newZoom);
+            
+            // Reset input
+            e.target.value = '';
         }
     };
 
     const handleSaveCrop = async () => {
-        if (!cropperRef.current?.cropper) {
-            setError('Cropper not initialized');
-            return;
-        }
-
+        if (!cropperRef.current) return;
+        
         try {
             setUploading(true);
-            setError(null);
-
-            // Get the cropped canvas from Cropper.js
-            const canvas = cropperRef.current.cropper.getCroppedCanvas({
-                width: 400,
-                height: 400,
+            const cropper = cropperRef.current?.cropper;
+            
+            // 1. Get the cropped canvas (Square)
+            const canvas = cropper.getCroppedCanvas({
+                width: 500,
+                height: 500,
                 imageSmoothingQuality: 'high',
             });
 
-            if (!canvas) {
-                throw new Error('Could not get cropped canvas');
-            }
+            // 2. Convert to Blob
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    setError('Failed to create image.');
+                    setUploading(false);
+                    return;
+                }
 
-            // Convert canvas to blob
-            const blob = await new Promise<Blob>((resolve, reject) => {
-                canvas.toBlob(
-                    (blob) => {
-                        if (blob) resolve(blob);
-                        else reject(new Error('Canvas to Blob conversion failed'));
-                    },
-                    'image/jpeg',
-                    0.95
-                );
-            });
+                // 3. Create File and Upload
+                const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+                await handleUpload(file);
+                
+                // Cleanup
+                setShowCropModal(false);
+                setImageSrc(null);
+            }, 'image/jpeg', 0.95);
 
-            const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-            await handleUpload(file);
-
-            setShowCropModal(false);
-            setImageSrc(null);
         } catch (e) {
             console.error(e);
-            setError('Failed to crop image. Please try again.');
+            setError('Failed to crop image.');
             setUploading(false);
         }
     };
@@ -147,206 +108,180 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
     const handleUpload = async (file: File) => {
         setError(null);
         const result = await uploadAvatar(file, userId);
+
         if (result.success && result.url) {
-            // Add timestamp to bypass browser caching of the old image
+            // Timestamp to bust cache
             const timestampUrl = `${result.url}?t=${Date.now()}`;
             setPreview(timestampUrl);
             onAvatarUpdate(timestampUrl);
             window.dispatchEvent(new Event('profile-updated'));
         } else {
+            console.error(result.error);
             setError('Failed to upload image. Please try again later.');
         }
         setUploading(false);
     };
 
-    const handleDelete = async () => {
-        try {
-            setUploading(true);
-            const result = await deleteAvatar(userId);
-            if (result.success) {
-                setPreview(null);
-                onAvatarUpdate(null);
-                window.dispatchEvent(new Event('profile-updated'));
-            } else {
-                setError('Failed to delete avatar.');
-            }
-        } catch (e) {
-            setError('Failed to delete avatar.');
-        } finally {
-            setUploading(false);
-            setShowDeleteModal(false);
+    const confirmDelete = async () => {
+        setShowDeleteModal(false);
+        setUploading(true);
+        setError(null);
+
+        const result = await deleteAvatar(userId);
+
+        if (result.success) {
+            setPreview(null);
+            onAvatarUpdate(null);
+            window.dispatchEvent(new Event('profile-updated'));
+        } else {
+            setError(result.error || 'Failed to delete avatar');
         }
+        setUploading(false);
     };
 
     return (
         <div className="flex flex-col items-center gap-4">
-            {/* Preview Circle */}
+            {/* Inject styles for the circular crop box */}
+            <style>{circleCropStyle}</style>
+
+            {/* Avatar Preview */}
             <div className="relative group">
                 <div className="w-32 h-32 relative rounded-full overflow-hidden bg-white border-4 border-white shadow-lg shrink-0">
                     {preview ? (
-                        <Image src={preview} alt="Profile" fill className="object-cover" unoptimized />
+                        <Image
+                            src={preview}
+                            alt="Profile"
+                            fill
+                            className="object-cover"
+                            unoptimized // Important for timestamp URLs
+                        />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-sai-pink/20 to-sai-pink/10">
                             <Camera className="w-12 h-12 text-sai-pink" />
-                                        <input
-                                            type="range"
-                                            min={0}
-                                            max={100}
-                                            step={1}
-                                            value={zoomToSlider(zoom)}
-                                            onChange={handleZoomSlider}
-                                            onMouseDown={handleSliderStart}
-                                            onMouseUp={handleSliderEnd}
-                                            onTouchStart={handleSliderStart}
-                                            onTouchEnd={handleSliderEnd}
-                                            className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"
-                                        />
+                        </div>
+                    )}
+                </div>
+
+                {!uploading && (
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white z-10"
+                    >
+                        <Upload className="w-6 h-6" />
+                    </button>
+                )}
+
+                {uploading && (
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center z-20">
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    </div>
+                )}
+            </div>
+
+            {/* Buttons */}
             <div className="flex gap-2">
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="px-4 py-2 bg-sai-pink text-white rounded-lg text-sm font-medium hover:bg-sai-pink/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="px-4 py-2 bg-sai-pink text-white rounded-lg text-sm font-medium hover:bg-sai-pink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
                     {preview ? 'Change Photo' : 'Upload Photo'}
                 </button>
+
                 {preview && (
-                    <button onClick={() => setShowDeleteModal(true)} disabled={uploading} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <X className="w-4 h-4" /> Remove
+                    <button
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={uploading}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                    >
+                        <X className="w-4 h-4" />
+                        Remove
                     </button>
                 )}
             </div>
 
-            {error && <div className="text-red-600 text-sm">{error}</div>}
-            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileSelect} />
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                    {error}
+                </div>
+            )}
 
-            {/* Crop Modal - Fixed Circle Mode (Instagram/Twitter Style) */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileSelect}
+            />
+
+            {/* Crop Modal */}
             {showCropModal && imageSrc && (
-                <>
-                    <style jsx global>{`
-                        .cropper-view-box {
-                            border-radius: 50% !important;
-                            outline: 3px solid rgba(255, 255, 255, 0.9) !important;
-                            outline-offset: -1px;
-                            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
-                        }
-                        .cropper-face {
-                            background-color: transparent !important;
-                        }
-                        .cropper-point,
-                        .cropper-line {
-                            display: none !important;
-                        }
-                    `}</style>
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-                            <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-bold text-lg text-sai-charcoal">Adjust Your Profile Photo</h3>
-                                    <p className="text-sm text-gray-500 mt-1">Drag to reposition • Scroll to zoom</p>
-                                </div>
-                                <button onClick={() => setShowCropModal(false)} className="hover:bg-gray-100 p-2 rounded-lg transition-colors">
-                                    <X className="w-5 h-5 text-gray-400" />
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="font-bold text-lg text-sai-charcoal">Adjust Photo</h3>
+                            <button onClick={() => setShowCropModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="relative h-80 w-full bg-black/90">
+                            <Cropper
+                                src={imageSrc}
+                                style={{ height: '100%', width: '100%' }}
+                                initialAspectRatio={1}
+                                aspectRatio={1}
+                                guides={false}
+                                viewMode={1}
+                                dragMode="move"
+                                cropBoxMovable={false}
+                                cropBoxResizable={false}
+                                toggleDragModeOnDblclick={false}
+                                background={false}
+                                ref={cropperRef}
+                            />
+                        </div>
+
+                        <div className="p-6 flex justify-between items-center bg-white">
+                            <div className="flex gap-2">
+                                <button onClick={() => cropperRef.current?.cropper.zoom(0.1)} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200" type="button">
+                                    <ZoomIn className="w-5 h-5 text-gray-600" />
+                                </button>
+                                <button onClick={() => cropperRef.current?.cropper.zoom(-0.1)} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200" type="button">
+                                    <ZoomOut className="w-5 h-5 text-gray-600" />
+                                </button>
+                                <button onClick={() => cropperRef.current?.cropper.rotate(90)} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200" type="button">
+                                    <RotateCw className="w-5 h-5 text-gray-600" />
                                 </button>
                             </div>
 
-                            {/* Cropper Container - Fixed Circle with Image Behind */}
-                            <div className="relative h-[400px] w-full bg-gray-900 overflow-hidden">
-                                <Cropper
-                                    src={imageSrc}
-                                    style={{ height: '100%', width: '100%' }}
-                                    aspectRatio={1}
-                                    viewMode={1}
-                                    dragMode="move"
-                                    cropBoxMovable={false}
-                                    cropBoxResizable={false}
-                                    guides={false}
-                                    background={false}
-                                    autoCropArea={0.8}
-                                    checkOrientation={true}
-                                    responsive={true}
-                                    ref={cropperRef}
-                                    crop={handleCropperZoom}
-                                    // Only set zoomTo if cropper is ready
-                                    {...(imageSrc && zoom && cropperRef.current?.cropper && cropperRef.current.cropper.getCanvasData() ? { zoomTo: zoom } : {})}
-                                />
-                            </div>
-
-                            <div className="p-6 space-y-6 bg-gray-50">
-                                {/* Zoom Control */}
-                                <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                    <label className="block text-sm font-medium text-gray-700 mb-3">Zoom Level</label>
-                                    <div className="flex items-center gap-4">
-                                        <ZoomOut
-                                            className="w-5 h-5 text-gray-400 flex-shrink-0 cursor-pointer hover:text-gray-600 transition-colors"
-                                            onClick={handleZoomOut}
-                                        />
-                                        <input
-                                            type="range"
-                                            min={0.1}
-                                            max={3}
-                                            step={0.01}
-                                            value={zoom}
-                                            onChange={handleZoomSlider}
-                                            onMouseDown={handleSliderStart}
-                                            onMouseUp={handleSliderEnd}
-                                            onTouchStart={handleSliderStart}
-                                            onTouchEnd={handleSliderEnd}
-                                            className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer accent-sai-pink"
-                                            style={{
-                                                accentColor: '#e11d48', // fallback for browsers that support accent-color
-                                            }}
-                                        />
-                                        <ZoomIn
-                                            className="w-5 h-5 text-gray-400 flex-shrink-0 cursor-pointer hover:text-gray-600 transition-colors"
-                                            onClick={handleZoomIn}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-3 justify-end">
-                                    <button
-                                        onClick={() => setShowCropModal(false)}
-                                        className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-200 bg-white border border-gray-300 rounded-lg transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSaveCrop}
-                                        disabled={uploading}
-                                        className="px-6 py-2.5 bg-sai-pink text-white font-medium rounded-lg hover:bg-sai-pink/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all shadow-lg shadow-sai-pink/30"
-                                    >
-                                        {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                        Set Profile Picture
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {/* Delete Confirmation Modal */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <h3 className="font-bold text-xl text-sai-charcoal mb-2">Remove Profile Picture?</h3>
-                        <p className="text-gray-600 mb-6">Are you sure you want to remove your profile picture?</p>
-                        <div className="flex gap-3 justify-end">
                             <button
-                                onClick={() => setShowDeleteModal(false)}
+                                onClick={handleSaveCrop}
                                 disabled={uploading}
-                                className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-100 bg-white border border-gray-300 rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                disabled={uploading}
-                                className="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                                className="px-6 py-2 bg-sai-pink text-white font-medium rounded-lg hover:bg-sai-pink/90 transition-colors flex items-center gap-2"
                             >
                                 {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                Remove
+                                Set Photo
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+                    <div className="relative bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+                        <h3 className="text-lg font-bold text-sai-charcoal mb-2">Remove Profile Picture?</h3>
+                        <p className="text-gray-600 mb-6">Are you sure you want to remove your profile picture? This cannot be undone.</p>
+                        <div className="flex gap-3 justify-end">
+                            <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg">Cancel</button>
+                            <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700">Remove</button>
                         </div>
                     </div>
                 </div>
             )}
         </div>
     );
+}
