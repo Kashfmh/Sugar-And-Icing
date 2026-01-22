@@ -41,7 +41,7 @@ export default function CheckoutPage() {
                 setContact({
                     first_name: prof?.first_name || '',
                     last_name: prof?.last_name || '',
-                    email: prof?.email || user.email || '',
+                    email: user.email || '',
                     phone: prof?.phone || ''
                 });
                 // Fetch addresses
