@@ -63,7 +63,15 @@ End-to-end order processing utilizing **Supabase Row Level Security (RLS)**. Use
     ```bash
     npm install
     ```
-3.  **Set up Database (Supabase)**
+3.  **Set up environment variables**
+    
+    Copy the example environment file:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Then open `.env.local` and fill in your Supabase and Stripe API keys.
+
+4.  **Set up Database (Supabase)**
     
     Run the following SQL script in your Supabase SQL Editor to initialize the database schema:
 
@@ -232,7 +240,7 @@ End-to-end order processing utilizing **Supabase Row Level Security (RLS)**. Use
     ```
     </details>
 
-4.  **Start the development server**
+5.  **Start the development server**
     ```bash
     npm run dev
     ```
