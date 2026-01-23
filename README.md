@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="public/images/logo/full-logo-pink.svg" alt="Sugar And Icing" width="250" />
+<img src="public/images/logo/full-logo-pink.svg" alt="Sugar And Icing" width="150" />
 
 **A high-performance, component-based e-commerce architecture designed for artisanal bakeries.**
 
