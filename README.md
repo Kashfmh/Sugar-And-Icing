@@ -25,25 +25,7 @@ Designed with **performance** and **security** first, it leverages the Next.js 1
 
 The system follows a modern **Serverless/Edge** architecture, utilizing Next.js as the orchestrator for both frontend UI and backend API routes.
 
-```mermaid
-graph TD
-    User[End User] -->|HTTPS| CDN[Next.js Edge Network]
-    CDN -->|SSR/RSC| App[App Router (Orchestrator)]
-    
-    subgraph "Frontend Layer (Client)"
-        App -->|Hydrates| UI[React Components (View)]
-        UI -->|State/Logic| Hooks[Custom Hooks (Controller)]
-    end
-
-    subgraph "Backend Layer (Server)"
-        App -->|API Routes| API[Next.js API Routes]
-        API -->|Transaction| Stripe[Stripe Payment Gateway]
-        API -->|Auth/Data| Supabase[Supabase (PostgreSQL)]
-    end
-
-    Supabase -->|Real-time| UI
-    Stripe -->|Webhook| API
-```
+![App Architecture](public/images/architecture.png)
 
 ## 🚀 Key Features
 
