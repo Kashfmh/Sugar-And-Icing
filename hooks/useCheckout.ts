@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { fetchUserProfile } from '@/lib/services/authService';
 import { useCart } from '@/hooks/useCart';
@@ -48,23 +48,52 @@ export function useCheckout() {
         loadData();
     }, []);
 
-    // 2. Initialize Stripe Payment Intent
+    const [orderId, setOrderId] = useState<string | null>(null);
+
+    // 2. Initialize Stripe Payment Intent (Create Order First)
+    const initializedRef = useRef(false);
+
     useEffect(() => {
-        if (items.length > 0) {
-            fetch('/api/payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items }),
-            })
-                .then((res) => res.json())
-                .then((data) => setClientSecret(data.clientSecret));
+        async function initPayment() {
+            if (initializedRef.current) return;
+
+            if (items.length > 0 && user) {
+                initializedRef.current = true; // Lock immediately
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+
+                fetch('/api/payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify({
+                        items,
+                        userId: user.id || null, // Keeping this for explicit logic compatibility
+                        userEmail: user.email || null
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        if (data.error) {
+                            console.error("Payment Init Error:", data.error);
+                        } else {
+                            setClientSecret(data.clientSecret);
+                            setOrderId(data.orderId);
+                        }
+                    })
+                    .catch(err => console.error("Fetch Error:", err));
+            }
         }
-    }, [items]);
+        initPayment();
+    }, [items, user]);
 
     return {
         // Data
         loading,
         clientSecret,
+        orderId,
         user,
         profile,
         addresses,

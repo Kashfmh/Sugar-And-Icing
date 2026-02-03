@@ -75,6 +75,7 @@ export default function CheckoutPage() {
                     <Elements stripe={stripePromise} options={{ clientSecret: checkout.clientSecret }}>
                         <PaymentForm
                             clientSecret={checkout.clientSecret}
+                            orderId={checkout.orderId!}
                             contact={checkout.contact}
                             cartTotal={checkout.cartTotal}
                             setIsProcessing={checkout.setIsProcessing}

@@ -1,39 +1,66 @@
+import { useState } from 'react';
 import { UserProfile, SpecialOccasion } from '@/lib/services/authService';
+import OrderHistoryModal from './OrderHistoryModal';
 
 interface DashboardViewProps {
     user: any;
     profile: UserProfile | null;
     occasions: SpecialOccasion[];
     recentlyViewed: any[];
+    orders: any[]; // New prop
+    totalOrders: number; // New prop
     router: any;
     setActiveTab: (tab: any) => void;
 }
 
-export default function DashboardView({ user, profile, occasions, recentlyViewed, router, setActiveTab }: DashboardViewProps) {
+export default function DashboardView({ user, profile, occasions, recentlyViewed, orders, totalOrders, router, setActiveTab }: DashboardViewProps) {
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const latestOrder = orders.length > 0 ? orders[0] : null;
+
+    const handleViewOrders = () => {
+        if (window.innerWidth >= 1024) {
+            setIsHistoryModalOpen(true);
+        } else {
+            router.push('/orders');
+        }
+    };
+
     return (
         <div className="space-y-6">
+            <OrderHistoryModal
+                isOpen={isHistoryModalOpen}
+                onClose={() => setIsHistoryModalOpen(false)}
+                orders={orders}
+            />
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Member Card */}
                 <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm relative overflow-hidden group">
                     <div className="flex items-start justify-between mb-6">
                         <h3 className="text-lg font-semibold text-sai-charcoal">Order History</h3>
-                        <span className="px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium text-sai-charcoal rounded-full border border-pink-200">
-                            Active
+                        <span className={`px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium rounded-full border ${latestOrder ? 'border-green-200 text-green-700' : 'border-gray-200 text-gray-500'}`}>
+                            {latestOrder ? latestOrder.status.replace('_', ' ') : 'No orders'}
                         </span>
                     </div>
                     <div className="mb-6">
-                        <div className="text-5xl font-bold text-sai-charcoal mb-2">0</div>
+                        <div className="text-5xl font-bold text-sai-charcoal mb-2">{totalOrders}</div>
                         <div className="text-sm text-sai-charcoal/60">total orders</div>
                     </div>
-                    {/* Placeholder chart */}
-                    <div className="h-32 mb-6 relative">
-                        <div className="absolute bottom-0 left-0 right-0 flex items-end gap-1">
-                            {[...Array(20)].map((_, i) => (
-                                <div key={i} className="flex-1 bg-sai-pink/30 rounded-t" style={{ height: `${Math.random() * 100}%` }}></div>
-                            ))}
-                        </div>
+
+                    {/* Latest Order Summary or Placeholder */}
+                    <div className="h-32 mb-6 relative bg-gray-50 rounded-xl p-4 flex flex-col justify-center">
+                        {latestOrder ? (
+                            <>
+                                <p className="text-sm text-gray-500 mb-1">Latest Order (ID: ...{latestOrder.id.slice(-4)})</p>
+                                <p className="text-xl font-bold text-sai-pink">RM {latestOrder.total_amount}</p>
+                                <p className="text-xs text-gray-400 mt-1">{new Date(latestOrder.created_at).toLocaleDateString()}</p>
+                            </>
+                        ) : (
+                            <p className="text-center text-gray-400 text-sm">You haven't placed any orders yet.</p>
+                        )}
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-200 cursor-pointer hover:bg-white/80 transition-colors">
+
+                    <div onClick={handleViewOrders} className="flex items-center justify-between p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-200 cursor-pointer hover:bg-white/80 transition-colors">
                         <span className="text-sm text-sai-charcoal/70">⟳ View all orders</span>
                     </div>
                 </div>

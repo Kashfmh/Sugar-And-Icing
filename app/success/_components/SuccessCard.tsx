@@ -4,9 +4,12 @@ import { motion } from 'motion/react';
 
 interface SuccessCardProps {
     orderId: string | null;
+    paymentStatus?: string | null;
 }
 
-export default function SuccessCard({ orderId }: SuccessCardProps) {
+export default function SuccessCard({ orderId, paymentStatus }: SuccessCardProps) {
+    const isSuccess = paymentStatus === 'succeeded';
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -15,12 +18,16 @@ export default function SuccessCard({ orderId }: SuccessCardProps) {
             className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden"
         >
             <div className="bg-sai-pink/10 p-8 text-center">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-10 h-10 text-green-600" />
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isSuccess ? 'bg-green-100' : 'bg-orange-100'}`}>
+                    <CheckCircle className={`w-10 h-10 ${isSuccess ? 'text-green-600' : 'text-orange-500'}`} />
                 </div>
-                <h1 className="text-3xl font-serif font-bold text-sai-charcoal mb-2">Order Confirmed!</h1>
+                <h1 className="text-3xl font-serif font-bold text-sai-charcoal mb-2">
+                    {isSuccess ? 'Order Confirmed!' : 'Processing Order'}
+                </h1>
                 <p className="text-gray-600">
-                    Thank you for your order. We've received your request and payment receipt.
+                    {isSuccess
+                        ? "Thank you for your order. We has received your payment."
+                        : "We've received your request. Please wait while we verify."}
                 </p>
             </div>
 
@@ -32,11 +39,18 @@ export default function SuccessCard({ orderId }: SuccessCardProps) {
 
                 <div className="space-y-4 text-sm text-gray-600">
                     <p>
-                        We will verify your payment shortly. You will receive a confirmation message via WhatsApp or Email once verified.
+                        You will receive a confirmation message via WhatsApp or Email shortly.
                     </p>
                     <ul className="list-disc pl-5 space-y-1">
-                        <li>Payment Status: <span className="font-medium text-orange-500">Pending Verification</span></li>
-                        <li>Preparation: Will start after verification</li>
+                        <li>
+                            Payment Status: {' '}
+                            {isSuccess ? (
+                                <span className="font-medium text-green-600">Paid (Stripe)</span>
+                            ) : (
+                                <span className="font-medium text-orange-500">Pending Verification</span>
+                            )}
+                        </li>
+                        <li>Preparation: Will start immediately</li>
                     </ul>
                 </div>
 

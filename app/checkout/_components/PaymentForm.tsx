@@ -7,15 +7,16 @@ import NumberBadge from '@/components/ui/number-badge';
 
 interface PaymentFormProps {
     clientSecret: string;
+    orderId: string;
     contact: any;
     cartTotal: number;
     setIsProcessing: (b: boolean) => void;
 }
 
-export default function PaymentForm({ clientSecret, contact, cartTotal, setIsProcessing }: PaymentFormProps) {
+export default function PaymentForm({ clientSecret, orderId, contact, cartTotal, setIsProcessing }: PaymentFormProps) {
     const stripe = useStripe();
     const elements = useElements();
-    const { items, clearCart } = useCart();
+    const { clearCart } = useCart();
 
     // Local loading state for the mobile button inside this form
     const [loading, setLoading] = useState(false);
@@ -33,36 +34,12 @@ export default function PaymentForm({ clientSecret, contact, cartTotal, setIsPro
             const { error: submitError } = await elements.submit();
             if (submitError) throw submitError;
 
-            // 1. Create Order
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data: order, error: orderError } = await supabase
-                .from('orders')
-                .insert({
-                    user_id: user?.id || null,
-                    total_amount: cartTotal,
-                    status: 'pending_payment',
-                    guest_info: contact
-                })
-                .select()
-                .single();
-
-            if (orderError) throw orderError;
-
-            // 2. Save Items
-            const orderItems = items.map(item => ({
-                order_id: order.id,
-                product_name: item.name,
-                quantity: item.quantity,
-                price_at_purchase: item.price,
-            }));
-            await supabase.from('order_items').insert(orderItems);
-
-            // 3. Confirm Payment
+            // 1. Confirm Payment (Order is already created server-side)
             const { error: payError } = await stripe.confirmPayment({
                 elements,
                 clientSecret,
                 confirmParams: {
-                    return_url: `${window.location.origin}/success?orderId=${order.id}`,
+                    return_url: `${window.location.origin}/success?orderId=${orderId}`, // Use the passed orderId
                     payment_method_data: {
                         billing_details: {
                             name: `${contact.first_name} ${contact.last_name}`,

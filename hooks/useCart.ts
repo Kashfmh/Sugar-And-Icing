@@ -129,7 +129,13 @@ export const useCart = create<CartState>()(
         }
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: async () => {
+        set({ items: [] });
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from('cart_items').delete().eq('user_id', user.id);
+        }
+      },
 
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 

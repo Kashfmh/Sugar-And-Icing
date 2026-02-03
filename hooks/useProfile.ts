@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import {
     validateSession,
     signOut,
@@ -44,6 +45,8 @@ export function useProfile() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [occasions, setOccasions] = useState<SpecialOccasion[]>([]);
     const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
+    const [totalOrders, setTotalOrders] = useState(0);
     const [status, setStatus] = useState<Status | null>(null);
 
     const [formData, setFormData] = useState<FormData>({
@@ -68,8 +71,56 @@ export function useProfile() {
     useEffect(() => {
         if (user) {
             loadRecentlyViewed();
+            loadOrders();
+
+            // Real-time Subscription
+            const channel = supabase
+                .channel('orders-channel')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*', // Listen for INSERT and UPDATE
+                        schema: 'public',
+                        table: 'orders',
+                        filter: `user_id=eq.${user.id}`
+                    },
+                    (payload) => {
+                        console.log('Real-time order update:', payload);
+                        loadOrders(); // Refresh orders on any change
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [user]);
+
+    async function loadOrders() {
+        try {
+            if (!user) return;
+
+            const { data, count, error } = await supabase
+                .from('orders')
+                .select('*, order_items(*, products(image_url))', { count: 'exact' })
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Calculate total items for each order
+            const formattedOrders = (data || []).map((order: any) => ({
+                ...order,
+                items_count: order.order_items?.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0) || 0
+            }));
+
+            setOrders(formattedOrders);
+            setTotalOrders(count || 0);
+        } catch (error) {
+            console.error('Failed to load orders:', error);
+        }
+    }
 
     useEffect(() => {
         if (profile) {
@@ -212,6 +263,8 @@ export function useProfile() {
         addresses,
         occasions,
         recentlyViewed,
+        orders,
+        totalOrders,
         status,
         formData,
         // Actions

@@ -19,6 +19,8 @@ export default function ProfilePage() {
         addresses,
         occasions,
         recentlyViewed,
+        orders,
+        totalOrders,
         status,
         formData,
         setActiveTab,
@@ -55,6 +57,8 @@ export default function ProfilePage() {
                         profile={profile}
                         occasions={occasions}
                         recentlyViewed={recentlyViewed}
+                        orders={orders}
+                        totalOrders={totalOrders}
                         router={router}
                         setActiveTab={setActiveTab}
                     />
