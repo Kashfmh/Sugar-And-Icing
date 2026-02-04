@@ -19,6 +19,12 @@ export function useCheckout() {
     const [deliveryType, setDeliveryType] = useState<'pickup' | 'delivery'>('pickup');
     const [selectedAddress, setSelectedAddress] = useState<string>('');
 
+    const refreshAddresses = async () => {
+        if (!user) return;
+        const { data } = await supabase.from('addresses').select('*').eq('user_id', user.id);
+        setAddresses(data || []);
+    };
+
     // 1. Fetch User Data & Addresses
     useEffect(() => {
         async function loadData() {
@@ -27,20 +33,19 @@ export function useCheckout() {
             setUser(user);
 
             if (user) {
-                const [prof, addr] = await Promise.all([
-                    fetchUserProfile(user.id),
-                    supabase.from('addresses').select('*').eq('user_id', user.id)
-                ]);
+                const profile = await fetchUserProfile(user.id);
+                setProfile(profile);
 
-                setProfile(prof);
-                setAddresses(addr.data || []);
+                // Fetch addresses directly using the new helper or inline
+                const { data: addrData } = await supabase.from('addresses').select('*').eq('user_id', user.id);
+                setAddresses(addrData || []);
 
                 // Pre-fill contact info
                 setContact({
-                    first_name: prof?.first_name || '',
-                    last_name: prof?.last_name || '',
+                    first_name: profile?.first_name || '',
+                    last_name: profile?.last_name || '',
                     email: user.email || '',
-                    phone: prof?.phone || ''
+                    phone: profile?.phone || ''
                 });
             }
             setLoading(false);
@@ -111,5 +116,6 @@ export function useCheckout() {
         setDeliveryType,
         setSelectedAddress,
         setIsProcessing,
+        refreshAddresses, // Exposed helper
     };
 }

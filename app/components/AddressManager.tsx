@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Trash2, MapPin, Plus, Star, Pencil } from 'lucide-react';
+import AlertModal from './AlertModal';
 
 interface Address {
     id: string;
@@ -19,10 +20,16 @@ interface AddressManagerProps {
     addresses: Address[];
     onUpdate: () => void;
     userId: string;
+    initialIsAdding?: boolean; // New prop to skip list view
 }
 
-export default function AddressManager({ addresses, onUpdate, userId }: AddressManagerProps) {
-    const [isAdding, setIsAdding] = useState(false);
+// DELIVERY ZONE CONFIGURATION
+const ALLOWED_POSTCODES = ['50470']; // KL Sentral / Brickfields
+const FIXED_CITY = 'Kuala Lumpur';
+const FIXED_STATE = 'Kuala Lumpur';
+
+export default function AddressManager({ addresses, onUpdate, userId, initialIsAdding = false }: AddressManagerProps) {
+    const [isAdding, setIsAdding] = useState(initialIsAdding);
     const formRef = useRef<HTMLDivElement>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -30,15 +37,57 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
         label: 'Home',
         address_line1: '',
         address_line2: '',
-        city: '',
-        state: '',
+        city: FIXED_CITY,
+        state: FIXED_STATE,
         postcode: '',
         is_default: false
     });
 
+    // Alert Modal State
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'error' | 'success' | 'confirm' | 'delete';
+        onConfirm?: () => void;
+        confirmText?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
+        setAlertConfig({
+            isOpen: true,
+            title,
+            message,
+            type
+        });
+    };
+
+    const showConfirm = (title: string, message: string, onConfirm: () => void, type: 'confirm' | 'delete' = 'confirm') => {
+        setAlertConfig({
+            isOpen: true,
+            title,
+            message,
+            type,
+            onConfirm,
+            confirmText: type === 'delete' ? 'Delete' : 'Confirm'
+        });
+    };
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
+
+        // Validation: Delivery Zone Check
+        if (!ALLOWED_POSTCODES.includes(formData.postcode)) {
+            showAlert('Delivery Zone Restriction', `Sorry, we currently only deliver to KL Sentral area (Postcode: ${ALLOWED_POSTCODES.join(', ')}). For other areas, please choose Pickup.`, 'error');
+            setLoading(false);
+            return;
+        }
 
         try {
             // If setting as default, first unset other defaults
@@ -91,27 +140,33 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
             onUpdate();
         } catch (error) {
             console.error('Error saving address:', error);
-            alert('Failed to save address');
+            showAlert('Error', 'Failed to save address. Please try again.', 'error');
         } finally {
             setLoading(false);
         }
     }
 
     async function handleDelete(id: string) {
-        if (!confirm('Are you sure you want to delete this address?')) return;
+        showConfirm(
+            'Delete Address?',
+            'Are you sure you want to delete this address? This action cannot be undone.',
+            async () => {
+                try {
+                    const { error } = await supabase
+                        .from('addresses')
+                        .delete()
+                        .eq('id', id);
 
-        try {
-            const { error } = await supabase
-                .from('addresses')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            onUpdate();
-        } catch (error) {
-            console.error('Error deleting address:', error);
-            alert('Failed to delete address');
-        }
+                    if (error) throw error;
+                    onUpdate();
+                    showAlert('Success', 'Address deleted successfully.', 'success');
+                } catch (error) {
+                    console.error('Error deleting address:', error);
+                    showAlert('Error', 'Failed to delete address.', 'error');
+                }
+            },
+            'delete'
+        );
     }
 
     function handleEdit(addr: Address) {
@@ -165,8 +220,8 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                             label: 'Home',
                             address_line1: '',
                             address_line2: '',
-                            city: '',
-                            state: '',
+                            city: FIXED_CITY,
+                            state: FIXED_STATE,
                             postcode: '',
                             is_default: false
                         });
@@ -255,6 +310,7 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                     ref={formRef}
                     className="bg-gray-50 rounded-xl p-6 border border-gray-200 animate-in fade-in slide-in-from-top-4"
                 >
+                    {/* ... (keep existing form content unchanged, just wrapper) ... */}
                     <h4 className="font-medium text-sai-charcoal mb-4">{editingId ? 'Edit Address' : 'Add New Address'}</h4>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -320,27 +376,20 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                                 <input
-                                    required
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200"
-                                    placeholder="Kuala Lumpur"
+                                    readOnly
+                                    disabled
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed"
                                     value={formData.city}
-                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <select
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white"
+                                <input
+                                    readOnly
+                                    disabled
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed"
                                     value={formData.state}
-                                    onChange={e => setFormData({ ...formData, state: e.target.value })}
-                                >
-                                    <option value="">Select State</option>
-                                    <option>Kuala Lumpur</option>
-                                    <option>Selangor</option>
-                                    <option>Johor</option>
-                                    <option>Penang</option>
-                                    {/* Add others as needed */}
-                                </select>
+                                />
                             </div>
                         </div>
 
@@ -354,8 +403,8 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                                         label: 'Home',
                                         address_line1: '',
                                         address_line2: '',
-                                        city: '',
-                                        state: '',
+                                        city: FIXED_CITY,
+                                        state: FIXED_STATE,
                                         postcode: '',
                                         is_default: false
                                     });
@@ -375,6 +424,16 @@ export default function AddressManager({ addresses, onUpdate, userId }: AddressM
                     </form>
                 </div>
             )}
+
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                confirmText={alertConfig.confirmText}
+            />
         </div>
     );
 }

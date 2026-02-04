@@ -69,6 +69,7 @@ export default function CheckoutPage() {
                         selectedAddress={checkout.selectedAddress}
                         setSelectedAddress={checkout.setSelectedAddress}
                         userId={checkout.user?.id}
+                        onRefresh={checkout.refreshAddresses}
                     />
 
                     {/* We wrap ONLY the payment form area with Stripe Elements */}
