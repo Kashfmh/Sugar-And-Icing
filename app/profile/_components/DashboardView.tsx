@@ -34,12 +34,15 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Member Card */}
-                <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm relative overflow-hidden group">
+                {/* Order History Card - Clickable */}
+                <div
+                    onClick={handleViewOrders}
+                    className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-all cursor-pointer"
+                >
                     <div className="flex items-start justify-between mb-6">
                         <h3 className="text-lg font-semibold text-sai-charcoal">Order History</h3>
-                        <span className={`px-3 py-1 bg-white/80 backdrop-blur-sm text-xs font-medium rounded-full border ${latestOrder ? 'border-green-200 text-green-700' : 'border-gray-200 text-gray-500'}`}>
-                            {latestOrder ? latestOrder.status.replace('_', ' ') : 'No orders'}
+                        <span className="px-3 py-1 bg-gray-50 text-xs font-medium text-gray-500 rounded-full border border-gray-200 group-hover:bg-sai-pink group-hover:text-white group-hover:border-sai-pink transition-colors">
+                            View All
                         </span>
                     </div>
                     <div className="mb-6">
@@ -48,20 +51,21 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                     </div>
 
                     {/* Latest Order Summary or Placeholder */}
-                    <div className="h-32 mb-6 relative bg-gray-50 rounded-xl p-4 flex flex-col justify-center">
+                    <div className="h-32 mb-0 relative bg-gray-50 rounded-xl p-4 flex flex-col justify-center group-hover:bg-white border border-transparent group-hover:border-gray-100 transition-colors">
                         {latestOrder ? (
                             <>
-                                <p className="text-sm text-gray-500 mb-1">Latest Order (ID: ...{latestOrder.id.slice(-4)})</p>
-                                <p className="text-xl font-bold text-sai-pink">RM {latestOrder.total_amount}</p>
-                                <p className="text-xs text-gray-400 mt-1">{new Date(latestOrder.created_at).toLocaleDateString()}</p>
+                                <p className="text-sm text-gray-500 mb-1">Latest Order #{latestOrder.id.slice(0, 8).toUpperCase()}</p>
+                                <p className="text-xl font-bold text-sai-pink">RM {latestOrder.total_amount?.toFixed(2)}</p>
+                                <div className="flex justify-between items-center mt-2">
+                                    <p className="text-xs text-gray-400">{new Date(latestOrder.created_at).toLocaleDateString()}</p>
+                                    <span className="capitalize text-xs font-medium px-2 py-0.5 bg-white rounded border border-gray-100 text-sai-charcoal">
+                                        {latestOrder.status.replace('_', ' ')}
+                                    </span>
+                                </div>
                             </>
                         ) : (
                             <p className="text-center text-gray-400 text-sm">You haven't placed any orders yet.</p>
                         )}
-                    </div>
-
-                    <div onClick={handleViewOrders} className="flex items-center justify-between p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-200 cursor-pointer hover:bg-white/80 transition-colors">
-                        <span className="text-sm text-sai-charcoal/70">⟳ View all orders</span>
                     </div>
                 </div>
 
@@ -91,7 +95,7 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                             </div>
                         </div>
                     </div>
-                    <button className="w-full mt-6 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors flex items-center justify-center gap-2">
+                    <button onClick={() => setActiveTab('edit-profile')} className="w-full mt-6 py-3 bg-sai-charcoal text-white rounded-xl font-medium hover:bg-sai-charcoal/90 transition-colors flex items-center justify-center gap-2">
                         View Profile
                     </button>
                 </div>
