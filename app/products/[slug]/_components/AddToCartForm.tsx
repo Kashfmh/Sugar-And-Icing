@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/useCart';
+import { supabase } from '@/lib/supabase';
+import { fetchUserProfile } from '@/lib/services/authService';
 import { ProductOption } from '@/hooks/useProductDetails';
 import Counter from '@/app/components/Counter';
 import { ChevronDown, Check, ShoppingCart } from 'lucide-react';
@@ -30,6 +32,60 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
     const frostingOptions = options.filter(opt => opt.option_category === 'frosting');
     const toppingOptions = options.filter(opt => opt.option_category === 'topping');
     const dietaryOptions = options.filter(opt => opt.option_category === 'dietary');
+
+    // Sweet Preferences Integration: Auto-Preselect
+    useEffect(() => {
+        async function applyPreferences() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const profile = await fetchUserProfile(user.id);
+            if (!profile) return;
+
+            // 1. Auto-select Base Flavor if matches Favorite
+            if (profile.favorite_flavors?.length > 0 && baseOptions.length > 0 && !selectedBase) {
+                // Find first matching flavor
+                const match = baseOptions.find(opt =>
+                    profile.favorite_flavors.some((fav: string) =>
+                        opt.option_name.toLowerCase().includes(fav.toLowerCase()) ||
+                        fav.toLowerCase().includes(opt.option_name.toLowerCase())
+                    )
+                );
+
+                if (match) {
+                    setSelectedBase(match.option_name);
+                }
+            }
+
+            // 2. Auto-select Frosting if matches Favorite (Secondary check)
+            if (profile.favorite_flavors?.length > 0 && frostingOptions.length > 0 && !selectedFrosting) {
+                const match = frostingOptions.find(opt =>
+                    profile.favorite_flavors.some((fav: string) =>
+                        opt.option_name.toLowerCase().includes(fav.toLowerCase()) ||
+                        fav.toLowerCase().includes(opt.option_name.toLowerCase())
+                    )
+                );
+                if (match) {
+                    setSelectedFrosting(match.option_name);
+                }
+            }
+
+            // 3. Auto-select Dietary Options
+            if (profile.dietary_restrictions?.length > 0 && dietaryOptions.length > 0) {
+                const matches = dietaryOptions
+                    .filter(opt => profile.dietary_restrictions.includes(opt.option_name))
+                    .map(opt => opt.option_name);
+
+                if (matches.length > 0) {
+                    // Combine with existing (should be empty usually)
+                    setSelectedDietaryOptions(prev => Array.from(new Set([...prev, ...matches])));
+                }
+            }
+        }
+        applyPreferences();
+    }, [baseOptions, frostingOptions, dietaryOptions]); // Run once when options load
+    // Note: passing options as deps to ensure we have them before checking
+
 
     const calculatePrice = () => {
         if (!product) return 0;

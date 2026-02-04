@@ -35,9 +35,9 @@ export default function InboxPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-24 px-4 bg-sai-cream">
+        <div className="min-h-screen bg-sai-cream flex flex-col items-center justify-center px-4 py-24">
             <AuthSync />
-            <div className="max-w-2xl mx-auto">
+            <div className="w-full max-w-2xl">
                 <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-200">
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold text-sai-charcoal font-serif">Inbox</h1>
