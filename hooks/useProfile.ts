@@ -224,7 +224,7 @@ export function useProfile() {
             // @ts-ignore
             await updateUserProfile(user.id, updates);
 
-            const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);
+           const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);
 
             setProfile(updatedProfile);
             setAddresses(updatedAddresses);

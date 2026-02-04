@@ -43,7 +43,8 @@ export default function CartList() {
                                         <div className="mt-2 space-y-1">
                                             {Object.entries(item.metadata).map(([key, value]) => {
                                                 if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                                                if (key === 'design_notes') return null; // Skip redundant notes if bulky
+                                                // if (key === 'design_notes') return null; // Showing notes now
+
                                                 return (
                                                     <div key={key} className="text-xs text-gray-500 flex items-start gap-1">
                                                         <span className="capitalize font-medium text-gray-700">{key}:</span>
