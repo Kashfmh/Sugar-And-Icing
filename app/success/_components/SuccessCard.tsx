@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CheckCircle, Home, ShoppingBag } from 'lucide-react';
+import { CheckCircle, Home, ShoppingBag, ClipboardList } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface SuccessCardProps {
@@ -56,11 +56,11 @@ export default function SuccessCard({ orderId, paymentStatus }: SuccessCardProps
 
                 <div className="flex flex-col gap-3 pt-2">
                     <Link
-                        href="/"
+                        href="/profile"
                         className="w-full bg-sai-pink text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                     >
-                        <Home className="w-4 h-4" />
-                        Return Home
+                        <ClipboardList className="w-4 h-4" />
+                        View Order Status
                     </Link>
                     <Link
                         href="/other-treats"
