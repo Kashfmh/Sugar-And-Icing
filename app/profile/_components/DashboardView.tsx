@@ -196,7 +196,7 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                                         <p className="text-sm text-sai-charcoal/60 mb-6">
                                             Don&apos;t forget to order something sweet!
                                         </p>
-                                        <button onClick={() => router.push('/products')} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                                        <button onClick={() => router.push('/custom-cakes')} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
                                             Order a Cake Now
                                         </button>
                                     </>

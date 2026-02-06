@@ -282,7 +282,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: any }) {
             {/* Items List */}
             <div className="divide-y divide-gray-50">
                 {order.order_items?.map((item, idx) => (
-                    <div key={idx} className="p-6 flex gap-6 hover:bg-gray-50/30 transition-colors group cursor-pointer" onClick={() => router.push(getImageUrl(item) ? '/products' : '/products')}>
+                    <div key={idx} className="p-6 flex gap-6 hover:bg-gray-50/30 transition-colors group cursor-pointer" onClick={() => router.push('/other-treats')}>
                         {/* Using router push just as placeholder, ideally goes to product page if slug available */}
 
                         {/* Image */}
@@ -342,7 +342,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: any }) {
                     </button>
 
                     <button
-                        onClick={() => router.push('/products')}
+                        onClick={() => router.push('/other-treats')}
                         className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
                     >
                         Buy Again
