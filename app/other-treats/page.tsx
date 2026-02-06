@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { generateProductSlug } from '@/lib/slugify';
@@ -55,6 +55,14 @@ export default function MenuPage() {
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const productId = searchParams.get('product_id');
+        if (productId && !isMobile) {
+            setSelectedProductId(productId);
+        }
+    }, [searchParams, isMobile]);
 
     const handleProductClick = (product: Product) => {
         if (isMobile) {
@@ -62,6 +70,8 @@ export default function MenuPage() {
             router.push(`/products/${slug}`);
         } else {
             setSelectedProductId(product.id);
+            // Optionally update URL without reload
+            window.history.pushState(null, '', `?product_id=${product.id}`);
         }
     };
 

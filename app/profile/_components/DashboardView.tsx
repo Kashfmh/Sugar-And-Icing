@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Zap } from 'lucide-react';
 import { UserProfile, SpecialOccasion } from '@/lib/services/authService';
 import OrderHistoryModal from './OrderHistoryModal';
@@ -16,6 +17,14 @@ interface DashboardViewProps {
 
 export default function DashboardView({ user, profile, occasions, recentlyViewed, orders, totalOrders, router, setActiveTab }: DashboardViewProps) {
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
     const latestOrder = orders.length > 0 ? orders[0] : null;
 
     const handleViewOrders = () => {
@@ -259,7 +268,13 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                     {recentlyViewed.length > 0 ? (
                         <div className="space-y-4">
                             {recentlyViewed.slice(0, 3).map((item) => (
-                                <div key={item.id} className="flex gap-3 items-center group cursor-pointer" onClick={() => router.push(`/products/${item.slug || item.id}`)}>
+                                <div key={item.id} className="flex gap-3 items-center group cursor-pointer" onClick={() => {
+                                    if (isMobile) {
+                                        router.push(`/products/${item.slug || item.id}`);
+                                    } else {
+                                        router.push(`/other-treats?product_id=${item.id}`);
+                                    }
+                                }}>
                                     <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden relative flex-shrink-0">
                                         {item.image_url ? (
                                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
