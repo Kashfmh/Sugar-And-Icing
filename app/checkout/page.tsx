@@ -5,10 +5,9 @@ import { ChevronLeft, Loader2 } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Controller
+// controller
 import { useCheckout } from '@/hooks/useCheckout';
 
-// View Components
 import ContactInfo from './_components/ContactInfo';
 import DeliveryOptions from './_components/DeliveryOptions';
 import PaymentForm from './_components/PaymentForm';
@@ -19,7 +18,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function CheckoutPage() {
     const checkout = useCheckout();
 
-    // 1. Loading State
+    // loading state
     if (checkout.loading || !checkout.clientSecret) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-sai-white">
@@ -28,7 +27,7 @@ export default function CheckoutPage() {
         );
     }
 
-    // 2. Empty Cart State
+    // empty cart
     if (checkout.cartItems.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-sai-white gap-4">
@@ -40,7 +39,6 @@ export default function CheckoutPage() {
 
     return (
         <main className="min-h-screen bg-sai-white pb-12">
-            {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 lg:hidden">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center">
                     <Link href="/other-treats" className="flex items-center text-gray-500 hover:text-sai-pink transition-colors">
@@ -50,10 +48,7 @@ export default function CheckoutPage() {
                 </div>
             </header>
 
-            {/* Layout Grid */}
             <div className="max-w-7xl mx-auto px-4 py-8 lg:mt-16 lg:grid lg:grid-cols-12 lg:gap-8">
-
-                {/* Left Column (Forms) */}
                 <div className="lg:col-span-8 space-y-8">
                     <ContactInfo
                         contact={checkout.contact}
@@ -72,7 +67,7 @@ export default function CheckoutPage() {
                         onRefresh={checkout.refreshAddresses}
                     />
 
-                    {/* We wrap ONLY the payment form area with Stripe Elements */}
+                    {/* stripe provider wrapper */}
                     <Elements stripe={stripePromise} options={{ clientSecret: checkout.clientSecret }}>
                         <PaymentForm
                             clientSecret={checkout.clientSecret}
@@ -84,7 +79,6 @@ export default function CheckoutPage() {
                     </Elements>
                 </div>
 
-                {/* Right Column (Summary) */}
                 <div className="lg:col-span-4 mt-8 lg:mt-0">
                     <OrderSummary
                         cartItems={checkout.cartItems}

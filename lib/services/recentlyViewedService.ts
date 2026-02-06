@@ -13,22 +13,16 @@ export interface RecentlyViewedProduct {
     } | null;  // Single object, not array (Supabase returns single related row)
 }
 
-/**
- * Track a product view for logged-in user
- * Following MVC - Controller layer for business logic
- */
+// track product view
 export async function trackProductView(userId: string, productId: string): Promise<void> {
-    console.log('[trackProductView] START - userId:', userId, 'productId:', productId);
 
     try {
-        // Upsert to recently_viewed (update timestamp if already exists)
+        // upsert to update timestamp
         const dataToInsert = {
             user_id: userId,
             product_id: productId,
             viewed_at: new Date().toISOString()
         };
-
-        console.log('[trackProductView] Attempting upsert with data:', dataToInsert);
 
         const { data: upsertData, error: upsertError } = await supabase
             .from('recently_viewed')
@@ -78,10 +72,7 @@ export async function trackProductView(userId: string, productId: string): Promi
     }
 }
 
-/**
- * Get recently viewed products for a user
- * Following MVC - Controller layer
- */
+// get recent views
 export async function getRecentlyViewed(
     userId: string,
     limit: number = 10
@@ -110,7 +101,7 @@ export async function getRecentlyViewed(
             return [];
         }
 
-        // Filter out any items with null products (deleted products) and cast properly
+        // clean up array structure
         return ((data || []) as any[])
             .filter(item => item.products !== null)
             .map(item => ({

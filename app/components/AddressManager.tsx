@@ -82,7 +82,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
         e.preventDefault();
         setLoading(true);
 
-        // Validation: Delivery Zone Check
+        // validation: delivery zone check
         if (!ALLOWED_POSTCODES.includes(formData.postcode)) {
             showAlert('Delivery Zone Restriction', `Sorry, we currently only deliver to KL Sentral area (Postcode: ${ALLOWED_POSTCODES.join(', ')}). For other areas, please choose Pickup.`, 'error');
             setLoading(false);

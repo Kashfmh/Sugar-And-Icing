@@ -43,7 +43,7 @@ export default function ProductPage() {
 
     return (
         <main className="min-h-screen bg-white md:pt-28">
-            {/* Mobile Header */}
+            {/* mobile header */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
                 <Link href="/other-treats" className="inline-flex items-center gap-2 text-sai-charcoal">
                     <ArrowLeft className="w-5 h-5" />
@@ -52,17 +52,14 @@ export default function ProductPage() {
             </div>
 
             <div className="max-w-4xl mx-auto p-4 pb-8">
-                {/* Image Gallery */}
                 <ProductGallery images={images} productName={product.name} />
 
-                {/* Product Info */}
                 <div className="space-y-4">
                     <ProductInfo product={product} />
 
-                    {/* Add To Cart & Customization */}
+                    {/* customization form */}
                     <AddToCartForm product={product} options={options} />
 
-                    {/* Reviews */}
                     <ProductReviews reviews={reviews} />
                 </div>
             </div>

@@ -25,12 +25,10 @@ export default function CartPage() {
                 </h1>
 
                 <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-                    {/* Cart Items List */}
                     <div className="lg:col-span-8">
                         <CartList />
                     </div>
 
-                    {/* Order Summary */}
                     <div className="lg:col-span-4 mt-8 lg:mt-0">
                         <CartSummary />
                     </div>

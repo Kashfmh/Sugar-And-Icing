@@ -43,13 +43,10 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-sai-white pt-24">
-            {/* Hero Section */}
             <ProfileHeader user={user} profile={profile} />
 
-            {/* Tabs */}
             <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            {/* Content */}
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {activeTab === 'dashboard' && (
                     <DashboardView

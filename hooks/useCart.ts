@@ -3,8 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
 
 export interface CartItem {
-  id: string; // Helper ID
-  productId: string; // Product UUID
+  id: string;
+  productId: string;
   name: string;
   price: number;
   image_url?: string;
@@ -39,7 +39,7 @@ export const useCart = create<CartState>()(
       setLoading: (isLoading) => set({ isLoading }),
 
       addItem: async (newItem) => {
-        // Optimistic Update
+        // optimistic update
         const state = get();
         const existingItemIndex = state.items.findIndex(
           (item) => item.id === newItem.id
@@ -54,7 +54,7 @@ export const useCart = create<CartState>()(
 
         set({ items: updatedItems, isOpen: true });
 
-        // DB Sync
+        // sync with db
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           try {
@@ -64,20 +64,20 @@ export const useCart = create<CartState>()(
               .eq('user_id', user.id)
               .eq('product_id', newItem.productId);
 
-            // Filter by metadata match in JS
+            // check if item with same custom options exists
             const match = existingRows?.find(row =>
               JSON.stringify(row.metadata) === JSON.stringify(newItem.metadata)
             );
 
             if (match) {
-              // Update quantity
+              // update quantity
               const newQty = match.quantity + newItem.quantity;
               await supabase
                 .from('cart_items')
                 .update({ quantity: newQty })
                 .eq('id', match.id);
             } else {
-              // Insert
+              // insert new
               await supabase.from('cart_items').insert({
                 user_id: user.id,
                 product_id: newItem.productId,
@@ -87,7 +87,7 @@ export const useCart = create<CartState>()(
               });
             }
 
-            // Fresh sync to normalize IDs
+            // resync to get real db ids
             await get().syncWithUser();
 
           } catch (error) {

@@ -11,7 +11,7 @@ export function useCheckout() {
     const [profile, setProfile] = useState<any>(null);
     const [addresses, setAddresses] = useState<any[]>([]);
 
-    // Global Payment State (To sync the Desktop Button in OrderSummary with the Form)
+    // sync button loading state
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Form State
@@ -25,7 +25,7 @@ export function useCheckout() {
         setAddresses(data || []);
     };
 
-    // 1. Fetch User Data & Addresses
+    // load initial data
     useEffect(() => {
         async function loadData() {
             setLoading(true);
@@ -36,11 +36,11 @@ export function useCheckout() {
                 const profile = await fetchUserProfile(user.id);
                 setProfile(profile);
 
-                // Fetch addresses directly using the new helper or inline
+                // fetch addresses
                 const { data: addrData } = await supabase.from('addresses').select('*').eq('user_id', user.id);
                 setAddresses(addrData || []);
 
-                // Pre-fill contact info
+                // pre-fill contact info
                 setContact({
                     first_name: profile?.first_name || '',
                     last_name: profile?.last_name || '',
@@ -55,7 +55,7 @@ export function useCheckout() {
 
     const [orderId, setOrderId] = useState<string | null>(null);
 
-    // 2. Initialize Stripe Payment Intent (Create Order First)
+    // create order immediately (so we have an ID for stripe)
     const initializedRef = useRef(false);
 
     useEffect(() => {
@@ -63,7 +63,7 @@ export function useCheckout() {
             if (initializedRef.current) return;
 
             if (items.length > 0 && user) {
-                initializedRef.current = true; // Lock immediately
+                initializedRef.current = true; // lock to prevent double-init
                 const { data: { session } } = await supabase.auth.getSession();
                 const token = session?.access_token;
 
@@ -75,7 +75,7 @@ export function useCheckout() {
                     },
                     body: JSON.stringify({
                         items,
-                        userId: user.id || null, // Keeping this for explicit logic compatibility
+                        userId: user.id || null, // explicit null for clarity
                         userEmail: user.email || null
                     }),
                 })
@@ -111,11 +111,11 @@ export function useCheckout() {
         selectedAddress,
         isProcessing,
 
-        // Setters
+        // setters
         setContact,
         setDeliveryType,
         setSelectedAddress,
         setIsProcessing,
-        refreshAddresses, // Exposed helper
+        refreshAddresses,
     };
 }

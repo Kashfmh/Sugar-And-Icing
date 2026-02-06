@@ -5,8 +5,8 @@ export interface UserProfile {
     first_name: string;
     last_name: string;
     phone: string;
-    avatar_url: string | null;  // Profile picture URL
-    dob: string | null;         // Changed: allow null for empty dates
+    avatar_url: string | null;
+    dob: string | null;
     preferred_contact_method: string;
     favorite_flavors: string[];
     dietary_restrictions: string[];
@@ -45,11 +45,11 @@ export async function fetchUserProfile(userId: string) {
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)  // Changed from user_id to id
+        .eq('id', userId)
         .single();
 
     if (error) {
-        // Handle PGRST116 error - no rows returned (user profile not created yet)
+        // no profile yet
         if (error.code === 'PGRST116') {
             console.log('Profile not found for user', userId);
             return null; // Return null instead of throwing for missing profiles
@@ -90,9 +90,9 @@ export async function fetchUserOccasions(userId: string) {
 
 export async function loadAllUserData(userId: string) {
     return Promise.all([
-        fetchUserProfile(userId).catch(() => null), // Don't fail if profile doesn't exist
-        fetchUserAddresses(userId).catch(() => []), // Return empty array on error
-        fetchUserOccasions(userId).catch(() => [])  // Return empty array on error
+        fetchUserProfile(userId).catch(() => null),
+        fetchUserAddresses(userId).catch(() => []),
+        fetchUserOccasions(userId).catch(() => [])
     ]);
 }
 
@@ -103,7 +103,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
             ...updates,
             updated_at: new Date().toISOString(),
         })
-        .eq('id', userId);  // Changed from user_id to id
+        .eq('id', userId);
 
     if (error) {
         console.error('Profile update error:', error.message || error.toString());
