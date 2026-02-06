@@ -61,7 +61,6 @@ export function useProductFilters({
                     const data = await onFetch();
                     setProducts(data);
                 } else {
-                    // Default fetch if no custom fetch provided
                     const { data, error } = await supabase
                         .from('products')
                         .select('*');
@@ -80,16 +79,12 @@ export function useProductFilters({
     }, [onFetch]);
 
     const filteredProducts = products.filter(product => {
-        // category filter
         let matchesCategory = true;
         if (activeCategory !== 'All') {
             if (categoryMap) {
-                // Use category mapping if provided (e.g., Other Treats)
                 const productTypes = categoryMap[activeCategory];
                 matchesCategory = productTypes?.includes(product.product_type || '') || false;
             } else {
-                // Default behavior: check if category matches name/description/category field 
-                // Or implementing Custom Cakes logic where category matches name/desc
                 const categoryLower = activeCategory.toLowerCase();
                 matchesCategory =
                     (product.category_name?.toLowerCase() === categoryLower) ||
@@ -99,7 +94,6 @@ export function useProductFilters({
             }
         }
 
-        // Search Filter
         const matchesSearch = !searchQuery ||
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -117,7 +111,7 @@ export function useProductFilters({
                 return a.name.localeCompare(b.name);
             case 'newest':
             default:
-                return 0; // Assuming default order from DB is acceptable or timestamps if available
+                return 0;
         }
     });
 
@@ -139,6 +133,10 @@ export function useProductFilters({
         isMobile,
         totalPages,
 
+        setActiveCategory,
+        setSearchQuery,
+        setSortBy,
+        setCurrentPage,
         setIsFilterModalOpen,
 
         totalCount: sortedProducts.length,

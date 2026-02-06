@@ -12,7 +12,6 @@ export default function BottomNav() {
     const pathname = usePathname();
     const { totalItems } = useCart();
 
-    // Use state to avoid hydration mismatch for the badge
     const [mounted, setMounted] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -26,7 +25,7 @@ export default function BottomNav() {
             setUser(currentUser);
 
             if (currentUser) {
-                // Fetch unread count
+                // fetch unread count
                 const { count } = await supabase
                     .from('notifications')
                     .select('*', { count: 'exact', head: true })
@@ -34,7 +33,7 @@ export default function BottomNav() {
                     .eq('read', false);
                 setUnreadCount(count || 0);
 
-                // Fetch avatar
+                // fetch avatar
                 const { data } = await supabase
                     .from('profiles')
                     .select('avatar_url')
@@ -50,7 +49,6 @@ export default function BottomNav() {
 
         fetchData();
 
-        // Listen for auth changes to reset count immediately
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') fetchData();
             if (event === 'SIGNED_OUT') {
@@ -60,7 +58,6 @@ export default function BottomNav() {
             }
         });
 
-        // Listen for profile updates
         window.addEventListener('profile-updated', fetchData);
 
         return () => {
@@ -82,7 +79,6 @@ export default function BottomNav() {
     return (
         <nav className="fixed bottom-6 left-0 right-0 z-[1000] flex justify-center px-4 md:hidden">
             <div className="bg-white/95 backdrop-blur-md border border-gray-200 shadow-lg rounded-2xl px-6 py-2 flex items-center relative max-w-md w-full">
-                {/* Left Group - Home and Menu */}
                 <div className="flex-1 flex justify-around gap-4">
                     {navItems.slice(0, 2).map((item) => {
                         const Icon = item.icon;
@@ -105,7 +101,6 @@ export default function BottomNav() {
                     })}
                 </div>
 
-                {/* Center - Elevated Cart Button */}
                 <div className="flex-1 flex justify-center relative">
                     <Link
                         href="/cart"
@@ -128,13 +123,11 @@ export default function BottomNav() {
                     </Link>
                 </div>
 
-                {/* Right Group - Treats, Profile */}
                 <div className="flex-1 flex justify-around gap-4">
                     {navItems.slice(3, 5).map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href || (item.href === '/profile' && pathname === '/login');
 
-                        // Checking if this is the profile item AND we have an avatar
                         const isProfileItem = item.label === 'Profile';
 
                         return (

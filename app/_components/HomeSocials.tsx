@@ -3,12 +3,10 @@ import { Instagram, Facebook } from 'lucide-react';
 export default function HomeSocials() {
     return (
         <div className="absolute bottom-8 left-8 flex flex-col gap-4 hidden md:flex">
-            {/* Socials Label */}
             <div className="bg-sai-charcoal text-white px-4 py-2 rounded-lg text-sm font-semibold mb-2 w-fit cursor-default select-none">
                 Follow My Socials
             </div>
 
-            {/* Social Icons */}
             <div className="flex gap-5">
                 <a
                     href="https://wa.me/60108091351?text=Hi,%20I%20am%20looking%20to%20buying%20something.%20Are%20you%20available?"

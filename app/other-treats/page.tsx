@@ -67,7 +67,6 @@ export default function MenuPage() {
 
     return (
         <main className="min-h-screen bg-sai-white md:pb-8 relative">
-            {/* Mobile Header - Simplified */}
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-lg font-semibold text-sai-charcoal">Other Treats</h1>
@@ -109,7 +108,6 @@ export default function MenuPage() {
                 onClickProduct={handleProductClick}
             />
 
-            {/* Product Detail Modal */}
             {selectedProductId && (
                 <ProductDetailModal
                     productId={selectedProductId}

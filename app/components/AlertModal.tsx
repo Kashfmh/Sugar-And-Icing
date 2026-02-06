@@ -52,15 +52,12 @@ export default function AlertModal({
 
     return (
         <div className={`fixed inset-0 z-[1200] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-            {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={onClose}
             />
 
-            {/* Modal Content */}
             <div className={`bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative z-10 transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
-                {/* Close Button */}
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -97,8 +94,8 @@ export default function AlertModal({
                                 onClose();
                             }}
                             className={`flex-1 px-4 py-2 text-white font-semibold rounded-xl shadow-lg transition-transform active:scale-95 ${type === 'delete' || type === 'error'
-                                    ? 'bg-red-500 hover:bg-red-600 shadow-red-200'
-                                    : 'bg-sai-pink hover:bg-sai-pink/90 shadow-pink-200'
+                                ? 'bg-red-500 hover:bg-red-600 shadow-red-200'
+                                : 'bg-sai-pink hover:bg-sai-pink/90 shadow-pink-200'
                                 }`}
                         >
                             {confirmText}

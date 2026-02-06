@@ -11,9 +11,6 @@ export async function POST(req: Request) {
     }
 
     if (!userId) {
-      // In a real app, strictly require userId. 
-      // For now, if guest checkouts are allowed, we'd handle it differently.
-      // But the schema links orders to auth.users, so we need it.
       return NextResponse.json({ error: "User ID is required" }, { status: 401 });
     }
 
@@ -24,12 +21,8 @@ export async function POST(req: Request) {
       throw new Error("Missing Supabase configuration");
     }
 
-    // Capture the Authorization header from the request (sent by the client)
     const authHeader = req.headers.get('Authorization');
 
-    // Initialize Supabase client
-    // If authHeader is present, Supabase will use it to identify the user
-    // This allows passing RLS policies that rely on auth.uid()
     const supabase = createClient(
       supabaseUrl,
       supabaseKey,
@@ -40,7 +33,6 @@ export async function POST(req: Request) {
       }
     );
 
-    // 1. FILTER VALID UUIDs ONLY
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const validIds = items
       .map((item: any) => item.id.split('-')[0])
@@ -50,7 +42,6 @@ export async function POST(req: Request) {
     let products: any[] = [];
     const dbOrderItems: any[] = [];
 
-    // 2. QUERY DB for Products
     if (validIds.length > 0) {
       const { data, error } = await supabase
         .from('products')
@@ -64,7 +55,6 @@ export async function POST(req: Request) {
       products = data || [];
     }
 
-    // 3. CALCULATE TOTAL & PREPARE ORDER ITEMS
     for (const item of items) {
       const productId = item.id.split('-')[0];
       const product = products.find((p) => p.id === productId);
@@ -74,7 +64,7 @@ export async function POST(req: Request) {
 
       if (product) {
         price = Number(product.base_price);
-        productName = product.name; // Use DB name for security
+        productName = product.name;
       } else {
         // Fallback for custom/test items
         console.warn(`Item ${item.name} not found in DB. Using client price.`);
@@ -92,14 +82,13 @@ export async function POST(req: Request) {
       });
     }
 
-    // 4. CREATE ORDER IN SUPABASE (Pending Payment)
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id: userId,
         total_amount: serverTotal,
         status: 'pending_payment',
-        receipt_url: null, // Will be updated by webhook
+        receipt_url: null,
       })
       .select('id')
       .single();
@@ -111,7 +100,6 @@ export async function POST(req: Request) {
 
     const orderId = orderData.id;
 
-    // 5. INSERT ORDER ITEMS
     const itemsToInsert = dbOrderItems.map(item => ({
       ...item,
       order_id: orderId
@@ -123,17 +111,15 @@ export async function POST(req: Request) {
 
     if (itemsError) {
       console.error("Order Items Creation Error:", itemsError);
-      // Rollback strategy could go here (delete order), but for now just throw.
       throw new Error(`Failed to create order items: ${itemsError.message}`);
     }
 
-    // 6. CREATE STRIPE INTENT
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(serverTotal * 100),
       currency: 'myr',
       automatic_payment_methods: { enabled: true },
       metadata: {
-        order_id: orderId, // CRITICAL: Link Stripe to Supabase Order
+        order_id: orderId,
         user_id: userId,
         user_email: userEmail || ""
       },

@@ -32,7 +32,6 @@ export default function OrderSummary({ cartItems, cartTotal, isProcessing }: Ord
                 <span>RM {cartTotal.toFixed(2)}</span>
             </div>
 
-            {/* Desktop Pay Button - Links to the form ID "checkout-form" */}
             <div className="hidden lg:block mt-6">
                 <button
                     type="submit"

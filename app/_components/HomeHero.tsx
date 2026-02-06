@@ -3,14 +3,11 @@ import DraggableText from '@/app/components/DraggableText';
 export default function HomeHero() {
     return (
         <section className="relative min-h-screen flex items-center justify-end px-6 md:px-16 pt-24 md:pt-32">
-            {/* Right Aligned Content */}
             <div className="relative z-10 text-right max-w-2xl">
-                {/* Desktop - Interactive Draggable Text */}
                 <div className="hidden md:block">
                     <DraggableText />
                 </div>
 
-                {/* Mobile - Regular Text */}
                 <div className="block md:hidden">
                     <h1 className="font-serif text-5xl font-normal leading-[1.1] mb-4 text-sai-charcoal">
                         Sugar And Icing
@@ -20,12 +17,10 @@ export default function HomeHero() {
                     </h2>
                 </div>
 
-                {/* Tagline - Playground Style */}
                 <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-sai-charcoal/90 mb-4 md:mb-8">
                     Handmade with love in KL Sentral, Brickfields
                 </p>
 
-                {/* Mobile Shop Now Button - Below tagline */}
                 <div className="md:hidden">
                     <a
                         href="/other-treats"
@@ -44,7 +39,6 @@ export default function HomeHero() {
                 </div>
             </div>
 
-            {/* Shop Now CTA - Left Middle (Desktop Only) */}
             <div className="hidden md:block absolute left-8 md:left-12 top-1/2 -translate-y-1/2 z-10">
                 <a
                     href="/other-treats"

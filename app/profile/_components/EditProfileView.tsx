@@ -36,11 +36,9 @@ export default function EditProfileView({
 }: EditProfileViewProps) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Personal Details Section */}
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">
                 <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Personal Details</h2>
 
-                {/* Status Banner */}
                 {status && (
                     <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${status.type === 'success'
                         ? 'bg-green-50 text-green-700 border border-green-200'
@@ -55,7 +53,6 @@ export default function EditProfileView({
                     </div>
                 )}
 
-                {/* Avatar Upload */}
                 <div className="mb-8 pb-8 border-b border-gray-100 flex justify-center">
                     <AvatarUpload
                         userId={user?.id}
@@ -160,21 +157,17 @@ export default function EditProfileView({
                 </form>
             </div>
 
-            {/* Address Book Section */}
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
                 <AddressManager addresses={addresses} onUpdate={initializeProfile} userId={user?.id} />
             </div>
 
-            {/* Special Occasions Section */}
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
                 <OccasionsManager occasions={occasions} onUpdate={initializeProfile} userId={user?.id} />
             </div>
 
-            {/* Preferences Section */}
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">
                 <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Sweet Preferences</h2>
 
-                {/* Status Banner */}
                 {status && (
                     <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${status.type === 'success'
                         ? 'bg-green-50 text-green-700 border border-green-200'

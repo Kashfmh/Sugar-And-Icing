@@ -12,7 +12,6 @@ interface DeliveryOptionsProps {
     onRefresh: () => void;
 }
 
-// DELIVERY ZONE CONFIGURATION - Must match AddressManager
 const ALLOWED_POSTCODES = ['50470'];
 
 export default function DeliveryOptions({
@@ -43,7 +42,6 @@ export default function DeliveryOptions({
                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-medium text-gray-700">Delivery Address</label>
-                        {/* Only show 'Manage' link if we have addresses, otherwise the big button below is enough */}
                         {addresses.length > 0 && (
                             <button
                                 type="button"
@@ -64,7 +62,7 @@ export default function DeliveryOptions({
                                     onRefresh();
                                 }}
                                 userId={userId}
-                                initialIsAdding={addresses.length === 0} // Auto-open form if no addresses
+                                initialIsAdding={addresses.length === 0}
                             />
                         </div>
                     ) : (

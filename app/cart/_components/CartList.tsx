@@ -11,7 +11,6 @@ export default function CartList() {
             <ul className="divide-y divide-gray-100">
                 {items.map((item) => (
                     <li key={item.id} className="p-6 flex flex-col sm:flex-row gap-6">
-                        {/* Image */}
                         <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
                             {item.image_url ? (
                                 <Image
@@ -25,7 +24,6 @@ export default function CartList() {
                             )}
                         </div>
 
-                        {/* Content */}
                         <div className="flex-1 flex flex-col">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -38,12 +36,10 @@ export default function CartList() {
                                         <p className="mt-1 text-sm text-gray-500 line-clamp-1">{item.description}</p>
                                     )}
 
-                                    {/* Metadata / Customizations */}
                                     {item.metadata && (
                                         <div className="mt-2 space-y-1">
                                             {Object.entries(item.metadata).map(([key, value]) => {
                                                 if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                                                // if (key === 'design_notes') return null; // Showing notes now
 
                                                 return (
                                                     <div key={key} className="text-xs text-gray-500 flex items-start gap-1">

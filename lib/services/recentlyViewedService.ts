@@ -10,14 +10,12 @@ export interface RecentlyViewedProduct {
         name: string;
         image_url: string;
         base_price: number;
-    } | null;  // Single object, not array (Supabase returns single related row)
+    } | null;
 }
 
-// track product view
 export async function trackProductView(userId: string, productId: string): Promise<void> {
 
     try {
-        // upsert to update timestamp
         const dataToInsert = {
             user_id: userId,
             product_id: productId,
@@ -38,7 +36,6 @@ export async function trackProductView(userId: string, productId: string): Promi
 
         console.log('[trackProductView] Upsert successful, result:', upsertData);
 
-        // Keep only last 10 items
         const { data: allViewed, error: fetchError } = await supabase
             .from('recently_viewed')
             .select('id')
@@ -72,7 +69,6 @@ export async function trackProductView(userId: string, productId: string): Promi
     }
 }
 
-// get recent views
 export async function getRecentlyViewed(
     userId: string,
     limit: number = 10
@@ -101,7 +97,6 @@ export async function getRecentlyViewed(
             return [];
         }
 
-        // clean up array structure
         return ((data || []) as any[])
             .filter(item => item.products !== null)
             .map(item => ({

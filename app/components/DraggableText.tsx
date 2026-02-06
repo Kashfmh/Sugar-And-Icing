@@ -68,7 +68,6 @@ export default function DraggableText() {
 
     return (
         <div ref={containerRef} className="select-none">
-            {/* Main Title - Draggable Letters */}
             <h1 className="font-serif text-6xl md:text-7xl font-normal leading-[1.1] mb-4 text-sai-charcoal">
                 {text.split('').map((char, index) => (
                     <span
@@ -81,7 +80,6 @@ export default function DraggableText() {
                 ))}
             </h1>
 
-            {/* Subtitle - All on one line, draggable */}
             <h2 className="font-serif text-5xl md:text-6xl font-normal leading-[1.1] mb-8 text-sai-charcoal">
                 {subtitle.split('').map((char, index) => (
                     <span

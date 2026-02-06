@@ -21,7 +21,6 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
-// New Handwritten Font
 const dancingScript = Dancing_Script({
   variable: "--font-dancing",
   subsets: ["latin"],
@@ -51,7 +50,6 @@ export default function RootLayout({
       >
         <AuthSync />
 
-        {/* Desktop Navbar - Fixed across all pages */}
         <div className="hidden md:block" data-navbar>
           <Navbar />
         </div>
@@ -60,12 +58,10 @@ export default function RootLayout({
           {children}
         </MainWrapper>
 
-        {/* Footer - All pages */}
         <footer>
           <Footer />
         </footer>
 
-        {/* Mobile Bottom Nav - Fixed across all pages */}
         <div data-bottom-nav>
           <BottomNav />
         </div>

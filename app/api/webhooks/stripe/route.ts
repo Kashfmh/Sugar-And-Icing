@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variable check
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
@@ -26,7 +25,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
     }
 
-    // Handle the event
     if (event.type === 'payment_intent.succeeded') {
         const paymentIntent = event.data.object as any;
         const orderId = paymentIntent.metadata.order_id;
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
             const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
             if (!supabaseServiceKey) {
-                console.error("❌ CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing. Webhook status update will likely fail due to RLS.");
+                console.error("Missing SUPABASE_SERVICE_ROLE_KEY");
             }
 
             const supabase = createClient(
@@ -53,7 +51,6 @@ export async function POST(req: Request) {
                 }
             );
 
-            // 1. Update Order Status
             const { error: updateError } = await supabase
                 .from('orders')
                 .update({
@@ -67,7 +64,6 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: "Database update failed" }, { status: 500 });
             }
 
-            // 2. Clear User's Cart (Server-side cleanup)
             if (userId) {
                 const { error: deleteError } = await supabase
                     .from('cart_items')

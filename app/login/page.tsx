@@ -20,7 +20,7 @@ export default function AuthPage() {
 
     const handleSuccessClose = () => {
         setSignupSuccess(false);
-        setIsSignUp(false); // Switch to sign in form
+        setIsSignUp(false);
     };
 
     return (

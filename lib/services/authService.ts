@@ -49,10 +49,9 @@ export async function fetchUserProfile(userId: string) {
         .single();
 
     if (error) {
-        // no profile yet
         if (error.code === 'PGRST116') {
             console.log('Profile not found for user', userId);
-            return null; // Return null instead of throwing for missing profiles
+            return null;
         }
         console.error('Profile fetch error:', error.message || error.toString());
         throw new Error(error.message || 'Failed to load profile');

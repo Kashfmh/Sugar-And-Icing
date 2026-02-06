@@ -38,7 +38,6 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
             let error;
 
             if (editingId) {
-                // Update existing
                 const { error: updateError } = await supabase
                     .from('special_occasions')
                     .update({
@@ -48,7 +47,6 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                     .eq('user_id', userId);
                 error = updateError;
             } else {
-                // Insert new
                 const { error: insertError } = await supabase
                     .from('special_occasions')
                     .insert([{
@@ -130,7 +128,6 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                 </button>
             </div>
 
-            {/* Occasion List */}
             <div className="grid gap-4">
                 {occasions.map((occ) => (
                     <div
@@ -181,7 +178,6 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                 )}
             </div>
 
-            {/* Add Occasion Form */}
             {isAdding && (
                 <div
                     ref={formRef}

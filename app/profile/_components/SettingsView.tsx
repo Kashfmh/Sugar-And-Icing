@@ -8,7 +8,6 @@ export default function SettingsView({ handleSignOut }: SettingsViewProps) {
             <h2 className="text-2xl font-bold text-sai-charcoal mb-6">Settings</h2>
 
             <div className="space-y-8">
-                {/* Account Security Section */}
                 <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
                     <h3 className="font-semibold text-sai-charcoal mb-4">Account Security</h3>
                     <div className="space-y-4">

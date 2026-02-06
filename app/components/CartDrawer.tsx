@@ -64,7 +64,6 @@ export default function CartDrawer() {
                             <div className="space-y-6">
                                 {items.map((item) => (
                                     <div key={item.id} className="flex gap-4">
-                                        {/* Image */}
                                         <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-100">
                                             {item.image_url ? (
                                                 <Image
@@ -78,7 +77,6 @@ export default function CartDrawer() {
                                             )}
                                         </div>
 
-                                        {/* Details */}
                                         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                                             <div className="space-y-1">
                                                 <h4 className="text-sm font-semibold text-gray-900 truncate pr-4">{item.name}</h4>
@@ -88,7 +86,6 @@ export default function CartDrawer() {
                                                 <p className="text-sm font-medium text-sai-pink">RM {item.price.toFixed(2)}</p>
                                             </div>
 
-                                            {/* Controls */}
                                             <div className="flex items-center justify-between mt-2">
                                                 <div className="flex items-center gap-1 bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
                                                     <button

@@ -51,7 +51,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     const [selectedFrosting, setSelectedFrosting] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
     const [designNotes, setDesignNotes] = useState('');
-    // Brownie options
     const [selectedTopping, setSelectedTopping] = useState<string>('None');
     const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
     const [isAdded, setIsAdded] = useState(false);
@@ -65,7 +64,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     async function fetchProductDetails() {
         setLoading(true);
         try {
-            // Fetch product
             const { data: productData, error: productError } = await supabase
                 .from('products')
                 .select('*')
@@ -75,7 +73,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             if (productError) throw productError;
             setProduct(productData);
 
-            // Fetch options if customizable
             if (productData.customizable) {
                 const { data: optionsData, error: optionsError } = await supabase
                     .from('product_options')
@@ -87,7 +84,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 }
             }
 
-            // Fetch reviews
             const { data: reviewsData, error: reviewsError } = await supabase
                 .from('reviews')
                 .select(`
@@ -103,7 +99,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 .limit(5);
 
             if (!reviewsError) {
-                // Transform profiles from array to single object
                 const transformedReviews = (reviewsData || []).map((review: any) => ({
                     ...review,
                     profiles: Array.isArray(review.profiles) ? review.profiles[0] : review.profiles
@@ -111,13 +106,11 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 setReviews(transformedReviews);
             }
 
-            // Track product view for logged-in users (database)
             try {
                 const { data: { user } } = await supabase.auth.getUser();
 
                 if (user) {
                     console.log('[Modal View] Tracking for user:', user.id);
-                    // Logged-in user: track in database
                     const { trackProductView } = await import('@/lib/services/recentlyViewedService');
                     await trackProductView(user.id, productData.id);
                 }
@@ -132,7 +125,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
         }
     }
 
-    // Support both gallery_images array and single image_url
+    // combine main image with gallery
     const images = [
         product?.image_url,
         ...(product?.gallery_images || [])
@@ -146,7 +139,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     const calculatePrice = () => {
         if (!product) return 0;
 
-        // For cupcakes with tiered pricing (6pc and 12pc sets)
         if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
             let baseTotal = 0;
             // Quantity 1 = 6 pieces = base_price
@@ -178,11 +170,9 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             return baseTotal + dietaryCost;
         }
 
-        // For brownies (per piece pricing with toppings and dietary options)
         if (product.product_type === 'brownie') {
             let pricePerPiece = product.base_price; // RM 3
 
-            // Check if premium topping selected (any topping makes it RM 4)
             if (selectedTopping && selectedTopping !== 'None') {
                 const toppingOption = toppingOptions.find(opt => opt.option_name === selectedTopping);
                 if (toppingOption?.is_premium) {
@@ -190,7 +180,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 }
             }
 
-            // Add dietary option costs (cumulative)
             selectedDietaryOptions.forEach(dietaryName => {
                 const dietaryOption = dietaryOptions.find(
                     opt => opt.option_name === dietaryName
@@ -203,11 +192,9 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             return pricePerPiece * quantity;
         }
 
-        // For other products (Fruitcake, Bread, Other)
-        // Pricing is per unit
+        // other products
         let basePrice = product.base_price;
 
-        // Handle generic premium logic if applicable (though usually handled by variant/options)
         const selectedBaseOption = baseOptions.find(opt => opt.option_name === selectedBase);
         const selectedFrostingOption = frostingOptions.find(opt => opt.option_name === selectedFrosting);
         const isPremium = selectedBaseOption?.is_premium || selectedFrostingOption?.is_premium;
@@ -218,7 +205,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
         let total = basePrice * quantity;
 
-        // Add dietary costs per unit
         selectedDietaryOptions.forEach(dietaryName => {
             const dietaryOption = dietaryOptions.find(opt => opt.option_name === dietaryName);
             if (dietaryOption) {
@@ -227,9 +213,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
         });
 
         return total;
-
-        // For other products with regular pricing
-
     };
 
     const nextImage = () => {
@@ -246,7 +229,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Animated Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -256,7 +238,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                         onClick={onClose}
                     />
 
-                    {/* Animated Modal */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -269,7 +250,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                         }}
                         className="relative bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-hidden shadow-2xl"
                     >
-                        {/* Close Button */}
                         <button
                             onClick={onClose}
                             className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/95 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 group"
@@ -277,17 +257,13 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                             <X className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" />
                         </button>
 
-                        {/* Scrollable Content */}
                         <div className="overflow-y-auto max-h-[92vh]">
 
                             {loading ? (
                                 <div className="grid md:grid-cols-2 gap-6 p-6">
-                                    {/* Left: Image Skeleton */}
                                     <div>
-                                        {/* Main Image Skeleton */}
                                         <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-200 mb-4 animate-pulse" />
 
-                                        {/* Thumbnail Gallery Skeleton */}
                                         <div className="grid grid-cols-4 gap-2">
                                             {[...Array(4)].map((_, i) => (
                                                 <div key={i} className="aspect-square rounded-lg bg-gray-200 animate-pulse" />

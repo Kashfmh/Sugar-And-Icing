@@ -7,18 +7,14 @@ export default function Footer() {
     const pathname = usePathname();
     const currentYear = new Date().getFullYear();
 
-    // Don't show footer on homepage
     if (pathname === '/') {
         return null;
     }
 
     return (
-        // Footer only visible on desktop (md and up), completely hidden on mobile
         <footer className="hidden md:block bg-sai-charcoal text-sai-white py-12">
             <div className="max-w-6xl mx-auto px-6">
-                {/* Main Footer Content */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                    {/* About Section */}
                     <div>
                         <h3 className="font-serif text-xl mb-4" style={{ color: 'var(--color-sai-pink)' }}>
                             Sugar And Icing
@@ -29,7 +25,6 @@ export default function Footer() {
                         </p>
                     </div>
 
-                    {/* Quick Links */}
                     <div>
                         <h4 className="font-semibold mb-4">Quick Links</h4>
                         <ul className="space-y-2 text-sm">
@@ -56,7 +51,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Contact Info */}
                     <div>
                         <h4 className="font-semibold mb-4">Get In Touch</h4>
                         <ul className="space-y-3 text-sm">
@@ -83,7 +77,6 @@ export default function Footer() {
                             </li>
                         </ul>
 
-                        {/* Social Media */}
                         <div className="flex gap-4 mt-4">
                             <a
                                 href="https://instagram.com"
@@ -107,7 +100,6 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
                 <div className="border-t border-gray-700 pt-6 text-center">
                     <p className="text-sm text-gray-400">
                         © {currentYear} Sugar And Icing. All rights reserved. Made with 💕 in KL.

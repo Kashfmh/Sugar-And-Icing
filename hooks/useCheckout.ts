@@ -11,10 +11,8 @@ export function useCheckout() {
     const [profile, setProfile] = useState<any>(null);
     const [addresses, setAddresses] = useState<any[]>([]);
 
-    // sync button loading state
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Form State
     const [contact, setContact] = useState({ first_name: '', last_name: '', email: '', phone: '' });
     const [deliveryType, setDeliveryType] = useState<'pickup' | 'delivery'>('pickup');
     const [selectedAddress, setSelectedAddress] = useState<string>('');
@@ -25,7 +23,6 @@ export function useCheckout() {
         setAddresses(data || []);
     };
 
-    // load initial data
     useEffect(() => {
         async function loadData() {
             setLoading(true);
@@ -36,11 +33,9 @@ export function useCheckout() {
                 const profile = await fetchUserProfile(user.id);
                 setProfile(profile);
 
-                // fetch addresses
                 const { data: addrData } = await supabase.from('addresses').select('*').eq('user_id', user.id);
                 setAddresses(addrData || []);
 
-                // pre-fill contact info
                 setContact({
                     first_name: profile?.first_name || '',
                     last_name: profile?.last_name || '',
@@ -55,7 +50,6 @@ export function useCheckout() {
 
     const [orderId, setOrderId] = useState<string | null>(null);
 
-    // create order immediately (so we have an ID for stripe)
     const initializedRef = useRef(false);
 
     useEffect(() => {
@@ -63,7 +57,7 @@ export function useCheckout() {
             if (initializedRef.current) return;
 
             if (items.length > 0 && user) {
-                initializedRef.current = true; // lock to prevent double-init
+                initializedRef.current = true;
                 const { data: { session } } = await supabase.auth.getSession();
                 const token = session?.access_token;
 
@@ -75,7 +69,7 @@ export function useCheckout() {
                     },
                     body: JSON.stringify({
                         items,
-                        userId: user.id || null, // explicit null for clarity
+                        userId: user.id || null,
                         userEmail: user.email || null
                     }),
                 })
@@ -95,7 +89,6 @@ export function useCheckout() {
     }, [items, user]);
 
     return {
-        // Data
         loading,
         clientSecret,
         orderId,
@@ -105,13 +98,11 @@ export function useCheckout() {
         cartItems: items,
         cartTotal: subtotal(),
 
-        // State
         contact,
         deliveryType,
         selectedAddress,
         isProcessing,
 
-        // setters
         setContact,
         setDeliveryType,
         setSelectedAddress,

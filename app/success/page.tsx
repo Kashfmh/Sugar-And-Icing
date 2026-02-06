@@ -13,16 +13,14 @@ export default function SuccessPage() {
     const { clearCart } = useCart();
 
     useEffect(() => {
-        // Clear local cart
         clearCart();
 
-        // Manual Verification (Updates DB if Webhook failed)
         if (paymentIntentId) {
             fetch('/api/payment/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    orderId, // Optional fallback
+                    orderId,
                     paymentIntentId
                 })
             })

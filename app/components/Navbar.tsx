@@ -29,14 +29,13 @@ export default function Navbar() {
 
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-    // Fetch user and profile data
     const refreshUser = async () => {
         try {
             const { data: { user: currentUser } } = await supabase.auth.getUser();
             setUser(currentUser);
 
             if (currentUser) {
-                // Fetch avatar from profiles table
+                // fetch avatar
                 const { data } = await supabase
                     .from('profiles')
                     .select('avatar_url')
@@ -50,7 +49,7 @@ export default function Navbar() {
                 setAvatarUrl(null);
             }
         } catch (error: any) {
-            // Provide a graceful fallback for "refresh token not found" errors which are common in dev/bad state
+            // handle refresh token errors gracefully
             if (error?.message?.includes('refresh_token_not_found') || error?.code === 'refresh_token_not_found') {
                 console.warn('Supabase Auth: Refresh token not found, session might remain invalid until re-login.');
             } else {
@@ -65,7 +64,6 @@ export default function Navbar() {
         setIsMounted(true);
         refreshUser();
 
-        // Listen for auth state changes (LOGIN/LOGOUT)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 refreshUser();
@@ -75,10 +73,8 @@ export default function Navbar() {
             }
         });
 
-        // Listen for profile updates (e.g. from AvatarUpload)
         window.addEventListener('profile-updated', refreshUser);
 
-        // Track scroll
         const handleScroll = () => setScrolled(window.scrollY > 100);
         window.addEventListener('scroll', handleScroll);
 
@@ -105,7 +101,6 @@ export default function Navbar() {
 
     return (
         <AceternityNavbar className="top-2 text-sai-charcoal">
-            {/* Desktop Navbar */}
             <NavBody>
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
                     <AnimatePresence mode="wait">
@@ -141,19 +136,14 @@ export default function Navbar() {
                     </span>
                 </Link>
 
-                {/* Nav Items */}
                 <NavItems items={navItems} pathname={pathname} />
 
-                {/* CTA Buttons */}
                 <div className="relative z-20 flex items-center gap-4">
-                    {/* Inbox Trigger (Always Visible) */}
                     <InboxTriggerButton pathname={pathname} userId={user?.id} />
 
-                    {/* Cart Trigger */}
                     <CartTriggerButton pathname={pathname} />
 
                     {(!isMounted || isAuthChecking) ? (
-                        /* Skeleton for Profile/Login */
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
                         <Link href="/profile">
@@ -180,8 +170,7 @@ export default function Navbar() {
                 </div>
             </NavBody >
 
-            {/* Mobile Navbar */}
-            < MobileNav >
+            <MobileNav>
                 <MobileNavHeader>
                     <Link href="/" className="flex items-center space-x-2 px-2 py-1">
                         <Image
@@ -207,7 +196,6 @@ export default function Navbar() {
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        {/* Inbox Trigger for Mobile */}
                         <InboxTriggerButton pathname={pathname} userId={user?.id} />
                         <CartTriggerButton pathname={pathname} />
                         <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
@@ -259,28 +247,10 @@ export default function Navbar() {
     );
 }
 
-// Separate component to avoid hydration issues if needed, or just cleaner code
 function CartTriggerButton({ pathname }: { pathname?: string }) {
     const { totalItems, isLoading } = useCart();
 
-    // During hydration or loading, don't show count badge to prevent flicker 0 -> N
-    // Or show a small skeleton dot if critical?
-    // User requested: "loses its number indicator... fix this"
-    // If we just hide the Badge until loaded, it won't "flash" 0 then N.
-    // It will be empty then pop N.
-
-    // Wait, useCart uses `persist`. If hydration is instant (localStorage), 
-    // `isLoading` goes false very fast.
-
-    // Issue: "loses its number indicator... for a split second"
-    // This happens because `isLoading` is likely FALSE initially (default state) -> Wait, I set default to TRUE in previous step.
-    // So now it should be consistent.
-
     const count = totalItems();
-
-    // If loading, we might show a small pulse or just the icon without badge?
-    // If I show badge '0' while loading, that is the bug.
-    // So I only show badge if !isLoading.
 
     return (
         <Link href="/cart" className="relative group p-1" aria-label="Open cart">
@@ -316,7 +286,7 @@ function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: 
 
         fetchUnread();
 
-        // Optional: Subscribe to changes for real-time updates
+        // realtime updates
         const channel = supabase
             .channel('public:notifications')
             .on(

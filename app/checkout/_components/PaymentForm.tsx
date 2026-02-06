@@ -18,7 +18,6 @@ export default function PaymentForm({ clientSecret, orderId, contact, cartTotal,
     const elements = useElements();
     const { clearCart } = useCart();
 
-    // Local loading state for the mobile button inside this form
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -27,19 +26,18 @@ export default function PaymentForm({ clientSecret, orderId, contact, cartTotal,
         if (!stripe || !elements) return;
 
         setLoading(true);
-        setIsProcessing(true); // Update parent state for Desktop Button
+        setIsProcessing(true);
         setError(null);
 
         try {
             const { error: submitError } = await elements.submit();
             if (submitError) throw submitError;
 
-            // 1. Confirm Payment (Order is already created server-side)
             const { error: payError } = await stripe.confirmPayment({
                 elements,
                 clientSecret,
                 confirmParams: {
-                    return_url: `${window.location.origin}/success?orderId=${orderId}`, // Use the passed orderId
+                    return_url: `${window.location.origin}/success?orderId=${orderId}`,
                     payment_method_data: {
                         billing_details: {
                             name: `${contact.first_name} ${contact.last_name}`,
@@ -78,7 +76,6 @@ export default function PaymentForm({ clientSecret, orderId, contact, cartTotal,
                 </div>
             )}
 
-            {/* Mobile-only Pay Button */}
             <div className="block lg:hidden">
                 <button
                     type="submit"

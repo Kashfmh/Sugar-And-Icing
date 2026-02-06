@@ -39,7 +39,6 @@ export const useCart = create<CartState>()(
       setLoading: (isLoading) => set({ isLoading }),
 
       addItem: async (newItem) => {
-        // optimistic update
         const state = get();
         const existingItemIndex = state.items.findIndex(
           (item) => item.id === newItem.id
@@ -54,7 +53,6 @@ export const useCart = create<CartState>()(
 
         set({ items: updatedItems, isOpen: true });
 
-        // sync with db
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           try {
@@ -64,20 +62,17 @@ export const useCart = create<CartState>()(
               .eq('user_id', user.id)
               .eq('product_id', newItem.productId);
 
-            // check if item with same custom options exists
             const match = existingRows?.find(row =>
               JSON.stringify(row.metadata) === JSON.stringify(newItem.metadata)
             );
 
             if (match) {
-              // update quantity
               const newQty = match.quantity + newItem.quantity;
               await supabase
                 .from('cart_items')
                 .update({ quantity: newQty })
                 .eq('id', match.id);
             } else {
-              // insert new
               await supabase.from('cart_items').insert({
                 user_id: user.id,
                 product_id: newItem.productId,
@@ -87,7 +82,6 @@ export const useCart = create<CartState>()(
               });
             }
 
-            // resync to get real db ids
             await get().syncWithUser();
 
           } catch (error) {

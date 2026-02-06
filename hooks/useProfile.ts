@@ -11,7 +11,6 @@ import {
     SpecialOccasion,
 } from '@/lib/services/authService';
 
-// interfaces
 export type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
 export interface FormData {
@@ -73,13 +72,12 @@ export function useProfile() {
             loadRecentlyViewed();
             loadOrders();
 
-            // Real-time Subscription
             const channel = supabase
                 .channel('orders-channel')
                 .on(
                     'postgres_changes',
                     {
-                        event: '*', // Listen for INSERT and UPDATE
+                        event: '*',
                         schema: 'public',
                         table: 'orders',
                         filter: `user_id=eq.${user.id}`
@@ -109,7 +107,6 @@ export function useProfile() {
 
             if (error) throw error;
 
-            // Calculate total items for each order
             const formattedOrders = (data || []).map((order: any) => ({
                 ...order,
                 items_count: order.order_items?.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0) || 0
@@ -177,7 +174,7 @@ export function useProfile() {
                 image_url: item.products?.image_url || '',
                 price: item.products?.base_price || 0,
                 viewed_at: item.viewed_at,
-                slug: item.products?.id // Fallback if slug missing
+                slug: item.products?.id
             }));
 
             setRecentlyViewed(formatted);

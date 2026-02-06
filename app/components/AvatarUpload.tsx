@@ -7,7 +7,6 @@ import { uploadAvatar, deleteAvatar } from '@/lib/services/profileService';
 import Cropper, { ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 
-// CSS to make the square crop box look circular to the user
 const circleCropStyle = `
   .cropper-view-box, .cropper-face {
     border-radius: 50%;
@@ -28,12 +27,10 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
     const [preview, setPreview] = useState<string | null>(currentAvatarUrl);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
-    // Refs
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cropperRef = useRef<ReactCropperElement>(null);
 
-    // State
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [showCropModal, setShowCropModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -42,7 +39,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
 
-            // 1. Validation
             if (file.size > 5 * 1024 * 1024) {
                 setError('File size too large. Maximum 5MB allowed.');
                 return;
@@ -54,34 +50,30 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                 return;
             }
 
-            // 2. Read File
             const reader = new FileReader();
             reader.onload = () => {
                 setImageSrc(reader.result as string);
                 setShowCropModal(true);
             };
             reader.readAsDataURL(file);
-            
-            // Reset input
+
             e.target.value = '';
         }
     };
 
     const handleSaveCrop = async () => {
         if (!cropperRef.current) return;
-        
+
         try {
             setUploading(true);
             const cropper = cropperRef.current?.cropper;
-            
-            // 1. Get the cropped canvas (Square)
+
             const canvas = cropper.getCroppedCanvas({
                 width: 500,
                 height: 500,
                 imageSmoothingQuality: 'high',
             });
 
-            // 2. Convert to Blob
             canvas.toBlob(async (blob) => {
                 if (!blob) {
                     setError('Failed to create image.');
@@ -89,11 +81,9 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                     return;
                 }
 
-                // 3. Create File and Upload
                 const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
                 await handleUpload(file);
-                
-                // Cleanup
+
                 setShowCropModal(false);
                 setImageSrc(null);
             }, 'image/jpeg', 0.95);
@@ -110,7 +100,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
         const result = await uploadAvatar(file, userId);
 
         if (result.success && result.url) {
-            // Timestamp to bust cache
             const timestampUrl = `${result.url}?t=${Date.now()}`;
             setPreview(timestampUrl);
             onAvatarUpdate(timestampUrl);
@@ -141,10 +130,8 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
 
     return (
         <div className="flex flex-col items-center gap-4">
-            {/* Inject styles for the circular crop box */}
             <style>{circleCropStyle}</style>
 
-            {/* Avatar Preview */}
             <div className="relative group">
                 <div className="w-32 h-32 relative rounded-full overflow-hidden bg-white border-4 border-white shadow-lg shrink-0">
                     {preview ? (
@@ -153,7 +140,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                             alt="Profile"
                             fill
                             className="object-cover"
-                            unoptimized // Important for timestamp URLs
+                            unoptimized
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-sai-pink/20 to-sai-pink/10">
@@ -178,7 +165,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                 )}
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-2">
                 <button
                     onClick={() => fileInputRef.current?.click()}
@@ -214,7 +200,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                 onChange={handleFileSelect}
             />
 
-            {/* Crop Modal */}
             {showCropModal && imageSrc && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -268,7 +253,6 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
                 </div>
             )}
 
-            {/* Delete Modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />

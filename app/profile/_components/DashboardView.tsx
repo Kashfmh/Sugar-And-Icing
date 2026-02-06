@@ -219,7 +219,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                     </div>
                 </div>
 
-                {/* Your Sweet Preferences Card */}
                 <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-3xl p-6 lg:p-8 border border-orange-100">
                     <div className="flex items-start justify-between mb-4">
                         <h3 className="text-lg font-semibold text-sai-charcoal">Sweet Preferences 🍬</h3>
@@ -254,7 +253,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                     </div>
                 </div>
 
-                {/* History */}
                 <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm">
                     <h3 className="font-semibold text-sai-charcoal mb-4">Recently Viewed</h3>
                     {recentlyViewed.length > 0 ? (

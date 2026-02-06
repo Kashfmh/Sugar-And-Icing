@@ -34,7 +34,6 @@ export default function OrderCard({ order }: OrderCardProps) {
                 </div>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
                 <button
                     onClick={() => setExpanded(!expanded)}
@@ -50,7 +49,6 @@ export default function OrderCard({ order }: OrderCardProps) {
                 )}
             </div>
 
-            {/* Collapsible Details */}
             <AnimatePresence>
                 {expanded && (
                     <motion.div

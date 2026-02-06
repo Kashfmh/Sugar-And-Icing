@@ -15,34 +15,23 @@ export interface UserProfile {
     updated_at: string;
 }
 
-/**
- * Sanitize and trim input
- */
 function sanitizeInput(input: string): string {
     return input.trim().replace(/[<>]/g, '');
 }
 
-/**
- * Validate email format
- */
 function isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-/**
- * Validate phone number (Malaysian or Indian format with country code)
- */
 function isValidPhone(phone: string): { valid: boolean; formatted: string; error?: string } {
     const cleanPhone = phone.replace(/[\s-]/g, '');
 
-    // Malaysian number (+60)
     if (cleanPhone.match(/^(\+?60|60)[0-9]{9,10}$/)) {
         const formatted = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
         return { valid: true, formatted };
     }
 
-    // Indian number (+91)
     if (cleanPhone.match(/^(\+?91|91)[0-9]{10}$/)) {
         const formatted = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
         return { valid: true, formatted };
@@ -51,16 +40,10 @@ function isValidPhone(phone: string): { valid: boolean; formatted: string; error
     return { valid: false, formatted: cleanPhone, error: 'Please enter a valid Malaysian (+60) or Indian (+91) phone number' };
 }
 
-/**
- * Validate password strength
- */
 function isValidPassword(password: string): boolean {
     return password.length >= 8 && /[0-9]/.test(password) && /[a-zA-Z]/.test(password);
 }
 
-/**
- * Sign up a new user with profile information
- */
 export async function signUp(
     email: string,
     password: string,
@@ -68,12 +51,10 @@ export async function signUp(
     phone: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        // Sanitize inputs
         const sanitizedEmail = sanitizeInput(email.toLowerCase());
         const sanitizedFirstName = sanitizeInput(firstName);
         const sanitizedPhone = sanitizeInput(phone);
 
-        // Validate inputs
         if (!isValidEmail(sanitizedEmail)) {
             return { success: false, error: 'Please enter a valid email address' };
         }
@@ -99,7 +80,6 @@ export async function signUp(
             return { success: false, error: 'First name can only contain letters and spaces' };
         }
 
-        // Sign up the user with metadata
         const { data, error } = await supabase.auth.signUp({
             email: sanitizedEmail,
             password: password,
@@ -125,7 +105,6 @@ export async function signUp(
 
         if (error) {
             console.error('Supabase signup error:', error);
-
             // Specific error messages based on Supabase error codes
             if (error.message.includes('already') ||
                 error.message.includes('User already registered') ||
@@ -150,12 +129,7 @@ export async function signUp(
             return { success: false, error: 'Account creation failed. Please try again.' };
         }
 
-        // CRITICAL: When email confirmation is ON, Supabase returns success for duplicates
-        // The ONLY way to detect existing users is to check if identities is empty
-        // New user: identities array has entries
-        // Existing user: identities array is EMPTY
         if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
-            console.log('DUPLICATE DETECTED: identities array is empty');
             return { success: false, error: 'This email is already registered. Please sign in instead.' };
         }
 
@@ -190,9 +164,6 @@ export async function signUp(
     }
 }
 
-/**
- * Sign in an existing user
- */
 export async function signIn(
     email: string,
     password: string,
@@ -211,7 +182,6 @@ export async function signIn(
         });
 
         if (error) {
-            // Specific error messages based on Supabase error codes
             if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid')) {
                 return { success: false, error: 'Incorrect email or password. Please try again.' };
             }
@@ -238,9 +208,6 @@ export async function signIn(
     }
 }
 
-/**
- * Sign out the current user
- */
 export async function signOut() {
     const { error } = await supabase.auth.signOut();
 
@@ -249,9 +216,6 @@ export async function signOut() {
     }
 }
 
-/**
- * Get the current authenticated user
- */
 export async function getCurrentUser(): Promise<AuthUser | null> {
     const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -266,9 +230,6 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     };
 }
 
-/**
- * Get user profile
- */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
         .from('profiles')
@@ -283,9 +244,6 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     return data;
 }
 
-/**
- * Get the current session
- */
 export async function getSession() {
     const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -296,9 +254,6 @@ export async function getSession() {
     return session;
 }
 
-/**
- * Listen to auth state changes
- */
 export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
     return supabase.auth.onAuthStateChange((event, session) => {
         if (session?.user) {

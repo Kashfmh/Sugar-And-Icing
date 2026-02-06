@@ -20,11 +20,10 @@ interface AddressManagerProps {
     addresses: Address[];
     onUpdate: () => void;
     userId: string;
-    initialIsAdding?: boolean; // New prop to skip list view
+    initialIsAdding?: boolean;
 }
 
-// DELIVERY ZONE CONFIGURATION
-const ALLOWED_POSTCODES = ['50470']; // KL Sentral / Brickfields
+const ALLOWED_POSTCODES = ['50470'];
 const FIXED_CITY = 'Kuala Lumpur';
 const FIXED_STATE = 'Kuala Lumpur';
 
@@ -43,7 +42,6 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
         is_default: false
     });
 
-    // Alert Modal State
     const [alertConfig, setAlertConfig] = useState<{
         isOpen: boolean;
         title: string;
@@ -82,7 +80,6 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
         e.preventDefault();
         setLoading(true);
 
-        // validation: delivery zone check
         if (!ALLOWED_POSTCODES.includes(formData.postcode)) {
             showAlert('Delivery Zone Restriction', `Sorry, we currently only deliver to KL Sentral area (Postcode: ${ALLOWED_POSTCODES.join(', ')}). For other areas, please choose Pickup.`, 'error');
             setLoading(false);
@@ -90,31 +87,27 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
         }
 
         try {
-            // If setting as default, first unset other defaults
             if (formData.is_default) {
                 await supabase
                     .from('addresses')
                     .update({ is_default: false })
                     .eq('user_id', userId);
             } else if (addresses.length === 0) {
-                // First address is always default
                 formData.is_default = true;
             }
 
             let error;
 
             if (editingId) {
-                // Update existing address
                 const { error: updateError } = await supabase
                     .from('addresses')
                     .update({
                         ...formData
                     })
                     .eq('id', editingId)
-                    .eq('user_id', userId); // Extra safety
+                    .eq('user_id', userId);
                 error = updateError;
             } else {
-                // Create new address
                 const { error: insertError } = await supabase
                     .from('addresses')
                     .insert([{
@@ -181,7 +174,6 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
         });
         setEditingId(addr.id);
         setIsAdding(true);
-        // Scroll to form
         setTimeout(() => {
             formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
@@ -189,13 +181,11 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
 
     async function handleSetDefault(id: string) {
         try {
-            // Unset all
             await supabase
                 .from('addresses')
                 .update({ is_default: false })
                 .eq('user_id', userId);
 
-            // Set specific
             const { error } = await supabase
                 .from('addresses')
                 .update({ is_default: true })
@@ -234,7 +224,6 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
                 </button>
             </div>
 
-            {/* Address List */}
             <div className="grid gap-4">
                 {addresses.map((addr) => (
                     <div
@@ -304,13 +293,11 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
                 )}
             </div>
 
-            {/* Add Address Form */}
             {isAdding && (
                 <div
                     ref={formRef}
                     className="bg-gray-50 rounded-xl p-6 border border-gray-200 animate-in fade-in slide-in-from-top-4"
                 >
-                    {/* ... (keep existing form content unchanged, just wrapper) ... */}
                     <h4 className="font-medium text-sai-charcoal mb-4">{editingId ? 'Edit Address' : 'Add New Address'}</h4>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">

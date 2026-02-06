@@ -22,16 +22,13 @@ export default function FilterModal({ isOpen, onClose, sortBy, onSortChange }: F
 
     return (
         <>
-            {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/50 z-[1100] md:hidden"
                 onClick={onClose}
             />
 
-            {/* Bottom Sheet */}
             <div className="fixed bottom-0 left-0 right-0 bg-sai-white rounded-t-3xl z-[1100] md:hidden animate-slide-up">
                 <div className="p-6">
-                    {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-semibold text-sai-charcoal">Sort & Filter</h3>
                         <button
@@ -42,7 +39,6 @@ export default function FilterModal({ isOpen, onClose, sortBy, onSortChange }: F
                         </button>
                     </div>
 
-                    {/* Sort Options */}
                     <div className="space-y-3 mb-6">
                         <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Sort By</p>
 
@@ -69,7 +65,6 @@ export default function FilterModal({ isOpen, onClose, sortBy, onSortChange }: F
                         ))}
                     </div>
 
-                    {/* Apply Button */}
                     <button
                         onClick={handleApply}
                         className="w-full py-4 bg-sai-pink text-white rounded-xl font-semibold hover:bg-sai-pink/90 transition-colors"

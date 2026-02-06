@@ -1,10 +1,8 @@
 export default function AllergenBadge({ tag }: { tag: string }) {
-    // Format tag for display (remove hyphens, capitalize)
     const displayText = tag
         .replace(/-/g, ' ')
         .replace(/\b\w/g, c => c.toUpperCase());
 
-    // Color coding based on tag type
     const isWarning = tag.startsWith('contains-');
     const isAvailable = tag.endsWith('-available');
 
