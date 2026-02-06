@@ -43,7 +43,7 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-sai-white pt-24">
-            <ProfileHeader user={user} profile={profile} />
+            <ProfileHeader user={user} profile={profile} orders={orders} />
 
             <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
