@@ -30,12 +30,10 @@ export default function ProfileHeader({ user, profile }: ProfileHeaderProps) {
                         </div>
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full">
                             <span className="text-sm font-medium text-sai-charcoal">Verified</span>
-                            <span className="text-sm font-semibold text-sai-charcoal">✓</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Decorative illustration placeholder */}
                 <div className="hidden lg:block w-80 h-56 bg-contain bg-right bg-no-repeat" style={{ backgroundImage: "url('/cupcake-illustration.png')" }}></div>
             </div>
         </div>

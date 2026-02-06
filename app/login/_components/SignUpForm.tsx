@@ -101,7 +101,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
         <div className="form-container sign-up-container">
             <form onSubmit={handleSignUp}>
                 <h1>Create Account</h1>
-                <span className="auth-subtitle">Join us for sweet moments 🍰</span>
+                <span className="auth-subtitle">Join us for sweet moments</span>
 
                 <input
                     type="text"

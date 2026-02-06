@@ -12,7 +12,6 @@ export default function PricingGuide() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    {/* 6 inch */}
                     <div className="bg-gradient-to-br from-pink-50 to-white rounded-xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-pink-100">
                         <div className="text-center">
                             <div className="relative mx-auto mb-4" style={{ width: '60px', height: '60px' }}>
@@ -38,7 +37,6 @@ export default function PricingGuide() {
                         </div>
                     </div>
 
-                    {/* 8 inch */}
                     <div className="bg-gradient-to-br from-pink-50 to-white rounded-xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-pink-100 relative">
                         <div className="absolute -top-2 -right-2 bg-sai-pink text-white text-xs font-bold px-2 py-1 rounded-full">
                             Popular
@@ -67,7 +65,6 @@ export default function PricingGuide() {
                         </div>
                     </div>
 
-                    {/* 10 inch */}
                     <div className="bg-gradient-to-br from-pink-50 to-white rounded-xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-pink-100">
                         <div className="text-center">
                             <div className="relative mx-auto mb-4" style={{ width: '90px', height: '90px' }}>
@@ -93,7 +90,6 @@ export default function PricingGuide() {
                         </div>
                     </div>
 
-                    {/* 12 inch */}
                     <div className="bg-gradient-to-br from-pink-50 to-white rounded-xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-pink-100">
                         <div className="text-center">
                             <div className="relative mx-auto mb-4" style={{ width: '105px', height: '105px' }}>
@@ -120,10 +116,9 @@ export default function PricingGuide() {
                     </div>
                 </div>
 
-                {/* Additional Info */}
                 <div className="mt-8 text-center">
                     <p className="text-sm text-sai-gray max-w-2xl mx-auto">
-                        💡 <span className="font-semibold">Note:</span> Prices vary based on design complexity, layers, decorations, and special requests.
+                        <span className="font-semibold">Note:</span> Prices vary based on design complexity, layers, decorations, and special requests.
                         Multi-tier cakes and custom designs may have different pricing. <span className="font-semibold" style={{ color: 'var(--color-sai-pink)' }}>Contact us for a personalized quote!</span>
                     </p>
                 </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Zap } from 'lucide-react';
 import { UserProfile, SpecialOccasion } from '@/lib/services/authService';
 import OrderHistoryModal from './OrderHistoryModal';
 
@@ -82,7 +83,7 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                         <div className="space-y-4">
                             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                                 <span className="text-sm text-sai-charcoal/60">Email Verified</span>
-                                <span className="font-semibold text-sai-pink">✓</span>
+                                <span className="font-semibold text-sai-pink">Verified</span>
                             </div>
                             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                                 <span className="text-sm text-sai-charcoal/60">Phone</span>
@@ -104,16 +105,16 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                             <span className="px-3 py-1 bg-gray-100 text-xs font-medium text-sai-charcoal rounded-full">Shortcuts</span>
                         </div>
                         <div className="mb-6">
-                            <div className="text-5xl font-bold text-sai-pink mb-2">⚡</div>
+                            <Zap className="w-12 h-12 text-sai-pink mb-2" />
                             <div className="text-sm text-sai-charcoal/60">get started quickly</div>
                         </div>
                     </div>
                     <div className="space-y-3">
                         <button onClick={() => router.push('/custom-cakes')} className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100">
-                            <div className="font-medium text-sai-charcoal">Order Custom Cake 🎂</div>
+                            <div className="font-medium text-sai-charcoal">Order Custom Cake</div>
                         </button>
                         <button onClick={() => router.push('/other-treats')} className="w-full p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors text-left border border-pink-100">
-                            <div className="font-medium text-sai-charcoal">Browse Treats 🧁</div>
+                            <div className="font-medium text-sai-charcoal">Browse Treats</div>
                         </button>
                     </div>
                 </div>
@@ -123,7 +124,7 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                 <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-6 lg:p-8 border border-indigo-100 relative overflow-hidden">
                     <div className="relative z-10">
                         <div className="flex items-start justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-sai-charcoal">The Cake Calendar 📅</h3>
+                            <h3 className="text-lg font-semibold text-sai-charcoal">Cake Calendar</h3>
                             {(() => {
                                 const upcoming = occasions
                                     .filter(o => {
@@ -221,7 +222,7 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
 
                 <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-3xl p-6 lg:p-8 border border-orange-100">
                     <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-sai-charcoal">Sweet Preferences 🍬</h3>
+                        <h3 className="text-lg font-semibold text-sai-charcoal">Sweet Preferences</h3>
                         <button onClick={() => setActiveTab('edit-profile')} className="text-xs font-medium text-orange-600 hover:text-orange-700 underline">
                             Edit
                         </button>

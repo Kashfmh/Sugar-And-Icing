@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         const orderId = paymentIntent.metadata.order_id;
         const userId = paymentIntent.metadata.user_id;
 
-        console.log(`💰 Payment succeeded for Order ID: ${orderId}`);
+        console.log(`Payment succeeded for Order ID: ${orderId}`);
 
         if (orderId) {
             const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

@@ -102,7 +102,7 @@ export default function Footer() {
 
                 <div className="border-t border-gray-700 pt-6 text-center">
                     <p className="text-sm text-gray-400">
-                        © {currentYear} Sugar And Icing. All rights reserved. Made with 💕 in KL.
+                        © {currentYear} Sugar And Icing. All rights reserved. Made in KL.
                     </p>
                 </div>
             </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Star, ShoppingCart, ChevronDown, Check } from 'lucide-react';
+import { X, Star, ShoppingCart, ChevronDown, Check, Info } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AllergenBadge from './AllergenBadge';
 import { motion, AnimatePresence } from 'motion/react';
@@ -401,10 +401,10 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                     </div>
                                                 </div>
 
-                                                {/* Customization Note */}
                                                 <div className="pt-3 border-t border-sai-pink/20">
                                                     <p className="text-xs text-gray-600 leading-relaxed">
-                                                        💡 <span className="font-medium">These are reference images!</span> Feel free to customize the design however you like, or request the exact same style. Your creativity, your choice! 🎨
+                                                        <Info className="w-4 h-4 text-sai-pink inline mr-1" />
+                                                        <span className="font-medium">These are reference images.</span> Feel free to customize the design however you like, or request the exact same style.
                                                     </p>
                                                 </div>
                                             </div>
