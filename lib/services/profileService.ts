@@ -1,32 +1,29 @@
 import { supabase } from '@/lib/supabase';
 import { updateUserProfile } from './authService';
 
-/**
- * Upload user avatar with validation
- * Following MVC - Controller layer for profile operations
- */
+// upload avatar
 export async function uploadAvatar(
     file: File,
     userId: string
 ): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
-        // Validate file size (5MB max)
-        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        // max 5mb
+        const MAX_SIZE = 5 * 1024 * 1024;
         if (file.size > MAX_SIZE) {
             return { success: false, error: 'File size too large. Maximum 5MB allowed.' };
         }
 
-        // Validate file type
+        // validate type
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
             return { success: false, error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.' };
         }
 
-        // Generate unique filename
+        // generate filename
         const fileExt = file.name.split('.').pop();
         const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
-        // Delete old avatar if exists
+        // delete old avatar
         const { data: oldFiles } = await supabase.storage
             .from('avatars')
             .list(userId);
@@ -38,7 +35,7 @@ export async function uploadAvatar(
                 .remove(filesToDelete);
         }
 
-        // Upload new avatar
+        // upload new
         const { data, error: uploadError } = await supabase.storage
             .from('avatars')
             .upload(fileName, file, {
@@ -51,12 +48,12 @@ export async function uploadAvatar(
             return { success: false, error: uploadError.message };
         }
 
-        // Get public URL
+        // get public url
         const { data: { publicUrl } } = supabase.storage
             .from('avatars')
             .getPublicUrl(fileName);
 
-        // Update profile with new avatar URL
+        // update profile
         await updateUserProfile(userId, { avatar_url: publicUrl });
 
         return { success: true, url: publicUrl };
@@ -66,12 +63,10 @@ export async function uploadAvatar(
     }
 }
 
-/**
- * Delete user avatar
- */
+// delete avatar
 export async function deleteAvatar(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
-        // List all files in user's folder
+        // list files
         const { data: files } = await supabase.storage
             .from('avatars')
             .list(userId);
@@ -87,7 +82,7 @@ export async function deleteAvatar(userId: string): Promise<{ success: boolean; 
             }
         }
 
-        // Update profile to remove avatar URL
+        // update profile
         await updateUserProfile(userId, { avatar_url: null });
 
         return { success: true };

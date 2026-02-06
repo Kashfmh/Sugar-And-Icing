@@ -5,7 +5,6 @@ import { ChevronLeft, Loader2 } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-// controller
 import { useCheckout } from '@/hooks/useCheckout';
 
 import ContactInfo from './_components/ContactInfo';
@@ -18,7 +17,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function CheckoutPage() {
     const checkout = useCheckout();
 
-    // loading state
+
     if (checkout.loading || !checkout.clientSecret) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-sai-white">
@@ -27,7 +26,7 @@ export default function CheckoutPage() {
         );
     }
 
-    // empty cart
+
     if (checkout.cartItems.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-sai-white gap-4">
@@ -67,7 +66,6 @@ export default function CheckoutPage() {
                         onRefresh={checkout.refreshAddresses}
                     />
 
-                    {/* stripe provider wrapper */}
                     <Elements stripe={stripePromise} options={{ clientSecret: checkout.clientSecret }}>
                         <PaymentForm
                             clientSecret={checkout.clientSecret}

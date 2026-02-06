@@ -11,7 +11,7 @@ import {
     SpecialOccasion,
 } from '@/lib/services/authService';
 
-// Define Interfaces
+// interfaces
 export type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
 export interface FormData {
@@ -224,7 +224,7 @@ export function useProfile() {
             // @ts-ignore
             await updateUserProfile(user.id, updates);
 
-           const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);
+            const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);
 
             setProfile(updatedProfile);
             setAddresses(updatedAddresses);
@@ -253,7 +253,6 @@ export function useProfile() {
     }
 
     return {
-        // State
         isCheckingAuth,
         isLoadingData,
         user,
@@ -267,14 +266,13 @@ export function useProfile() {
         totalOrders,
         status,
         formData,
-        // Actions
         setActiveTab,
         setFormData,
-        setProfile, // Exposed for AvatarUpload
+        setProfile,
         handleUpdateProfile,
         handleReset,
         handleSignOut,
-        initializeProfile, // Exposed for child components to refresh data
-        router // Exposed for navigation
+        initializeProfile,
+        router
     };
 }

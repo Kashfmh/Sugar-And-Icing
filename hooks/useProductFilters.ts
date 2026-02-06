@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// Shared types
+
 export interface Product {
     id: string;
     name: string;
     base_price: number;
-    price?: number; // Some components might use 'price' instead of 'base_price'
+    price?: number;
     description?: string | null;
     category_name: string;
     image_url?: string | null;
@@ -21,8 +21,8 @@ export type SortOption = 'newest' | 'price-low' | 'price-high' | 'name';
 interface UseProductFiltersProps {
     initialCategory?: string;
     itemsPerPage?: number;
-    categoryMap?: { [key: string]: string[] }; // Map UI category to product_type(s)
-    onFetch?: () => Promise<Product[]>; // Optional custom fetch function
+    categoryMap?: { [key: string]: string[] };
+    onFetch?: () => Promise<Product[]>;
 }
 
 export function useProductFilters({
@@ -31,7 +31,6 @@ export function useProductFilters({
     categoryMap,
     onFetch
 }: UseProductFiltersProps = {}) {
-    // State
     const [products, setProducts] = useState<Product[]>([]);
     const [activeCategory, setActiveCategory] = useState(initialCategory);
     const [loading, setLoading] = useState(true);
@@ -41,7 +40,6 @@ export function useProductFilters({
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
-    // Mobile detection
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 1024);
@@ -51,12 +49,10 @@ export function useProductFilters({
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Filter reset on change
     useEffect(() => {
         setCurrentPage(1);
     }, [activeCategory, searchQuery, sortBy]);
 
-    // Data fetching
     useEffect(() => {
         const loadProducts = async () => {
             setLoading(true);
@@ -83,9 +79,8 @@ export function useProductFilters({
         loadProducts();
     }, [onFetch]);
 
-    // Filtering logic
     const filteredProducts = products.filter(product => {
-        // Category Filter
+        // category filter
         let matchesCategory = true;
         if (activeCategory !== 'All') {
             if (categoryMap) {
@@ -112,7 +107,6 @@ export function useProductFilters({
         return matchesCategory && matchesSearch;
     });
 
-    // Sort logic
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         switch (sortBy) {
             case 'price-low':
@@ -127,16 +121,14 @@ export function useProductFilters({
         }
     });
 
-    // Pagination logic
     const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
 
     return {
-        // State
         products,
-        filteredProducts, // Expose if needed
-        sortedProducts,   // Expose if needed
+        filteredProducts,
+        sortedProducts,
         paginatedProducts,
         activeCategory,
         loading,
@@ -147,14 +139,8 @@ export function useProductFilters({
         isMobile,
         totalPages,
 
-        // Setters
-        setActiveCategory,
-        setSearchQuery,
-        setCurrentPage,
-        setSortBy,
         setIsFilterModalOpen,
 
-        // Helper
         totalCount: sortedProducts.length,
         showingCount: paginatedProducts.length,
     };

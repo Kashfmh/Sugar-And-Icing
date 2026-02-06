@@ -27,7 +27,6 @@ export function useProductDetails(slug: string) {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Extract product ID from slug
     const parts = slug?.split('-') || [];
     const productId = parts.length >= 5 ? parts.slice(-5).join('-') : '';
 
@@ -40,7 +39,6 @@ export function useProductDetails(slug: string) {
     async function fetchProductDetails() {
         setLoading(true);
         try {
-            // Fetch product
             const { data: productData, error: productError } = await supabase
                 .from('products')
                 .select('*')
@@ -48,7 +46,6 @@ export function useProductDetails(slug: string) {
                 .single();
 
             if (productError || !productData) {
-                // Return null product to let page handle 404
                 setProduct(null);
                 setLoading(false);
                 return;
@@ -56,7 +53,8 @@ export function useProductDetails(slug: string) {
 
             setProduct(productData);
 
-            // Fetch options if customizable
+            setProduct(productData);
+
             if (productData.customizable) {
                 const { data: optionsData } = await supabase
                     .from('product_options')
@@ -66,7 +64,6 @@ export function useProductDetails(slug: string) {
                 setOptions(optionsData || []);
             }
 
-            // Fetch reviews
             const { data: reviewsData } = await supabase
                 .from('reviews')
                 .select(`
@@ -89,7 +86,6 @@ export function useProductDetails(slug: string) {
                 setReviews(transformedReviews);
             }
 
-            // Track view
             trackView(productId);
 
         } catch (error) {

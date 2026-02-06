@@ -34,7 +34,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* order history */}
                 <div
                     onClick={handleViewOrders}
                     className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-all cursor-pointer"
@@ -50,7 +49,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                         <div className="text-sm text-sai-charcoal/60">total orders</div>
                     </div>
 
-                    {/* latest order summary */}
                     <div className="h-32 mb-0 relative bg-gray-50 rounded-xl p-4 flex flex-col justify-center group-hover:bg-white border border-transparent group-hover:border-gray-100 transition-colors">
                         {latestOrder ? (
                             <>
@@ -69,7 +67,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                     </div>
                 </div>
 
-                {/* account stats */}
                 <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
                         <div className="flex items-start justify-between mb-6">
@@ -100,7 +97,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                     </button>
                 </div>
 
-                {/* quick actions */}
                 <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
                         <div className="flex items-start justify-between mb-6">
@@ -123,7 +119,6 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                 </div>
             </div>
 
-            {/* bottom row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-6 lg:p-8 border border-indigo-100 relative overflow-hidden">
                     <div className="relative z-10">
