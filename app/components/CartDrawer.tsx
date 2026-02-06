@@ -1,5 +1,7 @@
 'use client';
 
+
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, Minus, Plus, Trash2, X } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
@@ -16,10 +18,12 @@ import {
     SheetClose,
 } from '@/components/ui/sheet';
 import Image from 'next/image';
+import ConfirmationModal from '@/app/components/ConfirmationModal';
 
 export default function CartDrawer() {
     const router = useRouter();
     const { items, isOpen, setIsOpen, removeItem, updateQuantity, subtotal, totalItems } = useCart();
+    const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
     const handleCheckout = () => {
         setIsOpen(false);
@@ -104,7 +108,7 @@ export default function CartDrawer() {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    onClick={() => removeItem(item.id)}
+                                                    onClick={() => setItemToRemove(item.id)}
                                                     className="text-gray-400 hover:text-red-500 transition-colors p-1"
                                                     aria-label="Remove item"
                                                 >
@@ -138,6 +142,18 @@ export default function CartDrawer() {
                     </>
                 )}
             </SheetContent>
-        </Sheet>
+
+            <ConfirmationModal
+                isOpen={!!itemToRemove}
+                onClose={() => setItemToRemove(null)}
+                onConfirm={() => {
+                    if (itemToRemove) removeItem(itemToRemove);
+                }}
+                title="Remove Item?"
+                description="Are you sure you want to remove this delicious treat from your cart?"
+                confirmLabel="Remove"
+                variant="danger"
+            />
+        </Sheet >
     );
 }

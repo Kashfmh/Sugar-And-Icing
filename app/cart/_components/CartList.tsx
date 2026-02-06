@@ -1,10 +1,13 @@
 import { useCart } from '@/hooks/useCart';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Minus, Plus, Trash2 } from 'lucide-react';
+import ConfirmationModal from '@/app/components/ConfirmationModal';
 
 export default function CartList() {
     const { items, updateQuantity, removeItem } = useCart();
+    const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -80,7 +83,7 @@ export default function CartList() {
                                 </div>
 
                                 <button
-                                    onClick={() => removeItem(item.id)}
+                                    onClick={() => setItemToRemove(item.id)}
                                     className="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium pr-2"
                                 >
                                     <Trash2 className="w-4 h-4" />
@@ -91,6 +94,18 @@ export default function CartList() {
                     </li>
                 ))}
             </ul>
-        </div>
+
+            <ConfirmationModal
+                isOpen={!!itemToRemove}
+                onClose={() => setItemToRemove(null)}
+                onConfirm={() => {
+                    if (itemToRemove) removeItem(itemToRemove);
+                }}
+                title="Remove Item?"
+                description="Are you sure you want to remove this delicious treat from your cart?"
+                confirmLabel="Remove"
+                variant="danger"
+            />
+        </div >
     );
 }

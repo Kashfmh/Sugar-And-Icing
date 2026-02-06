@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Counter from '@/app/components/Counter';
 
 export default function CartSummary() {
     const { subtotal } = useCart();
@@ -34,7 +35,20 @@ export default function CartSummary() {
 
                 <div className="flex justify-between items-end">
                     <span className="text-base font-bold text-gray-900">Estimated Total</span>
-                    <span className="text-2xl font-serif font-bold text-sai-pink">RM {subtotal().toFixed(2)}</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-2xl font-serif font-bold text-sai-pink">RM</span>
+                        <Counter
+                            value={subtotal()}
+                            fontSize={24}
+                            padding={0}
+                            gap={2}
+                            textColor="var(--color-sai-pink)"
+                            fontWeight="bold"
+                            gradientHeight={0}
+                            gradientFrom="white"
+                            gradientTo="transparent"
+                        />
+                    </div>
                 </div>
             </div>
 
