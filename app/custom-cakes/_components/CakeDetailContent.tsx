@@ -10,6 +10,7 @@ import { CAKE_SIZES, CAKE_BASES, CAKE_FROSTINGS, CAKE_DIETARY_OPTIONS } from '..
 import { Product } from '@/hooks/useProductFilters';
 
 interface CakeDetailContentProps {
+    productId: string;
     cakeName: string;
     imageUrl?: string;
     description?: string;
@@ -18,6 +19,7 @@ interface CakeDetailContentProps {
 }
 
 export default function CakeDetailContent({
+    productId,
     cakeName,
     imageUrl,
     description,
@@ -58,9 +60,13 @@ export default function CakeDetailContent({
             .filter(Boolean)
             .join(', ');
 
+        // Use a unique ID for the cart item (combination of product ID and timestamp/options)
+        // But productId MUST be the real UUID from the products table for the DB constraint.
+        const cartId = `${productId}-${Date.now()}`;
+
         addItem({
-            id: `custom-cake-${Date.now()}`,
-            productId: `custom-cake-${cakeName.toLowerCase().replace(/\s+/g, '-')}`,
+            id: cartId,
+            productId: productId,
             name: `Custom Cake: ${cakeName}`,
             price: basePrice + dietaryCost, // Unit price per cake including dietary
             quantity: quantity,
@@ -147,8 +153,8 @@ export default function CakeDetailContent({
                                     key={size.id}
                                     onClick={() => setSelectedSize(size)}
                                     className={`p-3 rounded-xl border text-center transition-all ${selectedSize.id === size.id
-                                            ? 'border-sai-pink bg-pink-50 ring-1 ring-sai-pink'
-                                            : 'border-gray-200 hover:border-pink-200 hover:bg-pink-50/50'
+                                        ? 'border-sai-pink bg-pink-50 ring-1 ring-sai-pink'
+                                        : 'border-gray-200 hover:border-pink-200 hover:bg-pink-50/50'
                                         }`}
                                 >
                                     <div className="font-bold text-gray-800">{size.weight}</div>
@@ -170,8 +176,8 @@ export default function CakeDetailContent({
                                     key={base.id}
                                     onClick={() => setSelectedBase(base)}
                                     className={`px-3 py-3 rounded-lg border text-left text-sm transition-all flex justify-between items-center ${selectedBase.id === base.id
-                                            ? 'border-sai-pink bg-pink-50 text-sai-pink font-medium ring-1 ring-sai-pink'
-                                            : 'border-gray-200 hover:border-pink-200 hover:bg-pink-50/50 text-gray-600'
+                                        ? 'border-sai-pink bg-pink-50 text-sai-pink font-medium ring-1 ring-sai-pink'
+                                        : 'border-gray-200 hover:border-pink-200 hover:bg-pink-50/50 text-gray-600'
                                         }`}
                                 >
                                     <span>{base.label}</span>
@@ -195,8 +201,8 @@ export default function CakeDetailContent({
                                     key={frosting.id}
                                     onClick={() => setSelectedFrosting(frosting)}
                                     className={`px-3 py-3 rounded-lg border text-left text-sm transition-all flex justify-between items-center ${selectedFrosting.id === frosting.id
-                                            ? 'border-sai-pink bg-pink-50 text-sai-pink font-medium ring-1 ring-sai-pink'
-                                            : 'border-gray-200 hover:border-pink-200 hover:bg-pink-50/50 text-gray-600'
+                                        ? 'border-sai-pink bg-pink-50 text-sai-pink font-medium ring-1 ring-sai-pink'
+                                        : 'border-gray-200 hover:border-pink-200 hover:bg-pink-50/50 text-gray-600'
                                         }`}
                                 >
                                     <span>{frosting.label}</span>
@@ -319,8 +325,8 @@ export default function CakeDetailContent({
                         onClick={handleAddToCart}
                         disabled={isAdded}
                         className={`w-full py-6 text-lg rounded-xl shadow-lg transition-all ${isAdded
-                                ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
-                                : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-200'
+                            ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
+                            : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-200'
                             }`}
                     >
                         {isAdded ? (

@@ -8,6 +8,7 @@ import CakeDetailContent from './CakeDetailContent';
 interface CakeDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
+    productId: string;
     cakeName: string;
     imageUrl?: string;
     description?: string;
@@ -16,6 +17,7 @@ interface CakeDetailModalProps {
 export default function CakeDetailModal({
     isOpen,
     onClose,
+    productId,
     cakeName,
     imageUrl,
     description
@@ -64,6 +66,7 @@ export default function CakeDetailModal({
                         </button>
 
                         <CakeDetailContent
+                            productId={productId}
                             cakeName={cakeName}
                             imageUrl={imageUrl}
                             description={description}
