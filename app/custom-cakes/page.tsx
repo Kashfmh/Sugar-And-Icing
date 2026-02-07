@@ -126,7 +126,6 @@ export default function CustomCakesPage() {
             <CakeDetailModal
                 isOpen={!!selectedCake}
                 onClose={() => setSelectedCake(null)}
-                productId={selectedCake?.id || ''}
                 cakeName={selectedCake?.name || ''}
                 imageUrl={selectedCake?.image_url || undefined}
                 description={selectedCake?.description || undefined}

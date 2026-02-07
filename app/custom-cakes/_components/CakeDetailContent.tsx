@@ -1,93 +1,59 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { X, ShoppingBag, Check, Info } from 'lucide-react';
-import Counter from '@/app/components/Counter';
+import { X, MessageCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/useCart';
 import { CAKE_SIZES, CAKE_BASES, CAKE_FROSTINGS, CAKE_DIETARY_OPTIONS } from '../constants';
-import { Product } from '@/hooks/useProductFilters';
 
 interface CakeDetailContentProps {
-    productId: string;
     cakeName: string;
     imageUrl?: string;
     description?: string;
     className?: string;
-    onClose?: () => void; // Optional, for close button inside content if needed
+    onClose?: () => void;
 }
 
 export default function CakeDetailContent({
-    productId,
     cakeName,
     imageUrl,
     description,
     className = "",
     onClose
 }: CakeDetailContentProps) {
-    const { addItem } = useCart();
-
     // State
-    const [selectedSize, setSelectedSize] = useState(CAKE_SIZES[1]); // Default 6" (500g)
+    const [selectedSize, setSelectedSize] = useState(CAKE_SIZES[1]); // 500g default
     const [selectedBase, setSelectedBase] = useState(CAKE_BASES[0]);
     const [selectedFrosting, setSelectedFrosting] = useState(CAKE_FROSTINGS[0]);
     const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
     const [message, setMessage] = useState('');
     const [designNotes, setDesignNotes] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [isAdded, setIsAdded] = useState(false);
 
-    // Pricing Logic
-    const isPremiumSelection = selectedBase.type === 'premium' || selectedFrosting.type === 'premium';
-    const basePrice = isPremiumSelection ? selectedSize.premiumPrice : selectedSize.basicPrice;
-
-    // Add dietary costs
-    let dietaryCost = 0;
-    selectedDietaryOptions.forEach(id => {
-        const option = CAKE_DIETARY_OPTIONS.find(opt => opt.id === id);
-        if (option) dietaryCost += option.price;
-    });
-
-    const totalPrice = (basePrice + dietaryCost) * quantity;
-
-    const handleAddToCart = () => {
-        setIsAdded(true);
-
-        // Find dietary labels
+    // Build WhatsApp message
+    const handleRequestQuote = () => {
         const dietaryLabels = selectedDietaryOptions
             .map(id => CAKE_DIETARY_OPTIONS.find(opt => opt.id === id)?.label)
             .filter(Boolean)
             .join(', ');
 
-        // Use a unique ID for the cart item (combination of product ID and timestamp/options)
-        // But productId MUST be the real UUID from the products table for the DB constraint.
-        const cartId = `${productId}-${Date.now()}`;
+        const lines = [
+            `Hi! I'm interested in ordering a custom cake.`,
+            ``,
+            `Design Reference: ${cakeName}`,
+            `Weight: ${selectedSize.weight} (serves ${selectedSize.serves})`,
+            `Base Flavor: ${selectedBase.label}`,
+            `Frosting: ${selectedFrosting.label}`,
+            dietaryLabels ? `Dietary: ${dietaryLabels}` : null,
+            message ? `Message on Cake: ${message}` : null,
+            designNotes ? `Design Notes: ${designNotes}` : null,
+            quantity > 1 ? `Quantity: ${quantity}` : null,
+            ``,
+            `Please let me know the estimated price and availability!`
+        ].filter(Boolean).join('\n');
 
-        addItem({
-            id: cartId,
-            productId: productId,
-            name: `Custom Cake: ${cakeName}`,
-            price: basePrice + dietaryCost, // Unit price per cake including dietary
-            quantity: quantity,
-            image_url: imageUrl || '/images/placeholder-cake.jpg',
-            description: `${selectedSize.weight} • ${selectedBase.label} • ${selectedFrosting.label}`,
-            metadata: {
-                Design: cakeName,
-                Size: selectedSize.label,
-                Weight: selectedSize.weight,
-                Base: selectedBase.label,
-                Frosting: selectedFrosting.label,
-                Dietary: dietaryLabels || 'None',
-                Message: message || 'None',
-                'Design Notes': designNotes || 'None'
-            }
-        });
-
-        setTimeout(() => {
-            setIsAdded(false);
-            if (onClose) onClose();
-        }, 1500);
+        const whatsappUrl = `https://wa.me/60108091351?text=${encodeURIComponent(lines)}`;
+        window.open(whatsappUrl, '_blank');
     };
 
     return (
@@ -110,7 +76,7 @@ export default function CakeDetailContent({
 
             {/* Config Section (Right) */}
             <div className="w-full md:w-1/2 flex flex-col h-full bg-white relative">
-                {/* Close Button (Desktop overlapping) */}
+                {/* Close Button (Desktop) */}
                 {onClose && (
                     <button
                         onClick={onClose}
@@ -126,12 +92,12 @@ export default function CakeDetailContent({
                     {description && <p className="text-sai-gray leading-relaxed text-sm">{description}</p>}
                 </div>
 
-                {/* Info Block (No Rating/Sold) */}
+                {/* Info Block */}
                 <div className="px-6 pb-4 border-b border-gray-100">
                     <div className="bg-gradient-to-br from-sai-pink/5 to-sai-pink/10 rounded-xl p-3 border border-sai-pink/20">
                         <p className="text-xs text-gray-600 leading-relaxed">
                             <Info className="w-4 h-4 text-sai-pink inline mr-1" />
-                            <span className="font-medium">These are reference images.</span> Feel free to customize the design however you like, or request the exact same style.
+                            <span className="font-medium">This is a reference image.</span> Customize the design however you like, or request the exact same style. Pricing depends on complexity.
                         </p>
                     </div>
                 </div>
@@ -139,7 +105,7 @@ export default function CakeDetailContent({
                 {/* Scrollable Form */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
 
-                    <h3 className="font-semibold text-lg text-sai-charcoal border-b border-gray-100 pb-2">Customize Your Order</h3>
+                    <h3 className="font-semibold text-lg text-sai-charcoal border-b border-gray-100 pb-2">Configure Your Cake</h3>
 
                     {/* Size Selector */}
                     <section>
@@ -234,18 +200,13 @@ export default function CakeDetailContent({
                                     />
                                     <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
                                         {opt.label}
-                                        {opt.price > 0 ? (
-                                            <span className="text-sai-pink ml-1">(+RM {opt.price.toFixed(2)})</span>
-                                        ) : (
-                                            <span className="text-green-600 ml-1">(Free)</span>
-                                        )}
                                     </span>
                                 </label>
                             ))}
                         </div>
                     </section>
 
-                    {/* Inputs */}
+                    {/* Text Inputs */}
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-sai-charcoal mb-2">
@@ -254,13 +215,10 @@ export default function CakeDetailContent({
                             <textarea
                                 value={designNotes}
                                 onChange={(e) => setDesignNotes(e.target.value)}
-                                placeholder="Describe your desired design, colors, themes, or any special requests..."
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink text-sm min-h-[100px] resize-none placeholder:text-gray-400"
+                                placeholder="Describe your desired design, colors, themes..."
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink text-sm min-h-[80px] resize-none placeholder:text-gray-400"
                                 maxLength={500}
                             />
-                            <p className="text-xs text-gray-500 mt-1 text-right">
-                                {designNotes.length}/500 characters
-                            </p>
                         </div>
 
                         <div>
@@ -299,47 +257,17 @@ export default function CakeDetailContent({
                     </div>
                 </div>
 
-                {/* Footer / Actions */}
+                {/* Footer */}
                 <div className="p-6 border-t border-gray-100 bg-white flex-shrink-0">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <div className="text-sm text-gray-500 mb-1">Total Price</div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-3xl font-bold font-serif text-sai-charcoal">RM</span>
-                                <Counter
-                                    value={totalPrice}
-                                    fontSize={32}
-                                    padding={0}
-                                    gap={2}
-                                    textColor="var(--color-sai-charcoal)"
-                                    fontWeight="bold"
-                                    gradientHeight={8}
-                                    gradientFrom="white"
-                                    gradientTo="transparent"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
+                    <p className="text-xs text-gray-500 mb-3 text-center">
+                        Pricing depends on design complexity. We'll confirm the final price on WhatsApp.
+                    </p>
                     <Button
-                        onClick={handleAddToCart}
-                        disabled={isAdded}
-                        className={`w-full py-6 text-lg rounded-xl shadow-lg transition-all ${isAdded
-                            ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
-                            : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-200'
-                            }`}
+                        onClick={handleRequestQuote}
+                        className="w-full py-6 text-lg rounded-xl shadow-lg bg-green-600 hover:bg-green-700 text-white"
                     >
-                        {isAdded ? (
-                            <>
-                                <Check className="w-5 h-5 mr-2" />
-                                Added to Cart
-                            </>
-                        ) : (
-                            <>
-                                <ShoppingBag className="w-5 h-5 mr-2" />
-                                Add to Cart
-                            </>
-                        )}
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Request Quote on WhatsApp
                     </Button>
                 </div>
             </div>
