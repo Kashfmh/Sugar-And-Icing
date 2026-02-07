@@ -51,6 +51,7 @@ export async function POST(req: Request) {
                 }
             );
 
+            // Update order status
             const { error: updateError } = await supabase
                 .from('orders')
                 .update({
@@ -62,6 +63,35 @@ export async function POST(req: Request) {
             if (updateError) {
                 console.error("Error updating order status:", updateError);
                 return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+            }
+
+            // Increment times_sold for each product in the order
+            const { data: orderItems, error: itemsError } = await supabase
+                .from('order_items')
+                .select('product_id, quantity')
+                .eq('order_id', orderId);
+
+            if (!itemsError && orderItems && orderItems.length > 0) {
+                for (const item of orderItems) {
+                    if (item.product_id) {
+                        // Fetch current times_sold
+                        const { data: productData, error: productFetchError } = await supabase
+                            .from('products')
+                            .select('times_sold')
+                            .eq('id', item.product_id)
+                            .single();
+
+                        if (!productFetchError && productData) {
+                            const newSold = (productData.times_sold || 0) + item.quantity;
+                            await supabase
+                                .from('products')
+                                .update({ times_sold: newSold })
+                                .eq('id', item.product_id);
+                        }
+                    }
+                }
+            } else if (itemsError) {
+                console.error("Error fetching order items for stats update:", itemsError);
             }
 
             if (userId) {

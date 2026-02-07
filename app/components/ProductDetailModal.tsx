@@ -248,174 +248,160 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                             stiffness: 300,
                             duration: 0.3
                         }}
-                        className="relative bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-hidden shadow-2xl"
+                        className="relative bg-white rounded-3xl max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl overflow-hidden flex flex-col"
                     >
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/95 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 group"
+                            className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-white/95 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 group"
                         >
                             <X className="w-5 h-5 text-sai-charcoal group-hover:text-sai-pink transition-colors" />
                         </button>
 
-                        <div className="overflow-y-auto max-h-[92vh]">
+                        {loading ? (
+                            <div className="flex flex-col lg:flex-row h-full overflow-hidden animate-pulse">
+                                {/* Left: Gallery Skeleton */}
+                                <div className="lg:w-2/5 flex flex-col h-full bg-gray-50 border-r border-gray-100">
+                                    <div className="flex-1 p-6 flex items-center justify-center">
+                                        <div className="aspect-square w-full max-w-[350px] rounded-2xl bg-gray-200" />
+                                    </div>
+                                    {/* Stats Footer Skeleton */}
+                                    <div className="p-6 border-t border-gray-200 bg-white flex-shrink-0">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-gray-200" />
+                                                <div className="space-y-1">
+                                                    <div className="h-4 w-16 bg-gray-200 rounded" />
+                                                    <div className="h-3 w-12 bg-gray-200 rounded" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="h-3 w-8 bg-gray-200 rounded ml-auto" />
+                                                <div className="h-5 w-12 bg-gray-200 rounded ml-auto" />
+                                            </div>
+                                        </div>
+                                        <div className="h-3 w-full bg-gray-200 rounded" />
+                                    </div>
+                                </div>
 
-                            {loading ? (
-                                <div className="grid md:grid-cols-2 gap-6 p-6">
-                                    <div>
-                                        <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-200 mb-4 animate-pulse" />
+                                {/* Right: Usage Skeleton */}
+                                <div className="lg:w-3/5 flex flex-col h-full bg-white relative">
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                                        {/* Header */}
+                                        <div className="space-y-4">
+                                            <div className="h-8 w-3/4 bg-gray-200 rounded-lg" />
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3].map(i => (
+                                                    <div key={i} className="h-6 w-16 bg-gray-200 rounded-full" />
+                                                ))}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="h-4 w-full bg-gray-200 rounded" />
+                                                <div className="h-4 w-5/6 bg-gray-200 rounded" />
+                                            </div>
+                                        </div>
 
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {[...Array(4)].map((_, i) => (
-                                                <div key={i} className="aspect-square rounded-lg bg-gray-200 animate-pulse" />
+                                        {/* Inputs */}
+                                        <div className="space-y-6 pt-6 border-t border-gray-100">
+                                            {[1, 2].map(i => (
+                                                <div key={i} className="space-y-2">
+                                                    <div className="h-4 w-24 bg-gray-200 rounded" />
+                                                    <div className="h-12 w-full bg-gray-100 rounded-xl border border-gray-200" />
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    {/* Right: Details Skeleton */}
-                                    <div>
-                                        {/* Title Skeleton */}
-                                        <div className="h-9 bg-gray-200 rounded-lg w-3/4 mb-4 animate-pulse" />
-
-                                        {/* Rating & Stats Skeleton */}
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
-                                            <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-                                        </div>
-
-                                        {/* Tags Skeleton */}
-                                        <div className="flex gap-2 mb-4">
-                                            <div className="h-6 bg-gray-200 rounded-full w-16 animate-pulse" />
-                                            <div className="h-6 bg-gray-200 rounded-full w-20 animate-pulse" />
-                                            <div className="h-6 bg-gray-200 rounded-full w-16 animate-pulse" />
-                                        </div>
-
-                                        {/* Description Skeleton */}
-                                        <div className="space-y-2 mb-6">
-                                            <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
-                                            <div className="h-4 bg-gray-200 rounded w-5/6 animate-pulse" />
-                                            <div className="h-4 bg-gray-200 rounded w-4/5 animate-pulse" />
-                                        </div>
-
-                                        {/* Customization Skeleton */}
-                                        <div className="border-t border-gray-200 pt-4 mb-4">
-                                            <div className="h-6 bg-gray-200 rounded w-48 mb-3 animate-pulse" />
-
-                                            {/* Dropdown 1 */}
-                                            <div className="mb-4">
-                                                <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse" />
-                                                <div className="h-10 bg-gray-200 rounded-lg animate-pulse" />
-                                            </div>
-
-                                            {/* Dropdown 2 */}
-                                            <div className="mb-4">
-                                                <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse" />
-                                                <div className="h-10 bg-gray-200 rounded-lg animate-pulse" />
-                                            </div>
-
-                                            {/* Quantity */}
-                                            <div className="mb-4">
-                                                <div className="h-4 bg-gray-200 rounded w-20 mb-2 animate-pulse" />
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
-                                                    <div className="w-12 h-6 bg-gray-200 rounded animate-pulse" />
-                                                    <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
-                                                </div>
+                                    {/* Footer Skeleton */}
+                                    <div className="px-6 py-4 border-t border-gray-100 bg-white flex-shrink-0">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="space-y-1">
+                                                <div className="h-3 w-16 bg-gray-200 rounded" />
+                                                <div className="h-8 w-24 bg-gray-200 rounded" />
                                             </div>
                                         </div>
-
-                                        {/* Price & Button Skeleton */}
-                                        <div className="border-t border-gray-200 pt-4 mb-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <div className="h-3 bg-gray-200 rounded w-20 mb-2 animate-pulse" />
-                                                    <div className="h-9 bg-gray-200 rounded w-32 animate-pulse" />
-                                                </div>
-                                            </div>
-                                            <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-                                        </div>
-
-                                        {/* Reviews Skeleton */}
-                                        <div className="border-t border-gray-200 pt-4">
-                                            <div className="h-6 bg-gray-200 rounded w-40 mb-3 animate-pulse" />
-                                            <div className="space-y-3">
-                                                {[...Array(2)].map((_, i) => (
-                                                    <div key={i} className="bg-gray-100 rounded-lg p-3">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+                                        <div className="h-[52px] w-full bg-gray-200 rounded-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+                                {/* Left: Gallery + Fixed Stats Footer */}
+                                <div className="lg:w-2/5 flex flex-col h-full bg-gray-50 border-r border-gray-100">
+                                    {/* Scrollable Gallery Area */}
+                                    <div className="flex-1 overflow-y-auto p-6 scrollbar-hide flex flex-col justify-center">
+                                        <Carousel className="w-full">
+                                            <CarouselContent>
+                                                {images.length > 0 ? (
+                                                    images.map((img, index) => (
+                                                        <CarouselItem key={index}>
+                                                            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
+                                                                <Image
+                                                                    src={img}
+                                                                    alt={`${product?.name} - Image ${index + 1}`}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                />
+                                                            </div>
+                                                        </CarouselItem>
+                                                    ))
+                                                ) : (
+                                                    <CarouselItem>
+                                                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                            <span className="text-gray-400">No image</span>
                                                         </div>
-                                                        <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                                                    </CarouselItem>
+                                                )}
+                                            </CarouselContent>
+                                            {images.length > 1 && (
+                                                <>
+                                                    <CarouselPrevious className="left-2" />
+                                                    <CarouselNext className="right-2" />
+                                                </>
+                                            )}
+                                        </Carousel>
+                                    </div>
+
+                                    {/* Fixed Stats Card Footer */}
+                                    <div className="p-6 border-t border-gray-200 bg-white flex-shrink-0">
+                                        <div className="flex items-center justify-between mb-0">
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-yellow-50 p-2 rounded-lg">
+                                                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-baseline gap-1">
+                                                        <span className="font-bold text-xl text-sai-charcoal">{product?.average_rating.toFixed(1)}</span>
+                                                        <span className="text-gray-400 text-sm">/ 5.0</span>
                                                     </div>
-                                                ))}
+                                                    <span className="text-xs text-gray-500">{product?.review_count} Reviews</span>
+                                                </div>
                                             </div>
+                                            <div className="text-right">
+                                                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-0.5">Sold</div>
+                                                <div className="font-bold text-xl text-sai-charcoal">{product?.times_sold}</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Info Text */}
+                                        <div className="mt-4 pt-4 border-t border-gray-100">
+                                            <p className="text-xs text-gray-500 leading-relaxed flex gap-2">
+                                                <Info className="w-4 h-4 text-sai-pink flex-shrink-0" />
+                                                <span>
+                                                    <span className="font-medium text-sai-charcoal">Note:</span> Product images are for reference. Customized items may vary slightly.
+                                                </span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="flex flex-col lg:flex-row gap-6 p-6">
-                                    {/* Left: Sticky Gallery - 40% width */}
-                                    <div className="lg:w-2/5 flex-shrink-0">
-                                        <div className="lg:sticky lg:top-6 space-y-4">
-                                            {/* Carousel Gallery */}
-                                            <Carousel className="w-full">
-                                                <CarouselContent>
-                                                    {images.length > 0 ? (
-                                                        images.map((img, index) => (
-                                                            <CarouselItem key={index}>
-                                                                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
-                                                                    <Image
-                                                                        src={img}
-                                                                        alt={`${product?.name} - Image ${index + 1}`}
-                                                                        fill
-                                                                        className="object-cover"
-                                                                    />
-                                                                </div>
-                                                            </CarouselItem>
-                                                        ))
-                                                    ) : (
-                                                        <CarouselItem>
-                                                            <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                                <span className="text-gray-400">No image</span>
-                                                            </div>
-                                                        </CarouselItem>
-                                                    )}
-                                                </CarouselContent>
-                                                {images.length > 1 && (
-                                                    <>
-                                                        <CarouselPrevious className="left-2" />
-                                                        <CarouselNext className="right-2" />
-                                                    </>
-                                                )}
-                                            </Carousel>
 
-                                            {/* Stats Card */}
-                                            <div className="bg-gradient-to-br from-sai-pink/5 to-sai-pink/10 rounded-xl p-4 border border-sai-pink/20">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                                                        <span className="font-bold text-lg">{product?.average_rating.toFixed(1)}</span>
-                                                        <span className="text-gray-500 text-sm">({product?.review_count})</span>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-sm text-gray-500">Sold</div>
-                                                        <div className="font-bold text-lg text-sai-charcoal">{product?.times_sold}</div>
-                                                    </div>
-                                                </div>
+                                {/* Right: Scrollable Content + Fixed Footer */}
+                                <div className="lg:w-3/5 flex flex-col h-full bg-white relative">
 
-                                                <div className="pt-3 border-t border-sai-pink/20">
-                                                    <p className="text-xs text-gray-600 leading-relaxed">
-                                                        <Info className="w-4 h-4 text-sai-pink inline mr-1" />
-                                                        <span className="font-medium">These are reference images.</span> Feel free to customize the design however you like, or request the exact same style.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right: Scrollable Details - 60% width */}
-                                    <div className="lg:w-3/5 flex-1 space-y-6">
+                                    {/* Scrollable Details */}
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                                         {/* Header */}
-                                        <div className="mb-4">
-                                            <h2 className="text-3xl font-serif font-bold text-sai-charcoal mb-2">
+                                        <div>
+                                            <h2 className="text-3xl font-serif font-bold text-sai-charcoal mb-2 pr-12">
                                                 {product?.name}
                                             </h2>
 
@@ -429,35 +415,35 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                             )}
 
                                             {/* Description */}
-                                            <p className="text-sai-gray leading-relaxed">
+                                            <p className="text-sai-gray leading-relaxed text-sm">
                                                 {product?.description}
                                             </p>
                                         </div>
 
                                         {/* Customization */}
                                         {product?.customizable && (
-                                            <div className="border-t border-gray-200 pt-4 mb-4">
-                                                <h3 className="font-semibold text-lg mb-3">Customize Your Order</h3>
+                                            <div className="border-t border-gray-100 pt-6">
+                                                <h3 className="font-semibold text-lg mb-4 text-sai-charcoal">Customize Your Order</h3>
 
                                                 {/* Base Selection */}
                                                 {baseOptions.length > 0 && (
-                                                    <div className="mb-4">
-                                                        <label className="block text-sm font-medium mb-2">Base Flavor *</label>
+                                                    <div className="mb-5">
+                                                        <label className="block text-sm font-medium mb-2 text-gray-700">Base Flavor *</label>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <button className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-gray-400 transition-colors flex justify-between items-center text-left">
-                                                                    <span className="text-sm">{selectedBase || "Select flavor..."}</span>
+                                                                <button className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-sai-pink/50 transition-colors flex justify-between items-center text-left bg-gray-50/50">
+                                                                    <span className="text-sm text-gray-700 font-medium">{selectedBase || "Select flavor..."}</span>
                                                                     <ChevronDown className="w-4 h-4 text-gray-500" />
                                                                 </button>
                                                             </DropdownMenuTrigger>
-                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto">
                                                                 {baseOptions.map((opt) => (
                                                                     <DropdownMenuItem
                                                                         key={opt.id}
                                                                         onSelect={() => setSelectedBase(opt.option_name)}
-                                                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                        className="py-2.5 cursor-pointer"
                                                                     >
-                                                                        {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1">(Premium)</span>}
+                                                                        {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1 text-xs font-semibold bg-pink-50 px-2 py-0.5 rounded-full">Premium</span>}
                                                                     </DropdownMenuItem>
                                                                 ))}
                                                             </DropdownMenuContent>
@@ -467,23 +453,23 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
                                                 {/* Frosting Selection */}
                                                 {frostingOptions.length > 0 && (
-                                                    <div className="mb-4">
-                                                        <label className="block text-sm font-medium mb-2">Frosting *</label>
+                                                    <div className="mb-5">
+                                                        <label className="block text-sm font-medium mb-2 text-gray-700">Frosting *</label>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <button className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-gray-400 transition-colors flex justify-between items-center text-left">
-                                                                    <span className="text-sm">{selectedFrosting || "Select frosting..."}</span>
+                                                                <button className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-sai-pink/50 transition-colors flex justify-between items-center text-left bg-gray-50/50">
+                                                                    <span className="text-sm text-gray-700 font-medium">{selectedFrosting || "Select frosting..."}</span>
                                                                     <ChevronDown className="w-4 h-4 text-gray-500" />
                                                                 </button>
                                                             </DropdownMenuTrigger>
-                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto">
                                                                 {frostingOptions.map((opt) => (
                                                                     <DropdownMenuItem
                                                                         key={opt.id}
                                                                         onSelect={() => setSelectedFrosting(opt.option_name)}
-                                                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                        className="py-2.5 cursor-pointer"
                                                                     >
-                                                                        {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1">(Premium)</span>}
+                                                                        {opt.option_name} {opt.is_premium && <span className="text-sai-pink ml-1 text-xs font-semibold bg-pink-50 px-2 py-0.5 rounded-full">Premium</span>}
                                                                     </DropdownMenuItem>
                                                                 ))}
                                                             </DropdownMenuContent>
@@ -493,14 +479,14 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
                                                 {/* Brownie Topping Selection */}
                                                 {toppingOptions.length > 0 && (
-                                                    <div className="mb-4">
-                                                        <label className="block text-sm font-medium mb-2">
+                                                    <div className="mb-5">
+                                                        <label className="block text-sm font-medium mb-2 text-gray-700">
                                                             Add Topping <span className="text-gray-400 font-normal">(Optional, +RM 1)</span>
                                                         </label>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <button className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-gray-400 transition-colors flex justify-between items-center text-left">
-                                                                    <span className="text-sm">
+                                                                <button className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sai-pink focus:border-sai-pink hover:border-sai-pink/50 transition-colors flex justify-between items-center text-left bg-gray-50/50">
+                                                                    <span className="text-sm text-gray-700 font-medium">
                                                                         {selectedTopping === 'None' ? 'No topping (RM 3/pc)' :
                                                                             selectedTopping ? `${selectedTopping} (+RM 1.00)` : 'Select topping...'}
                                                                     </span>
@@ -510,7 +496,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                             <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
                                                                 <DropdownMenuItem
                                                                     onSelect={() => setSelectedTopping('None')}
-                                                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                    className="py-2.5 cursor-pointer"
                                                                 >
                                                                     No topping (RM 3/pc)
                                                                 </DropdownMenuItem>
@@ -518,9 +504,9 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                                     <DropdownMenuItem
                                                                         key={opt.id}
                                                                         onSelect={() => setSelectedTopping(opt.option_name)}
-                                                                        className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
+                                                                        className="py-2.5 cursor-pointer"
                                                                     >
-                                                                        {opt.option_name} <span className="text-sai-pink ml-1">(+RM {opt.price_modifier.toFixed(2)})</span>
+                                                                        {opt.option_name} <span className="text-sai-pink ml-1 text-xs font-semibold">(+RM {opt.price_modifier.toFixed(2)})</span>
                                                                     </DropdownMenuItem>
                                                                 ))}
                                                             </DropdownMenuContent>
@@ -528,13 +514,13 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                     </div>
                                                 )}
 
-                                                {/* Dietary Options (Checkboxes) */}
+                                                {/* Dietary Options */}
                                                 {dietaryOptions.length > 0 && (
-                                                    <div className="mb-4">
-                                                        <label className="block text-sm font-medium mb-2">Dietary Options</label>
-                                                        <div className="space-y-2">
+                                                    <div className="mb-5">
+                                                        <label className="block text-sm font-medium mb-2 text-gray-700">Dietary Options</label>
+                                                        <div className="space-y-3">
                                                             {dietaryOptions.map((opt) => (
-                                                                <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
+                                                                <label key={opt.id} className="flex items-center gap-2 cursor-pointer group">
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={selectedDietaryOptions.includes(opt.option_name)}
@@ -545,14 +531,14 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                                                 setSelectedDietaryOptions(selectedDietaryOptions.filter(name => name !== opt.option_name));
                                                                             }
                                                                         }}
-                                                                        className="w-4 h-4 text-sai-pink border-gray-300 rounded focus:ring-sai-pink"
+                                                                        className="w-4 h-4 text-sai-pink border-gray-300 rounded focus:ring-sai-pink cursor-pointer"
                                                                     />
-                                                                    <span className="text-sm">
+                                                                    <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
                                                                         {opt.option_name}
                                                                         {opt.is_premium ? (
-                                                                            <span className="text-sai-pink ml-1">(+RM {opt.price_modifier.toFixed(2)})</span>
+                                                                            <span className="text-sai-pink ml-1 font-medium">(+RM {opt.price_modifier.toFixed(2)})</span>
                                                                         ) : (
-                                                                            <span className="text-green-600 ml-1">(Free)</span>
+                                                                            <span className="text-green-600 ml-1 font-medium">(Free)</span>
                                                                         )}
                                                                     </span>
                                                                 </label>
@@ -561,38 +547,37 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                     </div>
                                                 )}
 
-
                                                 {/* Design Notes */}
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2">
+                                                <div className="mb-5">
+                                                    <label className="block text-sm font-medium mb-2 text-gray-700">
                                                         Design Notes <span className="text-gray-400 font-normal">(Optional)</span>
                                                     </label>
                                                     <textarea
                                                         value={designNotes}
                                                         onChange={(e) => setDesignNotes(e.target.value)}
                                                         placeholder="Describe your desired design, colors, themes, or any special requests..."
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sai-pink focus:border-sai-pink min-h-[100px] resize-none"
+                                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sai-pink focus:border-sai-pink min-h-[100px] resize-none text-sm placeholder:text-gray-400"
                                                         maxLength={500}
                                                     />
-                                                    <p className="text-xs text-gray-500 mt-1">
+                                                    <p className="text-xs text-gray-400 mt-1 text-right">
                                                         {designNotes.length}/500 characters
                                                     </p>
                                                 </div>
 
                                                 {/* Quantity */}
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2">Quantity</label>
+                                                <div className="mb-2">
+                                                    <label className="block text-sm font-medium mb-2 text-gray-700">Quantity</label>
                                                     <div className="flex items-center gap-3">
                                                         <button
                                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                                            className="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-center"
+                                                            className="w-10 h-10 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-gray-600 transition-colors"
                                                         >
                                                             -
                                                         </button>
-                                                        <span className="w-12 text-center font-semibold">{quantity}</span>
+                                                        <span className="w-12 text-center font-bold text-lg text-sai-charcoal">{quantity}</span>
                                                         <button
                                                             onClick={() => setQuantity(quantity + 1)}
-                                                            className="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-center"
+                                                            className="w-10 h-10 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-gray-600 transition-colors"
                                                         >
                                                             +
                                                         </button>
@@ -601,125 +586,113 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                             </div>
                                         )}
 
-                                        {/* Price & Add to Cart */}
-                                        <div className="border-t border-gray-200 pt-4 mb-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <div className="text-sm text-gray-500 mb-1">Total Price</div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-3xl font-bold font-serif text-sai-charcoal">RM</span>
-                                                        <Counter
-                                                            value={parseFloat(calculatePrice().toFixed(2))}
-                                                            fontSize={32}
-                                                            padding={0}
-                                                            gap={2}
-                                                            textColor="var(--color-sai-charcoal)"
-                                                            fontWeight="bold"
-                                                            gradientHeight={8}
-                                                            gradientFrom="white"
-                                                            gradientTo="transparent"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    // Construct metadata
-                                                    const metadata: Record<string, any> = {};
-                                                    if (selectedBase) metadata['Base'] = selectedBase;
-                                                    if (selectedFrosting) metadata['Frosting'] = selectedFrosting;
-                                                    if (selectedTopping && selectedTopping !== 'None') metadata['Topping'] = selectedTopping;
-                                                    if (selectedDietaryOptions.length > 0) metadata['Dietary'] = selectedDietaryOptions.join(', ');
-                                                    if (designNotes) metadata['Notes'] = designNotes;
-
-                                                    // Calculate final unit price (approximate since logic is complex)
-                                                    // We use the total price divided by quantity to get unit price effective
-                                                    const totalPrice = calculatePrice();
-                                                    const unitPrice = totalPrice / quantity;
-
-                                                    // Generate unique ID based on options to separate distinct items in cart
-                                                    const uniqueId = `${product.id}-${JSON.stringify(metadata)}`;
-
-                                                    useCart.getState().addItem({
-                                                        id: uniqueId,
-                                                        productId: product.id,
-                                                        name: product.name,
-                                                        price: unitPrice,
-                                                        image_url: images[0],
-                                                        quantity: quantity,
-                                                        description: product.description,
-                                                        category: product.product_type,
-                                                        metadata: metadata
-                                                    });
-
-                                                    // Visual feedback before closing (optional) or just close?
-                                                    // User complained about "No indicator". 
-                                                    // If we close immediately, they might miss it unless we show a toast.
-                                                    // But if we keep it open, we need to show "Added!".
-
-                                                    // Let's TRY showing "Added!" on the button for 1s then close?
-                                                    // Or just close and rely on the global toast (if we had one, but we don't yet).
-                                                    // The Main Page keeps the user there.
-                                                    // This is a Modal. Usually modals close.
-                                                    // BUT if user says "no indicator", keeping it open for a split second with "Green Check" is good.
-
-                                                    setIsAdded(true);
-                                                    setTimeout(() => {
-                                                        setIsAdded(false);
-                                                        onClose();
-                                                    }, 1000);
-                                                }}
-                                                disabled={isAdded}
-                                                className={`w-full py-3 px-6 rounded-lg font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 ${isAdded ? 'bg-green-600 text-white' : 'bg-sai-pink text-white'
-                                                    }`}
-                                            >
-                                                {isAdded ? (
-                                                    <>
-                                                        <Check className="w-5 h-5" />
-                                                        Added to Cart!
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <ShoppingCart className="w-5 h-5" />
-                                                        Add to Cart
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
-
                                         {/* Reviews */}
                                         {reviews.length > 0 && (
-                                            <div className="border-t border-gray-200 pt-4">
-                                                <h3 className="font-semibold text-lg mb-3">Customer Reviews</h3>
-                                                <div className="space-y-3">
+                                            <div className="border-t border-gray-100 pt-6 pb-6">
+                                                <h3 className="font-semibold text-lg mb-4 text-sai-charcoal">Customer Reviews</h3>
+                                                <div className="space-y-4">
                                                     {reviews.map((review) => (
-                                                        <div key={review.id} className="bg-gray-50 rounded-lg p-3">
+                                                        <div key={review.id} className="bg-gray-50 rounded-xl p-4">
                                                             <div className="flex items-center gap-2 mb-2">
                                                                 <div className="flex">
                                                                     {[...Array(5)].map((_, i) => (
                                                                         <Star
                                                                             key={i}
-                                                                            className={`w-4 h-4 ${i < review.rating
+                                                                            className={`w-3.5 h-3.5 ${i < review.rating
                                                                                 ? 'fill-yellow-400 text-yellow-400'
                                                                                 : 'text-gray-300'
                                                                                 }`}
                                                                         />
                                                                     ))}
                                                                 </div>
-                                                                <span className="text-sm font-medium">
+                                                                <span className="text-sm font-semibold text-gray-900">
                                                                     {review.profiles?.first_name || 'Anonymous'}
                                                                 </span>
+                                                                <span className="text-xs text-gray-400">
+                                                                    • {new Date(review.created_at).toLocaleDateString()}
+                                                                </span>
                                                             </div>
-                                                            <p className="text-sm text-gray-600">{review.comment}</p>
+                                                            <p className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Fixed Footer */}
+                                    <div className="px-6 py-6 border-t border-gray-100 bg-white flex-shrink-0 z-10 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div>
+                                                <div className="text-sm text-gray-500 mb-1">Total Price</div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-3xl font-bold font-serif text-sai-charcoal">RM</span>
+                                                    <Counter
+                                                        value={parseFloat(calculatePrice().toFixed(2))}
+                                                        fontSize={32}
+                                                        padding={0}
+                                                        gap={2}
+                                                        textColor="var(--color-sai-charcoal)"
+                                                        fontWeight="bold"
+                                                        gradientHeight={8}
+                                                        gradientFrom="white"
+                                                        gradientTo="transparent"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                const metadata: Record<string, any> = {};
+                                                if (selectedBase) metadata['Base'] = selectedBase;
+                                                if (selectedFrosting) metadata['Frosting'] = selectedFrosting;
+                                                if (selectedTopping && selectedTopping !== 'None') metadata['Topping'] = selectedTopping;
+                                                if (selectedDietaryOptions.length > 0) metadata['Dietary'] = selectedDietaryOptions.join(', ');
+                                                if (designNotes) metadata['Notes'] = designNotes;
+
+                                                const totalPrice = calculatePrice();
+                                                const unitPrice = totalPrice / quantity;
+
+                                                const uniqueId = `${product.id}-${JSON.stringify(metadata)}`;
+
+                                                useCart.getState().addItem({
+                                                    id: uniqueId,
+                                                    productId: product.id,
+                                                    name: product.name,
+                                                    price: unitPrice,
+                                                    image_url: images[0],
+                                                    quantity: quantity,
+                                                    description: product.description,
+                                                    category: product.product_type,
+                                                    metadata: metadata
+                                                });
+
+                                                setIsAdded(true);
+                                                setTimeout(() => {
+                                                    setIsAdded(false);
+                                                    onClose();
+                                                }, 1000);
+                                            }}
+                                            disabled={isAdded}
+                                            className={`w-full py-3 text-lg rounded-xl font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-lg ${isAdded ? 'bg-green-600 text-white shadow-green-200' : 'bg-sai-pink text-white shadow-pink-200'
+                                                }`}
+                                        >
+                                            {isAdded ? (
+                                                <>
+                                                    <Check className="w-6 h-6" />
+                                                    Added to Cart!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ShoppingCart className="w-5 h-5 mr-1" />
+                                                    Add to Cart
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </motion.div>
                 </div>
             )}

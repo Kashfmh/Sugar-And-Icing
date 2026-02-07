@@ -1,14 +1,18 @@
 'use client';
 
+
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProductFilters, Product } from '@/hooks/useProductFilters'; // Use hook
 import CakeHeader from './_components/CakeHeader';
 import CakeFilterBar from './_components/CakeFilterBar';
 import CakeGallery from './_components/CakeGallery';
-import PricingGuide from './_components/PricingGuide';
+import CakeBuilder from './_components/CakeBuilder';
 import OrderSteps from './_components/OrderSteps';
+import CakeDetailModal from './_components/CakeDetailModal';
+import { useState } from 'react';
 
 const fetchCustomCakes = async () => {
     const { data, error } = await supabase
@@ -37,7 +41,8 @@ export default function CustomCakesPage() {
         loading,
         isFilterModalOpen,
         setIsFilterModalOpen,
-        totalPages
+        totalPages,
+        isMobile
     } = useProductFilters({
         initialCategory: 'All',
         itemsPerPage: 12,
@@ -49,6 +54,19 @@ export default function CustomCakesPage() {
         const message = `Hi! I'm interested in a custom cake similar to your "${cakeName}". Can we discuss the size, design, and pricing?`;
         const whatsappUrl = `https://wa.me/60108091351?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
+    };
+
+    const [selectedCake, setSelectedCake] = useState<Product | null>(null);
+    const router = useRouter();
+
+    const handleViewDetails = async (cake: Product) => {
+        if (isMobile) {
+            const { generateProductSlug } = await import('@/lib/slugify');
+            const slug = generateProductSlug({ id: cake.id, name: cake.name });
+            router.push(`/custom-cakes/${slug}`);
+        } else {
+            setSelectedCake(cake);
+        }
     };
 
     return (
@@ -73,9 +91,15 @@ export default function CustomCakesPage() {
             <CakeFilterBar
                 categories={categories}
                 activeCategory={activeCategory}
-                setActiveCategory={setActiveCategory}
+                setActiveCategory={(category) => {
+                    setActiveCategory(category);
+                    setCurrentPage(1);
+                }}
                 searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
+                setSearchQuery={(query) => {
+                    setSearchQuery(query);
+                    setCurrentPage(1);
+                }}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
                 paginatedCount={paginatedCakes.length}
@@ -91,12 +115,21 @@ export default function CustomCakesPage() {
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 totalPages={totalPages}
-                handleRequestQuote={handleRequestQuote}
+                onViewDetails={handleViewDetails}
             />
 
-            <PricingGuide />
+            <CakeBuilder />
 
             <OrderSteps />
+
+            {/* Modal for Gallery Items */}
+            <CakeDetailModal
+                isOpen={!!selectedCake}
+                onClose={() => setSelectedCake(null)}
+                cakeName={selectedCake?.name || ''}
+                imageUrl={selectedCake?.image_url || undefined}
+                description={selectedCake?.description || undefined}
+            />
         </main>
     );
 }

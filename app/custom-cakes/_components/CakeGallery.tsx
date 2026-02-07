@@ -11,7 +11,7 @@ interface CakeGalleryProps {
     currentPage: number;
     setCurrentPage: (page: number | ((prev: number) => number)) => void;
     totalPages: number;
-    handleRequestQuote: (name: string) => void;
+    onViewDetails: (cake: Product) => void;
 }
 
 export default function CakeGallery({
@@ -21,7 +21,7 @@ export default function CakeGallery({
     currentPage,
     setCurrentPage,
     totalPages,
-    handleRequestQuote
+    onViewDetails
 }: CakeGalleryProps) {
     return (
         <section className="px-6 py-4">
@@ -57,7 +57,7 @@ export default function CakeGallery({
                                     name={cake.name}
                                     description={cake.description || undefined}
                                     image_url={cake.image_url || undefined}
-                                    onRequestQuote={() => handleRequestQuote(cake.name)}
+                                    onRequestQuote={() => onViewDetails(cake)}
                                 />
                             ))}
                         </div>
@@ -70,7 +70,7 @@ export default function CakeGallery({
                                     name={cake.name}
                                     description={cake.description || undefined}
                                     image_url={cake.image_url || undefined}
-                                    onRequestQuote={() => handleRequestQuote(cake.name)}
+                                    onRequestQuote={() => onViewDetails(cake)}
                                 />
                             ))}
                         </div>
