@@ -10,37 +10,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface OrderItem {
-    id: string;
-    product_name: string;
-    quantity: number;
-    price_at_purchase: number;
-    metadata: Record<string, any>;
-    products?: {
-        image_url: string;
-    } | { image_url: string }[];
-}
-
-// ... (Order interface remains same)
-
-// ... (Component logic)
-
-
-
-// ... (Inside HistoryOrderCard)
-
-// Helper to get image URL safely
-
-
-// ... (Rest of card)
-
-interface Order {
-    id: string;
-    created_at: string;
-    status: string;
-    total_amount: number;
-    order_items: OrderItem[];
-}
+import { Order, OrderItem } from '@/types';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 interface OrderHistoryModalProps {
     isOpen: boolean;
@@ -84,7 +55,7 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
         // 2. Search Filter
         const searchMatch =
             order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.order_items?.some((item) => item.product_name.toLowerCase().includes(searchQuery.toLowerCase()));
+            order.order_items?.some((item) => item.products?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
 
         return statusMatch && searchMatch;
     }).sort((a, b) => {
@@ -229,7 +200,7 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
 }
 
 // Sub-component for individual order card
-function HistoryOrderCard({ order, router }: { order: Order, router: any }) {
+function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterInstance }) {
     // Determine status label and color
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -289,7 +260,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: any }) {
                         {/* Image */}
                         <div className="w-20 h-20 bg-gray-100 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0 relative">
                             {getImageUrl(item) ? (
-                                <img src={getImageUrl(item)!} alt={item.product_name} className="w-full h-full object-cover" />
+                                <img src={getImageUrl(item)!} alt={item.products?.name || 'Product'} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 bg-gray-50">
                                     No Img
@@ -300,7 +271,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: any }) {
                         {/* Details */}
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <h4 className="text-base font-medium text-sai-charcoal line-clamp-2 group-hover:text-sai-pink transition-colors">
-                                {item.product_name}
+                                {item.products?.name || 'Unknown Item'}
                             </h4>
                             {item.metadata && Object.keys(item.metadata).length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
@@ -316,7 +287,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: any }) {
 
                         {/* Price */}
                         <div className="text-right flex flex-col justify-center">
-                            <div className="text-sm font-medium text-sai-charcoal">RM {item.price_at_purchase?.toFixed(2)}</div>
+                            <div className="text-sm font-medium text-sai-charcoal">RM {item.price_at_time?.toFixed(2)}</div>
                         </div>
                     </div>
                 ))}

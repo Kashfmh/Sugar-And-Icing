@@ -4,9 +4,10 @@ import OccasionsManager from '@/app/components/OccasionsManager';
 import { Check, AlertCircle } from 'lucide-react';
 import { FormData, Status } from '@/hooks/useProfile';
 import { UserProfile, Address, SpecialOccasion } from '@/lib/services/authService';
+import { User } from '@supabase/supabase-js';
 
 interface EditProfileViewProps {
-    user: any;
+    user: User | null;
     profile: UserProfile | null;
     formData: FormData;
     setFormData: (data: FormData) => void;
@@ -55,7 +56,7 @@ export default function EditProfileView({
 
                 <div className="mb-8 pb-8 border-b border-gray-100 flex justify-center">
                     <AvatarUpload
-                        userId={user?.id}
+                        userId={user?.id || ''}
                         currentAvatarUrl={profile?.avatar_url || null}
                         onAvatarUpdate={(newUrl) => {
                             if (profile) {
@@ -158,11 +159,11 @@ export default function EditProfileView({
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
-                <AddressManager addresses={addresses} onUpdate={initializeProfile} userId={user?.id} />
+                <AddressManager addresses={addresses} onUpdate={initializeProfile} userId={user?.id || ''} />
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
-                <OccasionsManager occasions={occasions} onUpdate={initializeProfile} userId={user?.id} />
+                <OccasionsManager occasions={occasions} onUpdate={initializeProfile} userId={user?.id || ''} />
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">

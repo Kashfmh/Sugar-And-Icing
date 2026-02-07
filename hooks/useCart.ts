@@ -1,18 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
-
-export interface CartItem {
-  id: string;
-  productId: string;
-  name: string;
-  price: number;
-  image_url?: string;
-  quantity: number;
-  description?: string;
-  category?: string;
-  metadata?: Record<string, any>;
-}
+import { CartItem } from '@/types';
 
 interface CartState {
   items: CartItem[];
@@ -62,6 +51,7 @@ export const useCart = create<CartState>()(
               .eq('user_id', user.id)
               .eq('product_id', newItem.productId);
 
+            // strict comparison for metadata
             const match = existingRows?.find(row =>
               JSON.stringify(row.metadata) === JSON.stringify(newItem.metadata)
             );
@@ -160,19 +150,17 @@ export const useCart = create<CartState>()(
         }
 
         if (cartItems) {
-          const items: CartItem[] = cartItems.map((row: any) => {
-            return {
-              id: row.id,
-              productId: row.product_id,
-              name: row.products.name,
-              price: row.unit_price,
-              image_url: row.products.image_url,
-              quantity: row.quantity,
-              description: row.products.description,
-              category: row.products.product_type,
-              metadata: row.metadata
-            };
-          });
+          const items: CartItem[] = cartItems.map((row: any) => ({
+            id: row.id, // using DB id for sync
+            productId: row.product_id,
+            name: row.products.name,
+            price: row.unit_price,
+            image_url: row.products.image_url,
+            quantity: row.quantity,
+            description: row.products.description,
+            category: row.products.product_type,
+            metadata: row.metadata
+          }));
           set({ items });
         }
       }
@@ -181,7 +169,6 @@ export const useCart = create<CartState>()(
       name: 'sai-bakery-cart',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
-        console.log('Hydration finished');
         state?.setLoading(false);
       }
     }

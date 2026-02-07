@@ -10,6 +10,7 @@ import {
     Address,
     SpecialOccasion,
 } from '@/lib/services/authService';
+import { Order, Profile } from '@/types';
 
 export type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
@@ -33,18 +34,27 @@ export interface Status {
     message: string;
 }
 
+export interface RecentlyViewedItem {
+    id: string;
+    name: string;
+    image_url: string;
+    price: number;
+    viewed_at: string;
+    slug: string;
+}
+
 export function useProfile() {
     const router = useRouter();
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [isLoadingData, setIsLoadingData] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<any>(null); // keeping any for auth user object for now as it comes from supabase auth
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<Tab>('dashboard');
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [occasions, setOccasions] = useState<SpecialOccasion[]>([]);
-    const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
-    const [orders, setOrders] = useState<any[]>([]);
+    const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedItem[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [totalOrders, setTotalOrders] = useState(0);
     const [status, setStatus] = useState<Status | null>(null);
 
@@ -84,7 +94,7 @@ export function useProfile() {
                     },
                     (payload) => {
                         console.log('Real-time order update:', payload);
-                        loadOrders(); // Refresh orders on any change
+                        loadOrders();
                     }
                 )
                 .subscribe();
@@ -107,7 +117,7 @@ export function useProfile() {
 
             if (error) throw error;
 
-            const formattedOrders = (data || []).map((order: any) => ({
+            const formattedOrders: Order[] = (data || []).map((order: any) => ({
                 ...order,
                 items_count: order.order_items?.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0) || 0
             }));
@@ -168,7 +178,7 @@ export function useProfile() {
             const { getRecentlyViewed } = await import('@/lib/services/recentlyViewedService');
             const data = await getRecentlyViewed(user.id, 10);
 
-            const formatted = data.map((item: any) => ({
+            const formatted: RecentlyViewedItem[] = data.map((item: any) => ({
                 id: item.product_id,
                 name: item.products?.name || 'Unknown Product',
                 image_url: item.products?.image_url || '',

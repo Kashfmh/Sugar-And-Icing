@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Counter from './Counter';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { useCart } from '@/hooks/useCart';
+import { Product } from '@/types';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -42,7 +43,7 @@ interface ProductDetailModalProps {
 }
 
 export default function ProductDetailModal({ productId, isOpen, onClose }: ProductDetailModalProps) {
-    const [product, setProduct] = useState<any>(null);
+    const [product, setProduct] = useState<Product | null>(null);
     const [options, setOptions] = useState<ProductOption[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
@@ -71,7 +72,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 .single();
 
             if (productError) throw productError;
-            setProduct(productData);
+            setProduct(productData as Product);
 
             if (productData.customizable) {
                 const { data: optionsData, error: optionsError } = await supabase
@@ -176,7 +177,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             if (selectedTopping && selectedTopping !== 'None') {
                 const toppingOption = toppingOptions.find(opt => opt.option_name === selectedTopping);
                 if (toppingOption?.is_premium) {
-                    pricePerPiece = product.premium_price; // RM 4
+                    pricePerPiece = product.premium_price || product.base_price; // fallback to base if premium is null
                 }
             }
 
@@ -336,7 +337,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                         <CarouselItem key={index}>
                                                             <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
                                                                 <Image
-                                                                    src={img}
+                                                                    src={img || ''}
                                                                     alt={`${product?.name} - Image ${index + 1}`}
                                                                     fill
                                                                     className="object-cover"
@@ -653,25 +654,27 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                 const totalPrice = calculatePrice();
                                                 const unitPrice = totalPrice / quantity;
 
-                                                const uniqueId = `${product.id}-${JSON.stringify(metadata)}`;
+                                                const uniqueId = `${product?.id}-${JSON.stringify(metadata)}`;
 
-                                                useCart.getState().addItem({
-                                                    id: uniqueId,
-                                                    productId: product.id,
-                                                    name: product.name,
-                                                    price: unitPrice,
-                                                    image_url: images[0],
-                                                    quantity: quantity,
-                                                    description: product.description,
-                                                    category: product.product_type,
-                                                    metadata: metadata
-                                                });
+                                                if (product) {
+                                                    useCart.getState().addItem({
+                                                        id: uniqueId,
+                                                        productId: product.id,
+                                                        name: product.name,
+                                                        price: unitPrice,
+                                                        image_url: images[0] || null,
+                                                        quantity: quantity,
+                                                        description: product.description || null,
+                                                        category: product.product_type,
+                                                        metadata: metadata
+                                                    });
 
-                                                setIsAdded(true);
-                                                setTimeout(() => {
-                                                    setIsAdded(false);
-                                                    onClose();
-                                                }, 1000);
+                                                    setIsAdded(true);
+                                                    setTimeout(() => {
+                                                        setIsAdded(false);
+                                                        onClose();
+                                                    }, 1000);
+                                                }
                                             }}
                                             disabled={isAdded}
                                             className={`w-full py-3 text-lg rounded-xl font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-lg ${isAdded ? 'bg-green-600 text-white shadow-green-200' : 'bg-sai-pink text-white shadow-pink-200'

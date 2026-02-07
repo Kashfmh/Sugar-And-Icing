@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { User } from '@supabase/supabase-js';
 import { Zap } from 'lucide-react';
 import { UserProfile, SpecialOccasion } from '@/lib/services/authService';
+import { Order } from '@/types';
+import { RecentlyViewedItem, Tab } from '@/hooks/useProfile';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import OrderHistoryModal from './OrderHistoryModal';
 
 interface DashboardViewProps {
-    user: any;
+    user: User | null;
     profile: UserProfile | null;
     occasions: SpecialOccasion[];
-    recentlyViewed: any[];
-    orders: any[]; // New prop
-    totalOrders: number; // New prop
-    router: any;
-    setActiveTab: (tab: any) => void;
+    recentlyViewed: RecentlyViewedItem[];
+    orders: Order[];
+    totalOrders: number;
+    router: AppRouterInstance;
+    setActiveTab: (tab: Tab) => void;
 }
 
 export default function DashboardView({ user, profile, occasions, recentlyViewed, orders, totalOrders, router, setActiveTab }: DashboardViewProps) {
@@ -85,7 +88,7 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                         </div>
                         <div className="mb-6">
                             <div className="text-5xl font-bold text-sai-pink mb-2">
-                                {new Date(user?.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '-'}
                             </div>
                             <div className="text-sm text-sai-charcoal/60">member since</div>
                         </div>

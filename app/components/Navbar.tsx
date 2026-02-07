@@ -17,63 +17,33 @@ import {
     MobileNavToggle,
 } from '@/components/ui/resizable-navbar';
 import { useCart } from '@/hooks/useCart';
-// import CartDrawer from './CartDrawer';
 
 export default function Navbar() {
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    const [isAuthChecking, setIsAuthChecking] = useState(true);
-
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
-    const refreshUser = async () => {
-        try {
-            const { data: { user: currentUser } } = await supabase.auth.getUser();
-            setUser(currentUser);
-
-            if (currentUser) {
-                // fetch avatar
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('avatar_url')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (data) {
-                    setAvatarUrl(data.avatar_url);
-                }
-            } else {
-                setAvatarUrl(null);
-            }
-        } catch (error: any) {
-            // handle refresh token errors gracefully
-            if (error?.message?.includes('refresh_token_not_found') || error?.code === 'refresh_token_not_found') {
-                console.warn('Supabase Auth: Refresh token not found, session might remain invalid until re-login.');
-            } else {
-                console.error('Navbar Auth Check Error:', error);
-            }
-        } finally {
-            setIsAuthChecking(false);
-        }
-    };
 
     useEffect(() => {
         setIsMounted(true);
-        refreshUser();
+
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            if (user) {
+                const { data } = await supabase.from('profiles').select('avatar_url').eq('id', user.id).single();
+                if (data) setAvatarUrl(data.avatar_url);
+            }
+        };
+
+        getUser();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                refreshUser();
-            } else if (event === 'SIGNED_OUT') {
-                setUser(null);
-                setAvatarUrl(null);
-            }
+            setUser(session?.user ?? null);
+            if (event === 'SIGNED_OUT') setAvatarUrl(null);
         });
-
-        window.addEventListener('profile-updated', refreshUser);
 
         const handleScroll = () => setScrolled(window.scrollY > 100);
         window.addEventListener('scroll', handleScroll);
@@ -81,7 +51,6 @@ export default function Navbar() {
         return () => {
             subscription.unsubscribe();
             window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('profile-updated', refreshUser);
         };
     }, []);
 
@@ -90,7 +59,7 @@ export default function Navbar() {
         window.location.href = '/login';
     };
 
-    const firstName = user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'User';
+    const firstName = user?.user_metadata?.first_name || 'User';
 
     const navItems = [
         { name: 'Home', link: '/' },
@@ -120,7 +89,7 @@ export default function Navbar() {
                             />
                         </motion.div>
                     </AnimatePresence>
-                    <span className={`font-semibold text-base relative overflow-hidden text-sai-charcoal`}>
+                    <span className="font-semibold text-base relative overflow-hidden text-sai-charcoal">
                         <AnimatePresence mode="wait">
                             <motion.span
                                 key={isMounted && scrolled ? 'sai' : 'full'}
@@ -140,22 +109,15 @@ export default function Navbar() {
 
                 <div className="relative z-20 flex items-center gap-4">
                     <InboxTriggerButton pathname={pathname} userId={user?.id} />
-
                     <CartTriggerButton pathname={pathname} />
 
-                    {(!isMounted || isAuthChecking) ? (
+                    {!isMounted ? (
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
                         <Link href="/profile">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${pathname === '/profile' ? 'bg-sai-pink ring-2 ring-sai-pink/30' : 'bg-sai-pink'
-                                }`}>
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${pathname === '/profile' ? 'bg-sai-pink ring-2 ring-sai-pink/30' : 'bg-sai-pink'}`}>
                                 {avatarUrl ? (
-                                    <Image
-                                        src={avatarUrl}
-                                        alt="Profile"
-                                        fill
-                                        className="object-cover"
-                                    />
+                                    <Image src={avatarUrl} alt="Profile" fill className="object-cover" />
                                 ) : (
                                     firstName[0]?.toUpperCase()
                                 )}
@@ -163,23 +125,16 @@ export default function Navbar() {
                         </Link>
                     ) : (
                         <Link href="/login" className="group">
-                            <User className={`w-5 h-5 transition-colors ${pathname === '/login' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'
-                                }`} strokeWidth={2} />
+                            <User className={`w-5 h-5 transition-colors ${pathname === '/login' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'}`} strokeWidth={2} />
                         </Link>
                     )}
                 </div>
-            </NavBody >
+            </NavBody>
 
             <MobileNav>
                 <MobileNavHeader>
                     <Link href="/" className="flex items-center space-x-2 px-2 py-1">
-                        <Image
-                            src="/icon.svg"
-                            alt="Sugar And Icing"
-                            width={52}
-                            height={52}
-                            className="rounded-lg"
-                        />
+                        <Image src="/icon.svg" alt="Sugar And Icing" width={52} height={52} className="rounded-lg" />
                         <span className="font-semibold text-base text-sai-charcoal relative overflow-hidden">
                             <AnimatePresence mode="wait">
                                 <motion.span
@@ -241,21 +196,18 @@ export default function Navbar() {
                         )}
                     </div>
                 </MobileNavMenu>
-            </MobileNav >
-            {/* <CartDrawer /> */}
-        </AceternityNavbar >
+            </MobileNav>
+        </AceternityNavbar>
     );
 }
 
 function CartTriggerButton({ pathname }: { pathname?: string }) {
     const { totalItems, isLoading } = useCart();
-
     const count = totalItems();
 
     return (
         <Link href="/cart" className="relative group p-1" aria-label="Open cart">
-            <ShoppingBag className={`w-5 h-5 transition-colors ${pathname === '/cart' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'
-                }`} strokeWidth={2} />
+            <ShoppingBag className={`w-5 h-5 transition-colors ${pathname === '/cart' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'}`} strokeWidth={2} />
             {!isLoading && count > 0 && (
                 <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
                     {count}
@@ -280,13 +232,11 @@ function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: 
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', userId)
                 .eq('read', false);
-
             setUnreadCount(count || 0);
         };
 
         fetchUnread();
 
-        // realtime updates
         const channel = supabase
             .channel('public:notifications')
             .on(
@@ -303,8 +253,7 @@ function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: 
 
     return (
         <Link href="/inbox" className="relative group p-1" aria-label="Open inbox">
-            <Bell className={`w-5 h-5 transition-colors ${pathname === '/inbox' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'
-                }`} strokeWidth={2} />
+            <Bell className={`w-5 h-5 transition-colors ${pathname === '/inbox' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'}`} strokeWidth={2} />
             {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
                     {unreadCount > 9 ? '9+' : unreadCount}

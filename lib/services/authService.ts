@@ -2,12 +2,12 @@ import { supabase } from '@/lib/supabase';
 
 export interface UserProfile {
     id: string;
-    first_name: string;
-    last_name: string;
-    phone: string;
+    first_name: string | null;
+    last_name: string | null;
+    phone: string | null;
     avatar_url: string | null;
     dob: string | null;
-    preferred_contact_method: string;
+    preferred_contact_method: string | null;
     favorite_flavors: string[];
     dietary_restrictions: string[];
     notification_preferences: {
