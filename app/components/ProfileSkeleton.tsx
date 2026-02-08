@@ -15,7 +15,7 @@ export default function ProfileSkeleton() {
                             <div className="h-8 w-20 bg-gray-100 rounded-full border border-gray-200"></div>
                         </div>
                     </div>
-                    <div className="hidden lg:block w-80 h-56 bg-gray-100 rounded-2xl"></div>
+
                 </div>
             </div>
 
