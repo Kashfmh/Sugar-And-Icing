@@ -2,7 +2,7 @@ export interface Product {
     id: string;
     name: string;
     description: string | null;
-    price?: number; // legacy
+    price?: number;
     base_price: number;
     premium_price: number | null;
     image_url: string | null;
@@ -42,9 +42,9 @@ export interface OrderItem {
     order_id: string;
     product_id: string;
     quantity: number;
-    price_at_time: number;
+    price_at_purchase: number;
     metadata: Record<string, any> | null;
-    products?: Product; // joined
+    products?: Product;
 }
 
 export interface Order {
@@ -55,13 +55,13 @@ export interface Order {
     payment_status: 'pending' | 'paid' | 'failed';
     payment_method: string | null;
     delivery_method: 'pickup' | 'delivery';
-    delivery_address: any | null; // jsonb
+    delivery_address: any | null;
     pickup_date: string | null;
     pickup_time: string | null;
     notes: string | null;
     created_at: string;
     order_items?: OrderItem[];
-    items_count?: number; // computed
+    items_count?: number;
 }
 
 export interface Review {
@@ -77,7 +77,7 @@ export interface Review {
 }
 
 export interface CartItem {
-    id: string; // unique (product_id + metadata)
+    id: string;
     productId: string;
     name: string;
     price: number;

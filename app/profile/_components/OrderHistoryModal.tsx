@@ -284,7 +284,10 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
 
                         {/* Price */}
                         <div className="text-right flex flex-col justify-center">
-                            <div className="text-sm font-medium text-sai-charcoal">RM {item.price_at_time?.toFixed(2)}</div>
+                            <div className="text-sm font-medium text-sai-charcoal">
+                                RM {(item.price_at_purchase || 0).toFixed(2)}
+                                <span className="text-xs text-gray-400 font-normal">/ pc</span>
+                            </div>
                         </div>
                     </div>
                 ))}

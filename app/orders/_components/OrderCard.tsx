@@ -85,18 +85,17 @@ export default function OrderCard({ order }: OrderCardProps) {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <p className="font-medium text-sai-charcoal truncate pr-2">{getItemName(item)}</p>
-                                                <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
+                                                <p className="font-medium text-sai-charcoal truncate pr-2">{item.product_name}</p>
+                                                {item.metadata && Object.keys(item.metadata).length > 0 && (
+                                                    <p className="text-xs text-gray-400 italic mt-1 truncate">
+                                                        {Object.values(item.metadata).join(', ')}
+                                                    </p>
+                                                )}
                                             </div>
-                                            <span className="text-sai-charcoal/80 font-medium whitespace-nowrap">
-                                                RM {item.price_at_purchase?.toFixed(2)}
+                                            <span className="text-sai-charcoal/80 font-medium whitespace-nowrap text-xs">
+                                                RM {(item.price_at_purchase || 0).toFixed(2)} / pc
                                             </span>
                                         </div>
-                                        {item.metadata && Object.keys(item.metadata).length > 0 && (
-                                            <p className="text-xs text-gray-400 italic mt-1 truncate">
-                                                {Object.values(item.metadata).join(', ')}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
                             ))}
