@@ -33,48 +33,63 @@ export async function POST(req: Request) {
       }
     );
 
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const validIds = items
-      .map((item: any) => item.id.split('-')[0])
-      .filter((id: string) => uuidRegex.test(id));
+    // collect ids
+    const potentialIds = items.map((item: any) => item.id.split('-')[0]);
 
-    let serverTotal = 0;
     let products: any[] = [];
-    const dbOrderItems: any[] = [];
 
-    if (validIds.length > 0) {
+    // fetch products by id first
+    if (potentialIds.length > 0) {
       const { data, error } = await supabase
         .from('products')
         .select('id, base_price, name')
-        .in('id', validIds);
+        .in('id', potentialIds);
 
-      if (error) {
-        console.error("Supabase Product Query Error:", error);
-        throw new Error(`Database Error: ${error.message}`);
+      if (!error && data) {
+        products = data;
       }
-      products = data || [];
     }
 
+    let serverTotal = 0;
+    const dbOrderItems: any[] = [];
+
+    // process items with fallback mechanism
     for (const item of items) {
       const productId = item.id.split('-')[0];
-      const product = products.find((p) => p.id === productId);
+      let product = products.find((p) => p.id === productId);
+
+      // fallback: if id lookup failed, try finding by name
+      if (!product) {
+        console.warn(`⚠️ Product ID ${productId} not found. Trying fallback by name: ${item.name}`);
+        const { data: nameData } = await supabase
+          .from('products')
+          .select('id, base_price, name')
+          .eq('name', item.name)
+          .single();
+
+        if (nameData) {
+          product = nameData;
+        }
+      }
 
       let price = 0;
       let productName = item.name;
+      let finalProductId = null;
 
       if (product) {
         price = Number(product.base_price);
         productName = product.name;
+        finalProductId = product.id; // ensure this is saved
       } else {
-        // Fallback for custom/test items
-        console.warn(`Item ${item.name} not found in DB. Using client price.`);
+        // only use this if the product is truly deleted/missing from DB
+        console.warn(`❌ Item ${item.name} not found in DB via ID or Name. Using client price.`);
         price = Number(item.price);
       }
 
       serverTotal += price * item.quantity;
 
       dbOrderItems.push({
-        product_id: product ? product.id : null,
+        product_id: finalProductId, // ensure this is saved
         product_name: productName,
         quantity: item.quantity,
         price_at_purchase: price,
@@ -82,6 +97,7 @@ export async function POST(req: Request) {
       });
     }
 
+    // create order
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -100,6 +116,7 @@ export async function POST(req: Request) {
 
     const orderId = orderData.id;
 
+    // insert items
     const itemsToInsert = dbOrderItems.map(item => ({
       ...item,
       order_id: orderId
@@ -114,6 +131,7 @@ export async function POST(req: Request) {
       throw new Error(`Failed to create order items: ${itemsError.message}`);
     }
 
+    // create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(serverTotal * 100),
       currency: 'myr',
