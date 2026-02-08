@@ -47,7 +47,7 @@ export function useProfile() {
     const router = useRouter();
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [isLoadingData, setIsLoadingData] = useState(false);
-    const [user, setUser] = useState<any>(null); // keeping any for auth user object for now as it comes from supabase auth
+    const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<Tab>('dashboard');
@@ -111,7 +111,7 @@ export function useProfile() {
 
             const { data, count, error } = await supabase
                 .from('orders')
-                .select('*, order_items(*, products(image_url))', { count: 'exact' })
+                .select('*, order_items(*, products(name, image_url, gallery_images))', { count: 'exact' })
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -228,7 +228,6 @@ export function useProfile() {
                 dob: formData.dob === '' ? null : formData.dob,
             };
 
-            // @ts-ignore
             await updateUserProfile(user.id, updates);
 
             const [updatedProfile, updatedAddresses, updatedOccasions] = await loadAllUserData(user.id);

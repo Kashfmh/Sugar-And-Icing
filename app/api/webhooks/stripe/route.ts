@@ -37,12 +37,13 @@ export async function POST(req: Request) {
             const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
             if (!supabaseServiceKey) {
-                console.error("Missing SUPABASE_SERVICE_ROLE_KEY");
+                console.error("Missing SUPABASE_SERVICE_ROLE_KEY. Cannot update order status.");
+                return NextResponse.json({ error: "Server Configuration Error" }, { status: 500 });
             }
 
             const supabase = createClient(
                 supabaseUrl,
-                supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                supabaseServiceKey,
                 {
                     auth: {
                         persistSession: false,
@@ -51,7 +52,6 @@ export async function POST(req: Request) {
                 }
             );
 
-            // Update order status
             const { error: updateError } = await supabase
                 .from('orders')
                 .update({
@@ -63,9 +63,10 @@ export async function POST(req: Request) {
             if (updateError) {
                 console.error("Error updating order status:", updateError);
                 return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+            } else {
+                console.log(`Order ${orderId} marked as PAID.`);
             }
 
-            // Increment times_sold for each product in the order
             const { data: orderItems, error: itemsError } = await supabase
                 .from('order_items')
                 .select('product_id, quantity')
@@ -74,14 +75,13 @@ export async function POST(req: Request) {
             if (!itemsError && orderItems && orderItems.length > 0) {
                 for (const item of orderItems) {
                     if (item.product_id) {
-                        // Fetch current times_sold
-                        const { data: productData, error: productFetchError } = await supabase
+                        const { data: productData } = await supabase
                             .from('products')
                             .select('times_sold')
                             .eq('id', item.product_id)
                             .single();
 
-                        if (!productFetchError && productData) {
+                        if (productData) {
                             const newSold = (productData.times_sold || 0) + item.quantity;
                             await supabase
                                 .from('products')
@@ -90,8 +90,6 @@ export async function POST(req: Request) {
                         }
                     }
                 }
-            } else if (itemsError) {
-                console.error("Error fetching order items for stats update:", itemsError);
             }
 
             if (userId) {
@@ -102,6 +100,8 @@ export async function POST(req: Request) {
 
                 if (deleteError) {
                     console.error("Error clearing cart:", deleteError);
+                } else {
+                    console.log(`Cart cleared for user ${userId}`);
                 }
             }
         }

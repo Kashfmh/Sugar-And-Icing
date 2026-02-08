@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Filter, ChevronDown } from 'lucide-react';
@@ -26,7 +25,6 @@ const TABS = [
     { id: 'ready', label: 'Ready to Pickup', status: 'shipped' },
     { id: 'completed', label: 'Completed', status: 'delivered' },
     { id: 'cancelled', label: 'Cancelled', status: 'cancelled' },
-    // Removed 'Return Refund' as per user request
 ];
 
 export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHistoryModalProps) {
@@ -36,7 +34,7 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
     const [sortOption, setSortOption] = useState('newest');
 
     const filteredOrders = orders.filter(order => {
-        // 1. Filter by Tab Status
+
         let statusMatch = true;
 
         if (activeTab !== 'all') {
@@ -52,14 +50,17 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
             }
         }
 
-        // 2. Search Filter
+
         const searchMatch =
             order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.order_items?.some((item) => item.products?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+            order.order_items?.some((item) => {
+                const pName = item.products?.name || (item as any).product_name || '';
+                return pName.toLowerCase().includes(searchQuery.toLowerCase());
+            });
 
         return statusMatch && searchMatch;
     }).sort((a, b) => {
-        // 3. Sorting
+
         switch (sortOption) {
             case 'oldest':
                 return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
@@ -79,7 +80,6 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -87,7 +87,6 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                         onClick={onClose}
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
                     >
-                        {/* Modal Container */}
                         <motion.div
                             initial={{ scale: 0.98, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -95,7 +94,6 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                             onClick={(e) => e.stopPropagation()}
                             className="bg-gray-50 w-full max-w-5xl h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
                         >
-                            {/* Header */}
                             <div className="bg-white px-8 py-6 flex items-center justify-between border-b border-gray-100">
                                 <div>
                                     <h2 className="text-2xl font-serif font-bold text-sai-charcoal">Order History</h2>
@@ -106,7 +104,6 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                                 </button>
                             </div>
 
-                            {/* Tabs */}
                             <div className="bg-white border-b border-gray-100 px-6 overflow-x-auto no-scrollbar">
                                 <div className="flex w-max min-w-full gap-8">
                                     {TABS.map(tab => (
@@ -130,7 +127,6 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                                 </div>
                             </div>
 
-                            {/* Search & Filter Toolbar */}
                             <div className="bg-gray-50 p-6 pb-2">
                                 <div className="flex gap-4">
                                     <div className="relative flex-1">
@@ -176,7 +172,6 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                                 </div>
                             </div>
 
-                            {/* Order List */}
                             <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-4">
                                 {filteredOrders.length > 0 ? (
                                     filteredOrders.map(order => (
@@ -199,9 +194,8 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
     );
 }
 
-// Sub-component for individual order card
 function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterInstance }) {
-    // Determine status label and color
+    // set status and label color
     const getStatusLabel = (status: string) => {
         switch (status) {
             case 'pending_payment': return { text: 'To Pay', color: 'text-orange-600 bg-orange-50 border-orange-100' };
@@ -217,23 +211,28 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
 
     const statusConfig = getStatusLabel(order.status);
 
-    // Helper to get image URL safely
-    const getImageUrl = (item: OrderItem) => {
-        // 1. Try Joined Products (Object)
-        if (item.products && !Array.isArray(item.products)) {
-            if (item.products.image_url) return item.products.image_url;
+    // get image url   
+    const getImageUrl = (item: any) => {
+        // check joined product data
+        const p = item.products;
+
+        const product = Array.isArray(p) ? p[0] : p;
+
+        if (product) {
+            if (product.image_url) return product.image_url;
+            if (product.gallery_images && product.gallery_images.length > 0) return product.gallery_images[0];
         }
 
-        // 2. Try Joined Products (Array)
-        if (Array.isArray(item.products) && item.products.length > 0) {
-            if (item.products[0].image_url) return item.products[0].image_url;
-        }
-
-        // 3. Try Metadata Fallback
+        // metadata fallback
         if (item.metadata?.image_url) return item.metadata.image_url;
         if (item.metadata?.image) return item.metadata.image;
 
         return null;
+    };
+
+    const getItemName = (item: any) => {
+        const p = Array.isArray(item.products) ? item.products[0] : item.products;
+        return p?.name || item.product_name || 'Unknown Item';
     };
 
     return (
@@ -254,13 +253,11 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
             <div className="divide-y divide-gray-50">
                 {order.order_items?.map((item, idx) => (
                     <div key={idx} className="p-6 flex gap-6 hover:bg-gray-50/30 transition-colors group cursor-pointer" onClick={() => router.push('/other-treats')}>
-                        {/* Using router push just as placeholder, ideally goes to product page if slug available */}
 
-                        {/* Image */}
                         {/* Image */}
                         <div className="w-20 h-20 bg-gray-100 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0 relative">
                             {getImageUrl(item) ? (
-                                <img src={getImageUrl(item)!} alt={item.products?.name || 'Product'} className="w-full h-full object-cover" />
+                                <img src={getImageUrl(item)} alt="Product" className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 bg-gray-50">
                                     No Img
@@ -271,7 +268,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
                         {/* Details */}
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <h4 className="text-base font-medium text-sai-charcoal line-clamp-2 group-hover:text-sai-pink transition-colors">
-                                {item.products?.name || 'Unknown Item'}
+                                {getItemName(item)}
                             </h4>
                             {item.metadata && Object.keys(item.metadata).length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
