@@ -1,3 +1,6 @@
+'use client';
+
+import { useRef } from 'react';
 import GalleryCard from '@/app/components/GalleryCard';
 import GalleryListItem from '@/app/components/GalleryListItem';
 import ProductCardSkeleton from '@/app/components/ProductCardSkeleton';
@@ -23,8 +26,21 @@ export default function CakeGallery({
     totalPages,
     onViewDetails
 }: CakeGalleryProps) {
+    const galleryTopRef = useRef<HTMLElement>(null);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage === currentPage) return;
+
+        setCurrentPage(newPage);
+
+        galleryTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     return (
-        <section className="px-6 py-4">
+        <section
+            ref={galleryTopRef}
+            className="px-6 py-4 scroll-mt-32"
+        >
             <div className="max-w-6xl mx-auto">
                 {loading ? (
                     <>
@@ -79,7 +95,7 @@ export default function CakeGallery({
                         {totalPages > 1 && (
                             <div className="flex justify-center items-center gap-2 mt-8">
                                 <button
-                                    onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
+                                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                                     disabled={currentPage === 1}
                                     className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                                 >
@@ -90,7 +106,7 @@ export default function CakeGallery({
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                         <button
                                             key={page}
-                                            onClick={() => setCurrentPage(page)}
+                                            onClick={() => handlePageChange(page)}
                                             className={`w-10 h-10 rounded-lg transition-colors ${currentPage === page
                                                 ? 'bg-sai-pink text-white'
                                                 : 'border border-gray-200 hover:bg-gray-50'
@@ -102,7 +118,7 @@ export default function CakeGallery({
                                 </div>
 
                                 <button
-                                    onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
+                                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                                     disabled={currentPage === totalPages}
                                     className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                                 >
