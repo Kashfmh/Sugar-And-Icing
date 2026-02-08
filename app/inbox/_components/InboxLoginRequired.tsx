@@ -3,8 +3,8 @@ import Link from 'next/link';
 
 export default function InboxLoginRequired() {
     return (
-        <div className="min-h-screen pt-32 px-4">
-            <div className="max-w-md mx-auto text-center space-y-4">
+        <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="text-center space-y-4 max-w-md">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Bell className="w-8 h-8 text-gray-400" />
                 </div>
