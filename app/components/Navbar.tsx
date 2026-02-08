@@ -27,17 +27,19 @@ export default function Navbar() {
     const [isMounted, setIsMounted] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
 
+    const fetchProfile = async (userId: string) => {
+        try {
+            const { data } = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
+            if (data) {
+                setAvatarUrl(data.avatar_url);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        }
+    };
+
     useEffect(() => {
         setIsMounted(true);
-
-        const fetchProfile = async (userId: string) => {
-            try {
-                const { data } = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
-                if (data) setAvatarUrl(data.avatar_url);
-            } catch (error) {
-                console.error('Error fetching profile:', error);
-            }
-        };
 
         const getUser = async () => {
             try {
@@ -55,21 +57,31 @@ export default function Navbar() {
 
         getUser();
 
+        // listen for profile updates
+        const handleProfileUpdate = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await fetchProfile(user.id);
+            }
+        };
+        window.addEventListener('profile-updated', handleProfileUpdate);
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             const currentUser = session?.user ?? null;
-            setUser(currentUser);
+
+            setUser((prev: any) => {
+                if (prev?.id === currentUser?.id) return prev;
+                return currentUser;
+            });
 
             if (event === 'SIGNED_OUT') {
                 setAvatarUrl(null);
                 setAuthLoading(false);
             } else if (event === 'SIGNED_IN') {
-                setAuthLoading(true); // Show skeleton while fetching profile
                 if (currentUser) {
                     await fetchProfile(currentUser.id);
                 }
-                setAuthLoading(false);
             } else if (event === 'TOKEN_REFRESHED' && currentUser) {
-                // Ensure avatar is loaded if missing
                 if (!avatarUrl) await fetchProfile(currentUser.id);
             }
         });
@@ -80,6 +92,7 @@ export default function Navbar() {
         return () => {
             subscription.unsubscribe();
             window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('profile-updated', handleProfileUpdate);
         };
     }, []);
 
@@ -89,10 +102,8 @@ export default function Navbar() {
     };
 
     const firstName = user?.user_metadata?.first_name || 'User';
-
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    // Reset image loaded state when avatar url changes
     useEffect(() => {
         setImageLoaded(false);
     }, [avatarUrl]);
@@ -108,36 +119,25 @@ export default function Navbar() {
         <AceternityNavbar className="top-2 text-sai-charcoal">
             <NavBody>
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={'pink'}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <Image
-                                src={'/images/logo/icon-pink.svg'}
-                                alt="Sugar And Icing"
-                                width={35}
-                                height={35}
-                                className="rounded-lg"
-                            />
-                        </motion.div>
-                    </AnimatePresence>
-                    <span className="font-semibold text-base relative overflow-hidden text-sai-charcoal">
-                        <AnimatePresence mode="wait">
-                            <motion.span
-                                key={isMounted && scrolled ? 'sai' : 'full'}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                transition={{ duration: 0.2 }}
-                                className="inline-block"
-                            >
-                                {isMounted && scrolled ? 'SAI' : 'Sugar And Icing'}
-                            </motion.span>
-                        </AnimatePresence>
+                    {/* Logo Icon */}
+                    <div className="relative w-[35px] h-[35px]">
+                        <Image
+                            src={'/images/logo/icon-pink.svg'}
+                            alt="Sugar And Icing"
+                            fill
+                            className={`rounded-lg object-contain transition-all duration-300 ${isMounted && scrolled ? 'opacity-100 scale-100' : 'opacity-100 scale-100'}`}
+                        />
+                    </div>
+
+                    {/* Logo Text */}
+                    <span className="font-semibold text-base relative overflow-hidden text-sai-charcoal min-w-[140px]">
+                        <span className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ${isMounted && scrolled ? 'opacity-100 translate-y-[-50%]' : 'opacity-0 translate-y-10'}`}>
+                            SAI
+                        </span>
+                        <span className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ${isMounted && scrolled ? 'opacity-0 -translate-y-10' : 'opacity-100 translate-y-[-50%]'}`}>
+                            Sugar And Icing
+                        </span>
+                        <span className="opacity-0">Sugar And Icing</span>
                     </span>
                 </Link>
 
@@ -180,19 +180,8 @@ export default function Navbar() {
                 <MobileNavHeader>
                     <Link href="/" className="flex items-center space-x-2 px-2 py-1">
                         <Image src="/icon.svg" alt="Sugar And Icing" width={52} height={52} className="rounded-lg" />
-                        <span className="font-semibold text-base text-sai-charcoal relative overflow-hidden">
-                            <AnimatePresence mode="wait">
-                                <motion.span
-                                    key={isMounted && scrolled ? 'sai' : 'full'}
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="inline-block"
-                                >
-                                    {isMounted && scrolled ? 'SAI' : 'Sugar And Icing'}
-                                </motion.span>
-                            </AnimatePresence>
+                        <span className="font-semibold text-base text-sai-charcoal">
+                            {isMounted && scrolled ? 'SAI' : 'Sugar And Icing'}
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">

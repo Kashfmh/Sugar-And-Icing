@@ -7,9 +7,9 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "motion/react";
+import Link from "next/link";
 
 import React, { useRef, useState } from "react";
-
 
 interface NavbarProps {
   children: React.ReactNode;
@@ -50,6 +50,8 @@ interface MobileNavMenuProps {
   onClose: () => void;
 }
 
+const NavbarContext = React.createContext({ visible: false });
+
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({
@@ -67,24 +69,20 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   });
 
   return (
-    <motion.div
-      ref={ref}
-      // Changed from sticky to fixed so navbar stays visible when scrolling
-      className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}
-    >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? React.cloneElement(
-            child as React.ReactElement<{ visible?: boolean }>,
-            { visible },
-          )
-          : child,
-      )}
-    </motion.div>
+    <NavbarContext.Provider value={{ visible }}>
+      <motion.div
+        ref={ref}
+        className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}
+      >
+        {children}
+      </motion.div>
+    </NavbarContext.Provider>
   );
 };
 
-export const NavBody = ({ children, className, visible }: NavBodyProps) => {
+export const NavBody = ({ children, className }: NavBodyProps) => {
+  const { visible } = React.useContext(NavbarContext);
+
   return (
     <motion.div
       animate={{
@@ -127,7 +125,7 @@ export const NavItems = ({ items, className, onItemClick, pathname }: NavItemsPr
       {items.map((item, idx) => {
         const isActive = pathname === item.link;
         return (
-          <a
+          <Link
             onMouseEnter={() => setHovered(idx)}
             onClick={onItemClick}
             className={cn(
@@ -144,14 +142,16 @@ export const NavItems = ({ items, className, onItemClick, pathname }: NavItemsPr
               />
             )}
             <span className="relative z-20">{item.name}</span>
-          </a>
+          </Link>
         );
       })}
     </motion.div>
   );
 };
 
-export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
+export const MobileNav = ({ children, className }: MobileNavProps) => {
+  const { visible } = React.useContext(NavbarContext);
+
   return (
     <motion.div
       animate={{
@@ -237,8 +237,8 @@ export const MobileNavToggle = ({
 
 export const NavbarLogo = () => {
   return (
-    <a
-      href="#"
+    <Link
+      href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
     >
       <img
@@ -248,13 +248,13 @@ export const NavbarLogo = () => {
         height={30}
       />
       <span className="font-medium text-black dark:text-white">Startup</span>
-    </a>
+    </Link>
   );
 };
 
 export const NavbarButton = ({
   href,
-  as: Tag = "a",
+  as: Tag = "button",
   children,
   className,
   variant = "primary",
@@ -281,9 +281,16 @@ export const NavbarButton = ({
       "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
   };
 
+  if (href) {
+    return (
+      <Link href={href} className={cn(baseStyles, variantStyles[variant], className)} {...props as any}>
+        {children}
+      </Link>
+    );
+  }
+
   return (
     <Tag
-      href={href || undefined}
       className={cn(baseStyles, variantStyles[variant], className)}
       {...props}
     >
