@@ -11,6 +11,8 @@ import {
 
 import { Order, OrderItem } from '@/types';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { useCart } from '@/hooks/useCart';
+
 
 interface OrderHistoryModalProps {
     isOpen: boolean;
@@ -195,7 +197,11 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
 }
 
 function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterInstance }) {
+    const { addItems } = useCart();
+    const [isBuyingAgain, setIsBuyingAgain] = useState(false);
+
     // set status and label color
+
     const getStatusLabel = (status: string) => {
         switch (status) {
             case 'pending_payment': return { text: 'To Pay', color: 'text-orange-600 bg-orange-50 border-orange-100' };
@@ -235,6 +241,59 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
         return p?.name || item.product_name || 'Unknown Item';
     };
 
+    const handleContactSeller = () => {
+        const message = `Hey i wanted to enquire about my purchase with the order id : Order #${order.id.slice(0, 8).toUpperCase()}`;
+        const encodedMessage = encodeURIComponent(message);
+        // Replace with actual phone number
+        const phoneNumber = '60123456789';
+        window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+    };
+
+    const handleBuyAgain = async () => {
+        setIsBuyingAgain(true);
+        try {
+            const itemsToAdd: any[] = [];
+
+            order.order_items?.forEach(item => {
+                const product = Array.isArray(item.products) ? item.products[0] : item.products;
+                if (!product) return;
+
+                const metadataStr = JSON.stringify(item.metadata || {});
+                const uniqueId = `${product.id}-${btoa(metadataStr).slice(0, 8)}`;
+
+                itemsToAdd.push({
+                    id: uniqueId,
+                    productId: product.id,
+                    name: product.name,
+                    price: Number(item.price_at_purchase),
+                    image_url: product.image_url,
+                    quantity: item.quantity,
+                    description: product.description,
+                    category: product.product_type,
+                    metadata: item.metadata || {}
+                });
+            });
+
+            if (itemsToAdd.length > 0) {
+                await addItems(itemsToAdd);
+                router.push('/cart'); // Or open drawer
+                // For this app, maybe just open drawer? But user asked for redirect to cart
+                // If /cart page exists, push there. If not, open drawer.
+                // Assuming drawer is main cart view, we might just open it.
+                // But user specifically said "redirect to my cart", so let's push to /cart if it exists,
+                // or just open the drawer if that's how the app works.
+                // Given previous context, there is a useCart drawer.
+                // Let's try opening drawer AND pushing to a cart page if it exists.
+                // Actually, the user prompts "shud redirect to my cart".
+                // I'll stick to router.push('/cart') as requested.
+            }
+        } catch (error) {
+            console.error("Failed to buy again:", error);
+        } finally {
+            setIsBuyingAgain(false);
+        }
+    };
+
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
             {/* Header: Shop/Status */}
@@ -252,44 +311,7 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
             {/* Items List */}
             <div className="divide-y divide-gray-50">
                 {order.order_items?.map((item, idx) => (
-                    <div key={idx} className="p-6 flex gap-6 hover:bg-gray-50/30 transition-colors group cursor-pointer" onClick={() => router.push('/other-treats')}>
-
-                        {/* Image */}
-                        <div className="w-20 h-20 bg-gray-100 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0 relative">
-                            {getImageUrl(item) ? (
-                                <img src={getImageUrl(item)} alt="Product" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 bg-gray-50">
-                                    No Img
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 min-w-0 flex flex-col justify-center">
-                            <h4 className="text-base font-medium text-sai-charcoal line-clamp-2 group-hover:text-sai-pink transition-colors">
-                                {getItemName(item)}
-                            </h4>
-                            {item.metadata && Object.keys(item.metadata).length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {Object.entries(item.metadata).map(([key, val]) => (
-                                        <span key={key} className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-100">
-                                            {String(val)}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                            <div className="text-sm text-gray-500 mt-1">x{item.quantity}</div>
-                        </div>
-
-                        {/* Price */}
-                        <div className="text-right flex flex-col justify-center">
-                            <div className="text-sm font-medium text-sai-charcoal">
-                                RM {(item.price_at_purchase || 0).toFixed(2)}
-                                <span className="text-xs text-gray-400 font-normal">/ pc</span>
-                            </div>
-                        </div>
-                    </div>
+                    <OrderItemRow key={idx} item={item} getImageUrl={getImageUrl} getItemName={getItemName} />
                 ))}
             </div>
 
@@ -308,18 +330,172 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
                         </button>
                     )}
 
-                    <button className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm">
-                        Contact Shop
+                    <button
+                        onClick={handleContactSeller}
+                        className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                    >
+                        Contact Seller
                     </button>
 
                     <button
-                        onClick={() => router.push('/other-treats')}
-                        className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                        onClick={handleBuyAgain}
+                        disabled={isBuyingAgain}
+                        className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Buy Again
+                        {isBuyingAgain ? 'Adding...' : 'Buy Again'}
                     </button>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function OrderItemRow({ item, getImageUrl, getItemName }: { item: any, getImageUrl: (item: any) => string | null, getItemName: (item: any) => string }) {
+    const [showDetails, setShowDetails] = useState(false);
+
+    const metadata = item.metadata || {};
+
+    // primary fields - show outside
+    const primaryKeys = ['base_flavour', 'frosting', 'flavour', 'base', 'cake_flavour'];
+    // secondary fields - show in dropdown
+    const secondaryKeys = ['dietary', 'dietary_options', 'design_notes', 'notes', 'message', 'special_instructions'];
+
+    const primaryEntries = Object.entries(metadata).filter(([key]) =>
+        primaryKeys.some(pk => key.toLowerCase().includes(pk.toLowerCase()))
+    );
+
+    const secondaryEntries = Object.entries(metadata).filter(([key]) =>
+        secondaryKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))
+    );
+
+    // anything else that's not primary or secondary
+    const otherEntries = Object.entries(metadata).filter(([key]) =>
+        !primaryKeys.some(pk => key.toLowerCase().includes(pk.toLowerCase())) &&
+        !secondaryKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))
+    );
+
+    const hasSecondaryDetails = secondaryEntries.length > 0;
+
+    return (
+        <div className="p-6 hover:bg-gray-50/30 transition-colors">
+            <div className="flex gap-6">
+                {/* Image */}
+                <div className="w-20 h-20 bg-gray-100 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0 relative">
+                    {getImageUrl(item) ? (
+                        <img src={getImageUrl(item)!} alt="Product" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 bg-gray-50">
+                            No Img
+                        </div>
+                    )}
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <h4 className="text-base font-medium text-sai-charcoal line-clamp-2">
+                        {getItemName(item)}
+                    </h4>
+
+                    {/* Primary metadata - always visible */}
+                    {(primaryEntries.length > 0 || otherEntries.length > 0) && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {primaryEntries.map(([key, val]) => (
+                                <span key={key} className="text-xs px-2 py-1 bg-pink-50 text-pink-700 rounded-md border border-pink-100">
+                                    {String(val)}
+                                </span>
+                            ))}
+                            {otherEntries.map(([key, val]) => (
+                                <span key={key} className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-100">
+                                    {String(val)}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-3 mt-1">
+                        <span className="text-sm text-gray-500">x{item.quantity}</span>
+
+                        {/* View Details toggle - always show */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDetails(!showDetails);
+                            }}
+                            className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                        >
+                            <ChevronDown className={`w-3 h-3 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+                            {showDetails ? 'Hide' : 'View Details'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Price */}
+                <div className="text-right flex flex-col justify-center">
+                    <div className="text-sm font-medium text-sai-charcoal">
+                        RM {(item.price_at_purchase || 0).toFixed(2)}
+                        <span className="text-xs text-gray-400 font-normal">/ pc</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Collapsible Details */}
+            <AnimatePresence>
+                {showDetails && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="mt-4 ml-26 pl-6 border-l-2 border-gray-100 space-y-2">
+                            {Object.keys(metadata).length > 0 ? (
+                                Object.entries(metadata).map(([key, val]) => (
+                                    <TruncatedDetail key={key} label={key} value={String(val) || '-'} />
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">No additional details</p>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function TruncatedDetail({ label, value }: { label: string; value: string }) {
+    const [expanded, setExpanded] = useState(false);
+    const isLong = value.length > 80;
+
+    return (
+        <div className="text-sm">
+            <span className="text-gray-400 capitalize">{label.replace(/_/g, ' ')}: </span>
+            <span className="text-gray-600 break-words">
+                {isLong && !expanded ? (
+                    <>
+                        {value.slice(0, 80)}...
+                        <button
+                            onClick={() => setExpanded(true)}
+                            className="text-sai-pink hover:underline ml-1"
+                        >
+                            more
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        {value}
+                        {isLong && (
+                            <button
+                                onClick={() => setExpanded(false)}
+                                className="text-sai-pink hover:underline ml-1"
+                            >
+                                less
+                            </button>
+                        )}
+                    </>
+                )}
+            </span>
         </div>
     );
 }
