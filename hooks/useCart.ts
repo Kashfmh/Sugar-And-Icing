@@ -12,6 +12,7 @@ interface CartState {
   removeItem: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   clearCart: () => void;
+  addItems: (items: CartItem[]) => Promise<void>;
   toggleCart: () => void;
   setIsOpen: (isOpen: boolean) => void;
   totalItems: () => number;
@@ -76,6 +77,62 @@ export const useCart = create<CartState>()(
 
           } catch (error) {
             console.error("Cart sync error:", error);
+          }
+        }
+      },
+
+      addItems: async (newItems) => {
+        const state = get();
+        let updatedItems = [...state.items];
+
+        for (const newItem of newItems) {
+          const existingItemIndex = updatedItems.findIndex(
+            (item) => item.id === newItem.id
+          );
+
+          if (existingItemIndex > -1) {
+            updatedItems[existingItemIndex].quantity += newItem.quantity;
+          } else {
+            updatedItems.push(newItem);
+          }
+        }
+
+        set({ items: updatedItems, isOpen: true });
+
+        // sync to DB but don't refetch - we have the data locally already
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          try {
+            for (const newItem of newItems) {
+              const { data: existingRows } = await supabase
+                .from('cart_items')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('product_id', newItem.productId);
+
+              const match = existingRows?.find(row =>
+                JSON.stringify(row.metadata) === JSON.stringify(newItem.metadata)
+              );
+
+              if (match) {
+                const newQty = match.quantity + newItem.quantity;
+                await supabase
+                  .from('cart_items')
+                  .update({ quantity: newQty })
+                  .eq('id', match.id);
+              } else {
+                await supabase.from('cart_items').insert({
+                  user_id: user.id,
+                  product_id: newItem.productId,
+                  quantity: newItem.quantity,
+                  unit_price: newItem.price,
+                  metadata: newItem.metadata || {}
+                });
+              }
+            }
+            // don't call syncWithUser here - it overwrites our local state
+          } catch (error) {
+            console.error("Cart sync error (bulk):", error);
           }
         }
       },
@@ -150,17 +207,19 @@ export const useCart = create<CartState>()(
         }
 
         if (cartItems) {
-          const items: CartItem[] = cartItems.map((row: any) => ({
-            id: row.id, // using DB id for sync
-            productId: row.product_id,
-            name: row.products.name,
-            price: row.unit_price,
-            image_url: row.products.image_url,
-            quantity: row.quantity,
-            description: row.products.description,
-            category: row.products.product_type,
-            metadata: row.metadata
-          }));
+          const items: CartItem[] = cartItems
+            .filter((row: any) => row.products !== null)
+            .map((row: any) => ({
+              id: row.id,
+              productId: row.product_id,
+              name: row.products.name,
+              price: row.unit_price,
+              image_url: row.products.image_url,
+              quantity: row.quantity,
+              description: row.products.description,
+              category: row.products.product_type,
+              metadata: row.metadata
+            }));
           set({ items });
         }
       }

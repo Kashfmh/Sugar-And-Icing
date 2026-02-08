@@ -40,15 +40,14 @@ export default function CartList() {
                                     )}
 
                                     {item.metadata && (
-                                        <div className="mt-2 space-y-1">
+                                        <div className="mt-2 space-y-1 max-w-md">
                                             {Object.entries(item.metadata).map(([key, value]) => {
                                                 if (!value || (Array.isArray(value) && value.length === 0)) return null;
 
+                                                const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
+
                                                 return (
-                                                    <div key={key} className="text-xs text-gray-500 flex items-start gap-1">
-                                                        <span className="capitalize font-medium text-gray-700">{key}:</span>
-                                                        <span>{Array.isArray(value) ? value.join(', ') : String(value)}</span>
-                                                    </div>
+                                                    <TruncatableValue key={key} label={key} value={displayValue} />
                                                 );
                                             })}
                                         </div>
@@ -107,5 +106,41 @@ export default function CartList() {
                 variant="danger"
             />
         </div >
+    );
+}
+
+function TruncatableValue({ label, value }: { label: string; value: string }) {
+    const [expanded, setExpanded] = useState(false);
+    const isLong = value.length > 50;
+
+    return (
+        <div className="text-xs text-gray-500">
+            <span className="capitalize font-medium text-gray-700">{label}: </span>
+            <span className="break-all">
+                {isLong && !expanded ? (
+                    <>
+                        {value.slice(0, 50)}...
+                        <button
+                            onClick={() => setExpanded(true)}
+                            className="text-sai-pink hover:underline ml-1"
+                        >
+                            more
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        {value}
+                        {isLong && (
+                            <button
+                                onClick={() => setExpanded(false)}
+                                className="text-sai-pink hover:underline ml-1"
+                            >
+                                less
+                            </button>
+                        )}
+                    </>
+                )}
+            </span>
+        </div>
     );
 }

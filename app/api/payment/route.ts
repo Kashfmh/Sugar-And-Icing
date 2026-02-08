@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         product_name: productName,
         quantity: item.quantity,
         price_at_purchase: price,
-        metadata: item.selectedOptions || {}
+        metadata: item.metadata || item.selectedOptions || {}
       });
     }
 
