@@ -25,16 +25,23 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
         setIsMounted(true);
 
         const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
-            if (user) {
-                const { data } = await supabase.from('profiles').select('avatar_url').eq('id', user.id).single();
-                if (data) setAvatarUrl(data.avatar_url);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                setUser(user);
+                if (user) {
+                    const { data } = await supabase.from('profiles').select('avatar_url').eq('id', user.id).single();
+                    if (data) setAvatarUrl(data.avatar_url);
+                }
+            } catch (error) {
+                console.error('Auth check failed', error);
+            } finally {
+                setAuthLoading(false);
             }
         };
 
@@ -42,7 +49,12 @@ export default function Navbar() {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setUser(session?.user ?? null);
-            if (event === 'SIGNED_OUT') setAvatarUrl(null);
+            if (event === 'SIGNED_OUT') {
+                setAvatarUrl(null);
+                setAuthLoading(false);
+            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                // optionally refresh avatar here too, but simple user set is enough mostly
+            }
         });
 
         const handleScroll = () => setScrolled(window.scrollY > 100);
@@ -111,11 +123,11 @@ export default function Navbar() {
                     <InboxTriggerButton pathname={pathname} userId={user?.id} />
                     <CartTriggerButton pathname={pathname} />
 
-                    {!isMounted ? (
+                    {!isMounted || authLoading ? (
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
                         <Link href="/profile">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${pathname === '/profile' ? 'bg-sai-pink ring-2 ring-sai-pink/30' : 'bg-sai-pink'}`}>
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${!avatarUrl ? 'bg-sai-pink text-white' : 'bg-gray-100 text-transparent'} ${pathname === '/profile' ? 'ring-2 ring-sai-pink/30' : ''}`}>
                                 {avatarUrl ? (
                                     <Image src={avatarUrl} alt="Profile" fill className="object-cover" />
                                 ) : (
