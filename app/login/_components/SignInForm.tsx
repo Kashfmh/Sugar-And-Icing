@@ -40,8 +40,7 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                 return;
             }
 
-            router.push('/profile');
-            router.refresh();
+            window.location.href = '/profile';
         } catch (err: any) {
             setErrors({ general: 'Server error. Please try again later.' });
         } finally {

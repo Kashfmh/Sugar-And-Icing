@@ -30,13 +30,21 @@ export default function Navbar() {
     useEffect(() => {
         setIsMounted(true);
 
+        const fetchProfile = async (userId: string) => {
+            try {
+                const { data } = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
+                if (data) setAvatarUrl(data.avatar_url);
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+        };
+
         const getUser = async () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 setUser(user);
                 if (user) {
-                    const { data } = await supabase.from('profiles').select('avatar_url').eq('id', user.id).single();
-                    if (data) setAvatarUrl(data.avatar_url);
+                    await fetchProfile(user.id);
                 }
             } catch (error) {
                 console.error('Auth check failed', error);
@@ -47,13 +55,22 @@ export default function Navbar() {
 
         getUser();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            setUser(session?.user ?? null);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+
             if (event === 'SIGNED_OUT') {
                 setAvatarUrl(null);
                 setAuthLoading(false);
-            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                // optionally refresh avatar here too, but simple user set is enough mostly
+            } else if (event === 'SIGNED_IN') {
+                setAuthLoading(true); // Show skeleton while fetching profile
+                if (currentUser) {
+                    await fetchProfile(currentUser.id);
+                }
+                setAuthLoading(false);
+            } else if (event === 'TOKEN_REFRESHED' && currentUser) {
+                // Ensure avatar is loaded if missing
+                if (!avatarUrl) await fetchProfile(currentUser.id);
             }
         });
 
@@ -72,6 +89,13 @@ export default function Navbar() {
     };
 
     const firstName = user?.user_metadata?.first_name || 'User';
+
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    // Reset image loaded state when avatar url changes
+    useEffect(() => {
+        setImageLoaded(false);
+    }, [avatarUrl]);
 
     const navItems = [
         { name: 'Home', link: '/' },
@@ -127,9 +151,18 @@ export default function Navbar() {
                         <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
                     ) : user ? (
                         <Link href="/profile">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${!avatarUrl ? 'bg-sai-pink text-white' : 'bg-gray-100 text-transparent'} ${pathname === '/profile' ? 'ring-2 ring-sai-pink/30' : ''}`}>
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:opacity-80 transition-all overflow-hidden relative ${pathname === '/profile' ? 'ring-2 ring-sai-pink/30' : ''} ${!avatarUrl ? 'bg-sai-pink' : 'bg-gray-100'}`}>
                                 {avatarUrl ? (
-                                    <Image src={avatarUrl} alt="Profile" fill className="object-cover" />
+                                    <>
+                                        <Image
+                                            src={avatarUrl}
+                                            alt="Profile"
+                                            fill
+                                            className={`object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                            onLoad={() => setImageLoaded(true)}
+                                        />
+                                        {!imageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
+                                    </>
                                 ) : (
                                     firstName[0]?.toUpperCase()
                                 )}
