@@ -32,7 +32,7 @@ export default function RootLayout({
         </div>
 
         {/* 3. Main Content */}
-        <main className="flex-grow relative z-0">
+        <main className="flex-grow relative">
           {children}
         </main>
 
