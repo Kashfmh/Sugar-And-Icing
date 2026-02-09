@@ -98,13 +98,12 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                     </label>
                 </div>
 
-                <button
-                    type="button"
+                <a
+                    href="/forgot-password"
                     className="forgot-password-link"
-                    onClick={() => alert('Password reset feature coming soon! Please contact support at support@sugarandicing.com')}
                 >
                     Forgot password?
-                </button>
+                </a>
 
                 {errors.general && <div className="error-message">{errors.general}</div>}
 

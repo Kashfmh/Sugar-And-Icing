@@ -105,7 +105,6 @@ export async function signUp(
 
         if (error) {
             console.error('Supabase signup error:', error);
-            // Specific error messages based on Supabase error codes
             if (error.message.includes('already') ||
                 error.message.includes('User already registered') ||
                 error.status === 422 ||
@@ -133,30 +132,21 @@ export async function signUp(
             return { success: false, error: 'This email is already registered. Please sign in instead.' };
         }
 
-        // Create user profile
-        /*  const { error: profileError } = await supabase
-             .from('profiles')
-             .insert([{
-                 id: data.user.id,  // Changed from user_id to id
-                 first_name: sanitizedFirstName,
-                 phone: phoneValidation.formatted,
-             }]);
-         
+        // Create or update user profile (upsert in case trigger already created it)
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+                id: data.user.id,
+                first_name: sanitizedFirstName,
+                phone: phoneValidation.formatted,
+                email: sanitizedEmail,
+            }, { onConflict: 'id' });
+
         if (profileError) {
             console.error('Profile creation error:', profileError);
-            console.error('Profile error details:', {
-                message: profileError.message,
-                code: profileError.code,
-                details: profileError.details,
-                hint: profileError.hint
-            });
-
-            // User account was successfully created, profile creation failed
-            // Still return success so user can login - they can add profile info later
-            // TODO: Fix profiles table schema or permissions
-            console.warn('User account created but profile not saved. User can still login.');
+            console.warn('User account created but profile not saved.');
         }
-        */
+
         return { success: true };
     } catch (error: any) {
         console.error('Sign up error:', error);

@@ -29,7 +29,7 @@ export default function AuthSuccess({ email, onClose }: AuthSuccessProps) {
                         <span className="font-semibold">Next steps:</span>
                     </p>
                     <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                        <li>Open the email from Supabase Auth</li>
+                        <li>Open your email service provider</li>
                         <li>Click the confirmation link</li>
                         <li>Return here and sign in</li>
                     </ol>
