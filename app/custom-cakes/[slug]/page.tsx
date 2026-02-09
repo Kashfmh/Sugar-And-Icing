@@ -2,7 +2,7 @@
 
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Product } from '@/hooks/useProductFilters';
@@ -10,21 +10,10 @@ import CakeDetailContent from '../_components/CakeDetailContent';
 import { ProductSkeleton } from '@/app/components/skeletons/ProductSkeleton';
 
 export default function CustomCakeMobilePage() {
+    const supabase = createClient();
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
-
-    // Parse ID or name from slug? 
-    // Ideally we should have a slug field, or look up by name.
-    // For simplicity given the gallery uses GenerateProductSlug which combines ID+Name.
-    // But since we don't have a reliable slug lookup WITHOUT fetching all or a specific backend endpoint...
-    // Let's assume the slug format is `id-name` or we fetch by ID if possible.
-    // Wait, `generateProductSlug` is usually `name-id` or similar.
-    // Let's check `lib/slugify`. If not available, we have to guess.
-    // `app/other-treats/page.tsx` uses `generateProductSlug({ id: product.id, name: product.name })`.
-    // Let's assume we can try to find the product by matching the slug from a list of products,
-    // OR we just fetch the product if the slug contains the ID.
-    // Usually standard practice is `some-product-name-12345`.
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -35,13 +24,7 @@ export default function CustomCakeMobilePage() {
         const fetchProduct = async () => {
             setLoading(true);
             try {
-                // Fetch ALL custom cakes and find matching slug (inefficient but works for small catalog)
-                // OR better: extract ID from slug if possible.
-                // Let's assume we fetch all for now or try to match name.
-                // Since this is a "Custom Cake", maybe we just query by name if slug is name-based?
-                // Let's peek at `generateProductSlug`.
-
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('products')
                     .select('*')
                     .eq('product_type', 'cake');

@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import NotificationInbox from '@/app/components/NotificationInbox';
 import AuthSync from '@/app/components/AuthSync';
 import InboxLoginRequired from './_components/InboxLoginRequired';
 
 export default function InboxPage() {
+    const supabase = createClient();
     const [userId, setUserId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 

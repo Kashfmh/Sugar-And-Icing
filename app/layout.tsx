@@ -1,70 +1,45 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display, Dancing_Script } from "next/font/google";
-import "./globals.css";
-import Navbar from "./components/Navbar";
-import BottomNav from "./components/BottomNav";
-import Footer from "./components/Footer";
-import AuthSync from "./components/AuthSync";
+import type { Metadata } from 'next';
+import { Inter, Playfair_Display } from 'next/font/google'; // Adjust fonts if needed
+import './globals.css';
+import Navbar from '@/app/components/Navbar';
+import Footer from '@/app/components/Footer';
+import BottomNav from '@/app/components/BottomNav';
+import AuthSync from '@/app/components/AuthSync';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-});
-
-const dancingScript = Dancing_Script({
-  variable: "--font-dancing",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 
 export const metadata: Metadata = {
-  title: "Sugar And Icing - Handmade Treats in Brickfields",
-  description: "Artisanal bakery offering handmade brownies, cakes, and sweet treats. Freshly baked with love in KL Sentral, Brickfields.",
-  openGraph: {
-    title: "Sugar And Icing",
-    description: "Handmade with love in KL Sentral",
-    images: ['/images/logo/full-logo-white.png'],
-  },
+  title: 'Sugar & Icing',
+  description: 'Custom cakes and treats for every occasion',
 };
-
-import MainWrapper from "./components/MainWrapper";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${dancingScript.variable} antialiased bg-sai-cream text-sai-charcoal`}
-      >
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="bg-sai-white min-h-screen flex flex-col font-sans antialiased text-sai-charcoal selection:bg-sai-pink/20">
+
+        {/* 1. Global Auth Sync (Runs once, no visual rendering) */}
         <AuthSync />
 
-        <div className="hidden md:block" data-navbar>
+        {/* 2. Navbar: NO key={pathname} here! It must persist. */}
+        <div className="relative z-50">
           <Navbar />
         </div>
 
-        <MainWrapper>
+        {/* 3. Main Content */}
+        <main className="flex-grow relative z-0">
           {children}
-        </MainWrapper>
+        </main>
 
-        <footer>
-          <Footer />
-        </footer>
+        {/* 4. Footer & Bottom Nav */}
+        <Footer />
+        <BottomNav />
 
-        <div data-bottom-nav>
-          <BottomNav />
-        </div>
       </body>
     </html>
   );

@@ -1,5 +1,7 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { updateUserProfile } from './authService';
+
+const supabase = createClient();
 
 export async function uploadAvatar(
     file: File,

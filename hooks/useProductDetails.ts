@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
 
 export interface ProductOption {
@@ -22,6 +22,7 @@ export interface Review {
 }
 
 export function useProductDetails(slug: string) {
+    const supabase = createClient();
     const [product, setProduct] = useState<any>(null);
     const [options, setOptions] = useState<ProductOption[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -39,7 +40,7 @@ export function useProductDetails(slug: string) {
     async function fetchProductDetails() {
         setLoading(true);
         try {
-            const { data: productData, error: productError } = await (supabase as any)
+            const { data: productData, error: productError } = await supabase
                 .from('products')
                 .select('*')
                 .eq('id', productId)
@@ -53,10 +54,8 @@ export function useProductDetails(slug: string) {
 
             setProduct(productData);
 
-            setProduct(productData);
-
             if (productData.customizable) {
-                const { data: optionsData } = await (supabase as any)
+                const { data: optionsData } = await supabase
                     .from('product_options')
                     .select('*')
                     .eq('product_type', productData.product_type);
@@ -64,7 +63,7 @@ export function useProductDetails(slug: string) {
                 setOptions(optionsData || []);
             }
 
-            const { data: reviewsData } = await (supabase as any)
+            const { data: reviewsData } = await supabase
                 .from('reviews')
                 .select(`
                     id,

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Star, ShoppingCart, ChevronDown, Check, Info } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import AllergenBadge from './AllergenBadge';
 import { motion, AnimatePresence } from 'motion/react';
 import Counter from './Counter';
@@ -43,6 +43,7 @@ interface ProductDetailModalProps {
 }
 
 export default function ProductDetailModal({ productId, isOpen, onClose }: ProductDetailModalProps) {
+    const supabase = createClient();
     const [product, setProduct] = useState<Product | null>(null);
     const [options, setOptions] = useState<ProductOption[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -65,7 +66,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     async function fetchProductDetails() {
         setLoading(true);
         try {
-            const { data: productData, error: productError } = await (supabase as any)
+            const { data: productData, error: productError } = await supabase
                 .from('products')
                 .select('*')
                 .eq('id', productId)
@@ -75,7 +76,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             setProduct(productData as Product);
 
             if (productData.customizable) {
-                const { data: optionsData, error: optionsError } = await (supabase as any)
+                const { data: optionsData, error: optionsError } = await supabase
                     .from('product_options')
                     .select('*')
                     .eq('product_type', productData.product_type);
@@ -85,7 +86,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 }
             }
 
-            const { data: reviewsData, error: reviewsError } = await (supabase as any)
+            const { data: reviewsData, error: reviewsError } = await supabase
                 .from('reviews')
                 .select(`
           id,
@@ -125,7 +126,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             setLoading(false);
         }
     }
-
+    // ... rest of the component remains the same ...
     // combine main image with gallery
     const images = [
         product?.image_url,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { Trash2, MapPin, Plus, Star, Pencil } from 'lucide-react';
 import AlertModal from './AlertModal';
 
@@ -28,6 +28,7 @@ const FIXED_CITY = 'Kuala Lumpur';
 const FIXED_STATE = 'Kuala Lumpur';
 
 export default function AddressManager({ addresses, onUpdate, userId, initialIsAdding = false }: AddressManagerProps) {
+    const supabase = createClient();
     const [isAdding, setIsAdding] = useState(initialIsAdding);
     const formRef = useRef<HTMLDivElement>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -88,7 +89,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
 
         try {
             if (formData.is_default) {
-                await (supabase as any)
+                await supabase
                     .from('addresses')
                     .update({ is_default: false })
                     .eq('user_id', userId);
@@ -99,7 +100,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
             let error;
 
             if (editingId) {
-                const { error: updateError } = await (supabase as any)
+                const { error: updateError } = await supabase
                     .from('addresses')
                     .update({
                         ...formData
@@ -108,7 +109,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
                     .eq('user_id', userId);
                 error = updateError;
             } else {
-                const { error: insertError } = await (supabase as any)
+                const { error: insertError } = await supabase
                     .from('addresses')
                     .insert([{
                         user_id: userId,
@@ -181,12 +182,12 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
 
     async function handleSetDefault(id: string) {
         try {
-            await (supabase as any)
+            await supabase
                 .from('addresses')
                 .update({ is_default: false })
                 .eq('user_id', userId);
 
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('addresses')
                 .update({ is_default: true })
                 .eq('id', id);

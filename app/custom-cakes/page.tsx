@@ -1,7 +1,7 @@
 'use client';
 
 
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import CakeDetailModal from './_components/CakeDetailModal';
 import { useState } from 'react';
 
 const fetchCustomCakes = async () => {
+    const supabase = createClient();
     const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -47,7 +48,6 @@ export default function CustomCakesPage() {
         initialCategory: 'All',
         itemsPerPage: 12,
         onFetch: fetchCustomCakes
-        // No categoryMap passed, so it uses the default logic (matching string in name/desc/category_name)
     });
 
     const handleRequestQuote = (cakeName: string) => {

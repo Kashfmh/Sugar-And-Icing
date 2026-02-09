@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Mail, Check, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
+    const supabase = createClient();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
         setLoading(true);
 
         try {
-            // Send reset link - Supabase handles whether email exists
+            // Send reset link
             const { error } = await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
                 redirectTo: `${window.location.origin}/reset-password`
             });
@@ -25,7 +26,7 @@ export default function ForgotPasswordPage() {
             if (error) {
                 setError(error.message);
             } else {
-                // Always show success (even if email doesn't exist - security best practice)
+                // Always show success
                 setSent(true);
             }
         } catch (err: any) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server'
 import { fetchUserProfile } from '@/lib/services/authService';
 import { useCart } from '@/hooks/useCart';
 

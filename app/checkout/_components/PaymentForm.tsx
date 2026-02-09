@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
-import { supabase } from '@/lib/supabase';
 import { useCart } from '@/hooks/useCart';
 import { Loader2, AlertCircle, Lock } from 'lucide-react';
 import NumberBadge from '@/components/ui/number-badge';

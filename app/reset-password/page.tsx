@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Lock, Check, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
+    const supabase = createClient();
     const router = useRouter();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -75,7 +76,7 @@ export default function ResetPasswordPage() {
             setLoading(false);
         }
     };
-
+    // ... rest of the file remains the same ...
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">

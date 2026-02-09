@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import {
     validateSession,
     signOut,
@@ -44,6 +44,7 @@ export interface RecentlyViewedItem {
 }
 
 export function useProfile() {
+    const supabase = createClient();
     const router = useRouter();
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [isLoadingData, setIsLoadingData] = useState(false);
@@ -128,7 +129,7 @@ export function useProfile() {
             console.error('Failed to load orders:', error);
         }
     }
-
+    // ... rest of the file stays the same
     useEffect(() => {
         if (profile) {
             populateFormData(profile);

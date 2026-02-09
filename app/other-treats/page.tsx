@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ const categoryMap: { [key: string]: string[] } = {
 };
 
 const fetchProducts = async () => {
+    const supabase = createClient();
     const { data, error } = await supabase
         .from('products')
         .select('*')

@@ -1,4 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
 
 export interface UserProfile {
     id: string;
@@ -42,7 +44,7 @@ export async function validateSession() {
 }
 
 export async function fetchUserProfile(userId: string) {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -56,11 +58,11 @@ export async function fetchUserProfile(userId: string) {
         console.error('Profile fetch error:', error.message || error.toString());
         throw new Error(error.message || 'Failed to load profile');
     }
-    return data as UserProfile;
+    return data as unknown as UserProfile;
 }
 
 export async function fetchUserAddresses(userId: string) {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
         .from('addresses')
         .select('*')
         .eq('user_id', userId)
@@ -74,7 +76,7 @@ export async function fetchUserAddresses(userId: string) {
 }
 
 export async function fetchUserOccasions(userId: string) {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
         .from('special_occasions')
         .select('*')
         .eq('user_id', userId)
@@ -96,7 +98,7 @@ export async function loadAllUserData(userId: string) {
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<UserProfile>) {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
         .from('profiles')
         .update({
             ...updates,

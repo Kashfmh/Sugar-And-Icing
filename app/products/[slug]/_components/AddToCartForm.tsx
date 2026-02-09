@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/useCart';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { fetchUserProfile } from '@/lib/services/authService';
 import { ProductOption } from '@/hooks/useProductDetails';
 import Counter from '@/app/components/Counter';
@@ -18,6 +18,7 @@ interface AddToCartFormProps {
 }
 
 export default function AddToCartForm({ product, options }: AddToCartFormProps) {
+    const supabase = createClient();
     const { addItem } = useCart();
 
     const [selectedBase, setSelectedBase] = useState<string>('');

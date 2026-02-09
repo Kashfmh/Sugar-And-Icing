@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bell, Check, Info, ShoppingBag, Tag } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 interface Notification {
     id: string;
@@ -18,6 +18,7 @@ interface NotificationInboxProps {
 }
 
 export default function NotificationInbox({ userId }: NotificationInboxProps) {
+    const supabase = createClient();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,7 +28,7 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     async function fetchNotifications() {
         try {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('notifications')
                 .select('*')
                 .eq('user_id', userId)
@@ -44,7 +45,7 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     async function markAsRead(id: string) {
         try {
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('notifications')
                 .update({ read: true })
                 .eq('id', id);
@@ -61,7 +62,7 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     async function markAllAsRead() {
         try {
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('notifications')
                 .update({ read: true })
                 .eq('user_id', userId)

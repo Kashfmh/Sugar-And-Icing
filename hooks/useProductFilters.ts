@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 
 export interface Product {
@@ -31,6 +31,7 @@ export function useProductFilters({
     categoryMap,
     onFetch
 }: UseProductFiltersProps = {}) {
+    const supabase = createClient();
     const [products, setProducts] = useState<Product[]>([]);
     const [activeCategory, setActiveCategory] = useState(initialCategory);
     const [loading, setLoading] = useState(true);

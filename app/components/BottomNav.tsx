@@ -5,13 +5,13 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Home, FileText, ShoppingCart, CakeSlice, User, Bell, Package } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
 
 export default function BottomNav() {
+    const supabase = createClient();
     const pathname = usePathname();
     const { totalItems } = useCart();
-
     const [mounted, setMounted] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export default function BottomNav() {
 
             if (currentUser) {
                 // fetch unread count
-                const { count } = await (supabase as any)
+                const { count } = await supabase
                     .from('notifications')
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', currentUser.id)
@@ -34,7 +34,7 @@ export default function BottomNav() {
                 setUnreadCount(count || 0);
 
                 // fetch avatar
-                const { data } = await (supabase as any)
+                const { data } = await supabase
                     .from('profiles')
                     .select('avatar_url')
                     .eq('id', currentUser.id)

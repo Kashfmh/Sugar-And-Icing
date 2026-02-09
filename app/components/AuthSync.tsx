@@ -1,46 +1,43 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import { useCart } from '@/hooks/useCart'
 
 export default function AuthSync() {
     const router = useRouter()
     const { syncWithUser } = useCart()
-    const initialMount = useRef(true)
+    const supabase = createClient()
 
     useEffect(() => {
+        // 1. Just sync the cart on mount. No router refresh.
         syncWithUser()
 
-        let currentAccessToken: string | undefined
-
+        // 2. Listen for AUTH events
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (initialMount.current) {
-                initialMount.current = false
-                currentAccessToken = session?.access_token
-                return
-            }
 
-            const newAccessToken = session?.access_token
+            // LOGIC:
+            // - If SIGNED_IN: Just sync the cart. DO NOT REFRESH.
+            // - If TOKEN_REFRESHED: Just sync the cart. DO NOT REFRESH.
+            // - If SIGNED_OUT: Clear cart, Refresh Router (to protect data), and Redirect.
 
-            if (currentAccessToken !== newAccessToken) {
-                currentAccessToken = newAccessToken
-
-                if (event === 'SIGNED_OUT') {
-                    useCart.getState().clearCart()
-                } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                if (session?.user) {
                     syncWithUser()
                 }
-
-                router.refresh()
+            }
+            else if (event === 'SIGNED_OUT') {
+                useCart.getState().clearCart()
+                router.refresh() // Valid use case: clear sensitive data from screen
+                router.push('/') // Send to home
             }
         })
 
         return () => {
             subscription.unsubscribe()
         }
-    }, [router, syncWithUser])
+    }, [router, syncWithUser, supabase])
 
     return null
 }

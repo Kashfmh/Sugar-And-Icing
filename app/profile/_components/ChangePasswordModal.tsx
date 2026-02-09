@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Eye, EyeOff, Lock, Check, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -11,6 +11,7 @@ interface ChangePasswordModalProps {
 }
 
 export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
+    const supabase = createClient();
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -112,7 +113,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             setLoading(false);
         }
     };
-
+    // ... rest of the file remains the same ...
     return (
         <AnimatePresence>
             {isOpen && (

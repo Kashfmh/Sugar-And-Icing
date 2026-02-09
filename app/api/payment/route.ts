@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
@@ -14,24 +14,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 401 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase configuration");
-    }
-
-    const authHeader = req.headers.get('Authorization');
-
-    const supabase = createClient(
-      supabaseUrl,
-      supabaseKey,
-      {
-        global: {
-          headers: authHeader ? { Authorization: authHeader } : {}
-        }
-      }
-    );
+    // Initialize Server Client
+    const supabase = await createClient();
 
     // collect ids
     const potentialIds = items.map((item: any) => item.id.split('-')[0]);
@@ -60,7 +44,7 @@ export async function POST(req: Request) {
 
       // fallback: if id lookup failed, try finding by name
       if (!product) {
-        console.warn(`⚠️ Product ID ${productId} not found. Trying fallback by name: ${item.name}`);
+        console.warn(`Product ID ${productId} not found. Trying fallback by name: ${item.name}`);
         const { data: nameData } = await supabase
           .from('products')
           .select('id, base_price, name')
@@ -79,17 +63,16 @@ export async function POST(req: Request) {
       if (product) {
         price = Number(product.base_price);
         productName = product.name;
-        finalProductId = product.id; // ensure this is saved
+        finalProductId = product.id;
       } else {
-        // only use this if the product is truly deleted/missing from DB
-        console.warn(`❌ Item ${item.name} not found in DB via ID or Name. Using client price.`);
+        console.warn(`Item ${item.name} not found in DB via ID or Name. Using client price.`);
         price = Number(item.price);
       }
 
       serverTotal += price * item.quantity;
 
       dbOrderItems.push({
-        product_id: finalProductId, // ensure this is saved
+        product_id: finalProductId,
         product_name: productName,
         quantity: item.quantity,
         price_at_purchase: price,

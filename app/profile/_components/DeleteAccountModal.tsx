@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 interface DeleteAccountModalProps {
     isOpen: boolean;
@@ -11,6 +11,7 @@ interface DeleteAccountModalProps {
 }
 
 export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountModalProps) {
+    const supabase = createClient();
     const [step, setStep] = useState<'warning' | 'confirm' | 'deleting' | 'error'>('warning');
     const [confirmText, setConfirmText] = useState('');
     const [error, setError] = useState<string | null>(null);
