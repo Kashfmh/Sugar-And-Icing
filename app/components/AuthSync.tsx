@@ -1,41 +1,46 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useCart } from '@/hooks/useCart';
+import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { useCart } from '@/hooks/useCart'
 
 export default function AuthSync() {
-    const { syncWithUser } = useCart();
+    const router = useRouter()
+    const { syncWithUser } = useCart()
+    const initialMount = useRef(true)
 
     useEffect(() => {
-        syncWithUser();
+        syncWithUser()
+
+        let currentAccessToken: string | undefined
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                syncWithUser();
-            } else if (event === 'SIGNED_OUT') {
-                useCart.getState().clearCart();
+            if (initialMount.current) {
+                initialMount.current = false
+                currentAccessToken = session?.access_token
+                return
             }
-        });
 
-        // Refresh session when tab becomes visible again
-        const handleVisibilityChange = async () => {
-            if (document.visibilityState === 'visible') {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (session && !error) {
-                    // Trigger a token refresh if needed
-                    await supabase.auth.refreshSession();
+            const newAccessToken = session?.access_token
+
+            if (currentAccessToken !== newAccessToken) {
+                currentAccessToken = newAccessToken
+
+                if (event === 'SIGNED_OUT') {
+                    useCart.getState().clearCart()
+                } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                    syncWithUser()
                 }
-            }
-        };
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+                router.refresh()
+            }
+        })
 
         return () => {
-            subscription.unsubscribe();
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            subscription.unsubscribe()
         }
-    }, [syncWithUser]);
+    }, [router, syncWithUser])
 
-    return null;
+    return null
 }
