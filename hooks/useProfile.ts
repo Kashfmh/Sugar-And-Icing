@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
@@ -78,7 +78,7 @@ export function useProfile() {
     }, []);
 
     useEffect(() => {
-        if (user) {
+        if (user?.id) {
             loadRecentlyViewed();
             loadOrders();
 
@@ -103,7 +103,7 @@ export function useProfile() {
                 supabase.removeChannel(channel);
             };
         }
-    }, [user]);
+    }, [user?.id]);
 
     async function loadOrders() {
         try {

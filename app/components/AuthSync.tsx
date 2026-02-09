@@ -18,8 +18,22 @@ export default function AuthSync() {
             }
         });
 
+        // Refresh session when tab becomes visible again
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible') {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (session && !error) {
+                    // Trigger a token refresh if needed
+                    await supabase.auth.refreshSession();
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             subscription.unsubscribe();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         }
     }, [syncWithUser]);
 

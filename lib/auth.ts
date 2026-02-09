@@ -93,35 +93,18 @@ export async function signUp(
             }
         });
 
-        console.log('=== SIGNUP DEBUG ===');
-        console.log('Has user:', !!data?.user);
-        console.log('Has session:', !!data?.session);
-        console.log('Has error:', !!error);
-        console.log('User ID:', data?.user?.id);
-        if (error) {
-            console.log('Error:', error.message, error.status, error.code);
-        }
-        console.log('==================');
-
         if (error) {
             console.error('Supabase signup error:', error);
-            if (error.message.includes('already') ||
-                error.message.includes('User already registered') ||
-                error.status === 422 ||
-                error.code === 'user_already_exists' ||
-                error.message.includes('duplicate')) {
+            if (error.message.includes('already') || error.message.includes('User already registered') || error.status === 422) {
                 return { success: false, error: 'This email is already registered. Please sign in instead.' };
             }
             if (error.message.includes('Invalid email')) {
                 return { success: false, error: 'Please enter a valid email address' };
             }
             if (error.message.includes('Password')) {
-                return { success: false, error: 'Password is too weak. Use at least 8 characters with letters and numbers.' };
+                return { success: false, error: 'Password is too weak.' };
             }
-            if (error.message.includes('rate limit')) {
-                return { success: false, error: 'Too many attempts. Please try again in a few minutes.' };
-            }
-            return { success: false, error: error.message || 'Failed to create account. Please try again.' };
+            return { success: false, error: error.message || 'Failed to create account.' };
         }
 
         if (!data.user) {
@@ -132,22 +115,21 @@ export async function signUp(
             return { success: false, error: 'This email is already registered. Please sign in instead.' };
         }
 
-        // Create or update user profile (upsert in case trigger already created it)
         const { error: profileError } = await supabase
             .from('profiles')
-            .upsert({
+            .insert([{
                 id: data.user.id,
                 first_name: sanitizedFirstName,
                 phone: phoneValidation.formatted,
-                email: sanitizedEmail,
-            }, { onConflict: 'id' });
+                email: sanitizedEmail
+            }]);
 
         if (profileError) {
             console.error('Profile creation error:', profileError);
-            console.warn('User account created but profile not saved.');
         }
 
         return { success: true };
+
     } catch (error: any) {
         console.error('Sign up error:', error);
         return { success: false, error: 'An unexpected error occurred. Please try again.' };
