@@ -41,7 +41,7 @@ export default function CustomCakeMobilePage() {
                 // Since this is a "Custom Cake", maybe we just query by name if slug is name-based?
                 // Let's peek at `generateProductSlug`.
 
-                const { data, error } = await supabase
+                const { data, error } = await (supabase as any)
                     .from('products')
                     .select('*')
                     .eq('product_type', 'cake');
@@ -50,7 +50,7 @@ export default function CustomCakeMobilePage() {
 
                 if (data) {
                     const { generateProductSlug } = await import('@/lib/slugify');
-                    const found = data.find(p => generateProductSlug({ id: p.id, name: p.name }) === slug);
+                    const found = data.find((p: any) => generateProductSlug({ id: p.id, name: p.name }) === slug);
                     setProduct(found || null);
                 }
             } catch (err) {

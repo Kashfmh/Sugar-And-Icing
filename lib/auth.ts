@@ -8,9 +8,10 @@ export interface AuthUser {
 
 export interface UserProfile {
     id: string;
-    user_id: string;
     first_name: string;
+    last_name?: string;
     phone: string;
+    email?: string;
     created_at: string;
     updated_at: string;
 }
@@ -86,9 +87,10 @@ export async function signUp(
             options: {
                 emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/profile`,
                 data: {
+                    // We pass these as metadata so the SQL Trigger can pick them up
                     display_name: sanitizedFirstName,
-                    phone: phoneValidation.formatted,
                     first_name: sanitizedFirstName,
+                    phone: phoneValidation.formatted,
                 }
             }
         });
@@ -115,18 +117,9 @@ export async function signUp(
             return { success: false, error: 'This email is already registered. Please sign in instead.' };
         }
 
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([{
-                id: data.user.id,
-                first_name: sanitizedFirstName,
-                phone: phoneValidation.formatted,
-                email: sanitizedEmail
-            }]);
-
-        if (profileError) {
-            console.error('Profile creation error:', profileError);
-        }
+        // NOTE: Manual profile insertion removed. 
+        // It relies on the SQL Trigger "handle_new_user" to create the profile row.
+        // This prevents race conditions and permission errors.
 
         return { success: true };
 
@@ -213,7 +206,13 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         return null;
     }
 
-    return data;
+    return {
+        id: data.id,
+        first_name: data.first_name || '',
+        phone: data.phone || '',
+        created_at: data.created_at || '',
+        updated_at: data.updated_at || '',
+    };
 }
 
 export async function getSession() {

@@ -65,7 +65,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     async function fetchProductDetails() {
         setLoading(true);
         try {
-            const { data: productData, error: productError } = await supabase
+            const { data: productData, error: productError } = await (supabase as any)
                 .from('products')
                 .select('*')
                 .eq('id', productId)
@@ -75,7 +75,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             setProduct(productData as Product);
 
             if (productData.customizable) {
-                const { data: optionsData, error: optionsError } = await supabase
+                const { data: optionsData, error: optionsError } = await (supabase as any)
                     .from('product_options')
                     .select('*')
                     .eq('product_type', productData.product_type);
@@ -85,7 +85,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 }
             }
 
-            const { data: reviewsData, error: reviewsError } = await supabase
+            const { data: reviewsData, error: reviewsError } = await (supabase as any)
                 .from('reviews')
                 .select(`
           id,

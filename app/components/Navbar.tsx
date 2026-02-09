@@ -29,7 +29,7 @@ export default function Navbar() {
 
     const fetchProfile = async (userId: string) => {
         try {
-            const { data } = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
+            const { data } = await (supabase as any).from('profiles').select('avatar_url').eq('id', userId).single();
             if (data) {
                 setAvatarUrl(data.avatar_url);
             }
@@ -261,7 +261,7 @@ function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: 
         }
 
         const fetchUnread = async () => {
-            const { count } = await supabase
+            const { count } = await (supabase as any)
                 .from('notifications')
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', userId)

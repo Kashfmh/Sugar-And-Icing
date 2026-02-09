@@ -46,25 +46,25 @@ export const useCart = create<CartState>()(
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           try {
-            const { data: existingRows } = await supabase
+            const { data: existingRows } = await (supabase as any)
               .from('cart_items')
               .select('*')
               .eq('user_id', user.id)
               .eq('product_id', newItem.productId);
 
             // strict comparison for metadata
-            const match = existingRows?.find(row =>
+            const match = existingRows?.find((row: any) =>
               JSON.stringify(row.metadata) === JSON.stringify(newItem.metadata)
             );
 
             if (match) {
               const newQty = match.quantity + newItem.quantity;
-              await supabase
+              await (supabase as any)
                 .from('cart_items')
                 .update({ quantity: newQty })
                 .eq('id', match.id);
             } else {
-              await supabase.from('cart_items').insert({
+              await (supabase as any).from('cart_items').insert({
                 user_id: user.id,
                 product_id: newItem.productId,
                 quantity: newItem.quantity,
@@ -104,24 +104,24 @@ export const useCart = create<CartState>()(
         if (user) {
           try {
             for (const newItem of newItems) {
-              const { data: existingRows } = await supabase
+              const { data: existingRows } = await (supabase as any)
                 .from('cart_items')
                 .select('*')
                 .eq('user_id', user.id)
                 .eq('product_id', newItem.productId);
 
-              const match = existingRows?.find(row =>
+              const match = existingRows?.find((row: any) =>
                 JSON.stringify(row.metadata) === JSON.stringify(newItem.metadata)
               );
 
               if (match) {
                 const newQty = match.quantity + newItem.quantity;
-                await supabase
+                await (supabase as any)
                   .from('cart_items')
                   .update({ quantity: newQty })
                   .eq('id', match.id);
               } else {
-                await supabase.from('cart_items').insert({
+                await (supabase as any).from('cart_items').insert({
                   user_id: user.id,
                   product_id: newItem.productId,
                   quantity: newItem.quantity,
@@ -144,7 +144,7 @@ export const useCart = create<CartState>()(
 
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase.from('cart_items').delete().eq('id', itemId);
+          await (supabase as any).from('cart_items').delete().eq('id', itemId);
         }
       },
 
@@ -163,9 +163,9 @@ export const useCart = create<CartState>()(
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           if (quantity <= 0) {
-            await supabase.from('cart_items').delete().eq('id', itemId);
+            await (supabase as any).from('cart_items').delete().eq('id', itemId);
           } else {
-            await supabase.from('cart_items').update({ quantity }).eq('id', itemId);
+            await (supabase as any).from('cart_items').update({ quantity }).eq('id', itemId);
           }
         }
       },
@@ -174,7 +174,7 @@ export const useCart = create<CartState>()(
         set({ items: [] });
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase.from('cart_items').delete().eq('user_id', user.id);
+          await (supabase as any).from('cart_items').delete().eq('user_id', user.id);
         }
       },
 

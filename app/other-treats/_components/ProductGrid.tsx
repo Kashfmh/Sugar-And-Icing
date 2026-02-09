@@ -58,9 +58,9 @@ export default function ProductGrid({
                                         name={product.name}
                                         price={product.base_price}
                                         description={product.description || undefined}
-                                        category={product.category_name}
+                                        category={product.category_name || undefined}
                                         image_url={product.image_url || undefined}
-                                        tags={product.tags}
+                                        tags={product.tags || undefined}
                                         onClick={() => onClickProduct(product)}
                                     />
                                 </div>
@@ -76,9 +76,9 @@ export default function ProductGrid({
                                     name={product.name}
                                     price={product.base_price}
                                     description={product.description || undefined}
-                                    category={product.category_name}
+                                    category={product.category_name || undefined}
                                     image_url={product.image_url || undefined}
-                                    tags={product.tags}
+                                    tags={product.tags || undefined}
                                     onClick={() => onClickProduct(product)}
                                 />
                             ))}

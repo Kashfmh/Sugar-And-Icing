@@ -26,7 +26,7 @@ export default function BottomNav() {
 
             if (currentUser) {
                 // fetch unread count
-                const { count } = await supabase
+                const { count } = await (supabase as any)
                     .from('notifications')
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', currentUser.id)
@@ -34,7 +34,7 @@ export default function BottomNav() {
                 setUnreadCount(count || 0);
 
                 // fetch avatar
-                const { data } = await supabase
+                const { data } = await (supabase as any)
                     .from('profiles')
                     .select('avatar_url')
                     .eq('id', currentUser.id)

@@ -88,7 +88,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
 
         try {
             if (formData.is_default) {
-                await supabase
+                await (supabase as any)
                     .from('addresses')
                     .update({ is_default: false })
                     .eq('user_id', userId);
@@ -99,7 +99,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
             let error;
 
             if (editingId) {
-                const { error: updateError } = await supabase
+                const { error: updateError } = await (supabase as any)
                     .from('addresses')
                     .update({
                         ...formData
@@ -108,7 +108,7 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
                     .eq('user_id', userId);
                 error = updateError;
             } else {
-                const { error: insertError } = await supabase
+                const { error: insertError } = await (supabase as any)
                     .from('addresses')
                     .insert([{
                         user_id: userId,
@@ -181,12 +181,12 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
 
     async function handleSetDefault(id: string) {
         try {
-            await supabase
+            await (supabase as any)
                 .from('addresses')
                 .update({ is_default: false })
                 .eq('user_id', userId);
 
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('addresses')
                 .update({ is_default: true })
                 .eq('id', id);

@@ -39,7 +39,7 @@ export function useProductDetails(slug: string) {
     async function fetchProductDetails() {
         setLoading(true);
         try {
-            const { data: productData, error: productError } = await supabase
+            const { data: productData, error: productError } = await (supabase as any)
                 .from('products')
                 .select('*')
                 .eq('id', productId)
@@ -56,7 +56,7 @@ export function useProductDetails(slug: string) {
             setProduct(productData);
 
             if (productData.customizable) {
-                const { data: optionsData } = await supabase
+                const { data: optionsData } = await (supabase as any)
                     .from('product_options')
                     .select('*')
                     .eq('product_type', productData.product_type);
@@ -64,7 +64,7 @@ export function useProductDetails(slug: string) {
                 setOptions(optionsData || []);
             }
 
-            const { data: reviewsData } = await supabase
+            const { data: reviewsData } = await (supabase as any)
                 .from('reviews')
                 .select(`
                     id,

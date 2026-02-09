@@ -42,7 +42,7 @@ export async function validateSession() {
 }
 
 export async function fetchUserProfile(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -60,7 +60,7 @@ export async function fetchUserProfile(userId: string) {
 }
 
 export async function fetchUserAddresses(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('addresses')
         .select('*')
         .eq('user_id', userId)
@@ -74,7 +74,7 @@ export async function fetchUserAddresses(userId: string) {
 }
 
 export async function fetchUserOccasions(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('special_occasions')
         .select('*')
         .eq('user_id', userId)
@@ -96,7 +96,7 @@ export async function loadAllUserData(userId: string) {
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<UserProfile>) {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
         .from('profiles')
         .update({
             ...updates,

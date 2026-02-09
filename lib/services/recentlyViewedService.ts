@@ -22,7 +22,7 @@ export async function trackProductView(userId: string, productId: string): Promi
             viewed_at: new Date().toISOString()
         };
 
-        const { data: upsertData, error: upsertError } = await supabase
+        const { data: upsertData, error: upsertError } = await (supabase as any)
             .from('recently_viewed')
             .upsert(dataToInsert, {
                 onConflict: 'user_id,product_id'
@@ -36,7 +36,7 @@ export async function trackProductView(userId: string, productId: string): Promi
 
         console.log('[trackProductView] Upsert successful, result:', upsertData);
 
-        const { data: allViewed, error: fetchError } = await supabase
+        const { data: allViewed, error: fetchError } = await (supabase as any)
             .from('recently_viewed')
             .select('id')
             .eq('user_id', userId)
@@ -50,10 +50,10 @@ export async function trackProductView(userId: string, productId: string): Promi
         }
 
         if (allViewed && allViewed.length > 10) {
-            const toDelete = allViewed.slice(10).map(item => item.id);
+            const toDelete = allViewed.slice(10).map((item: any) => item.id);
             console.log('[trackProductView] Deleting old items:', toDelete.length);
 
-            const { error: deleteError } = await supabase
+            const { error: deleteError } = await (supabase as any)
                 .from('recently_viewed')
                 .delete()
                 .in('id', toDelete);
@@ -74,7 +74,7 @@ export async function getRecentlyViewed(
     limit: number = 10
 ): Promise<RecentlyViewedProduct[]> {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('recently_viewed')
             .select(`
                 id,

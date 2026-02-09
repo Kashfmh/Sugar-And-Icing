@@ -27,7 +27,7 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     async function fetchNotifications() {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('notifications')
                 .select('*')
                 .eq('user_id', userId)
@@ -44,7 +44,7 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     async function markAsRead(id: string) {
         try {
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('notifications')
                 .update({ read: true })
                 .eq('id', id);
@@ -61,7 +61,7 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     async function markAllAsRead() {
         try {
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('notifications')
                 .update({ read: true })
                 .eq('user_id', userId)

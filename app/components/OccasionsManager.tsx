@@ -38,7 +38,7 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
             let error;
 
             if (editingId) {
-                const { error: updateError } = await supabase
+                const { error: updateError } = await (supabase as any)
                     .from('special_occasions')
                     .update({
                         ...formData
@@ -47,7 +47,7 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                     .eq('user_id', userId);
                 error = updateError;
             } else {
-                const { error: insertError } = await supabase
+                const { error: insertError } = await (supabase as any)
                     .from('special_occasions')
                     .insert([{
                         user_id: userId,
@@ -93,7 +93,7 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
         if (!confirm('Are you sure you want to delete this occasion?')) return;
 
         try {
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('special_occasions')
                 .delete()
                 .eq('id', id);

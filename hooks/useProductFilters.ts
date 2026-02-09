@@ -8,12 +8,12 @@ export interface Product {
     base_price: number;
     price?: number;
     description?: string | null;
-    category_name: string;
+    category_name?: string | null;
     image_url?: string | null;
-    is_available?: boolean;
-    is_best_seller?: boolean;
-    tags?: string[];
-    product_type?: string;
+    is_available?: boolean | null;
+    is_best_seller?: boolean | null;
+    tags?: string[] | null;
+    product_type?: string | null;
 }
 
 export type SortOption = 'newest' | 'price-low' | 'price-high' | 'name';
