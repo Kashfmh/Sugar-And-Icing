@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client';
 import { fetchUserProfile } from '@/lib/services/authService';
 import { useCart } from '@/hooks/useCart';
 
 export function useCheckout() {
+    const supabase = createClient();
     const { items, subtotal } = useCart();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);

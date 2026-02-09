@@ -82,7 +82,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                     .eq('product_type', productData.product_type);
 
                 if (!optionsError) {
-                    setOptions(optionsData || []);
+                    setOptions((optionsData as unknown as ProductOption[]) || []);
                 }
             }
 

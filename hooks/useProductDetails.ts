@@ -60,7 +60,7 @@ export function useProductDetails(slug: string) {
                     .select('*')
                     .eq('product_type', productData.product_type);
 
-                setOptions(optionsData || []);
+                setOptions((optionsData as unknown as ProductOption[]) || []);
             }
 
             const { data: reviewsData } = await supabase
