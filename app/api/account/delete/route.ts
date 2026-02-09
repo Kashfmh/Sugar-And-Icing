@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Use service role key for admin operations
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(request: NextRequest) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+        console.error("Missing Supabase credentials in environment variables.");
+        return NextResponse.json(
+            { error: 'Server configuration error' },
+            { status: 500 }
+        );
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    });
+
     try {
         const { userId, confirmText } = await request.json();
 
-        // Validate confirmation text
         if (confirmText !== 'DELETE') {
             return NextResponse.json(
                 { error: 'Invalid confirmation' },
@@ -26,7 +37,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check for active orders that would block deletion
         const { data: activeOrders, error: ordersError } = await supabaseAdmin
             .from('orders')
             .select('id, status')
@@ -52,9 +62,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Delete user data in order (respecting foreign key constraints)
-
-        // 1. Delete cart items
+        // delete cart items
         const { error: cartError } = await supabaseAdmin
             .from('cart_items')
             .delete()
@@ -64,7 +72,7 @@ export async function POST(request: NextRequest) {
             console.error('Error deleting cart items:', cartError);
         }
 
-        // 2. Delete order items (for completed orders)
+        // delete order items (for completed orders)
         const { data: userOrders } = await supabaseAdmin
             .from('orders')
             .select('id')
@@ -83,7 +91,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // 3. Delete orders
+        // delete orders
         const { error: ordersDeleteError } = await supabaseAdmin
             .from('orders')
             .delete()
@@ -93,7 +101,7 @@ export async function POST(request: NextRequest) {
             console.error('Error deleting orders:', ordersDeleteError);
         }
 
-        // 4. Delete profile
+        // delete profile
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
             .delete()
@@ -103,7 +111,7 @@ export async function POST(request: NextRequest) {
             console.error('Error deleting profile:', profileError);
         }
 
-        // 5. Delete user from auth
+        // delete user from auth
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
         if (authError) {
