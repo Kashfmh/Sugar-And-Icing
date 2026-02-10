@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 401 });
     }
 
-    // Initialize Server Client
+    // initialize server client
     const supabase = await createClient();
 
     // collect ids

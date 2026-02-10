@@ -21,7 +21,7 @@ export default function OrdersPage() {
             }
         };
 
-        // Check on mount
+        // check on mount
         handleResize();
 
         window.addEventListener('resize', handleResize);

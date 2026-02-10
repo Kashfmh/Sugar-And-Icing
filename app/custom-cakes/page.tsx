@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useProductFilters, Product } from '@/hooks/useProductFilters'; // Use hook
+import { useProductFilters, Product } from '@/hooks/useProductFilters';
 import CakeHeader from './_components/CakeHeader';
 import CakeFilterBar from './_components/CakeFilterBar';
 import CakeGallery from './_components/CakeGallery';
@@ -19,7 +19,7 @@ const fetchCustomCakes = async () => {
     const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('product_type', 'cake'); // Only custom cakes
+        .eq('product_type', 'cake');
 
     if (error) throw error;
     return data as Product[];
@@ -30,7 +30,7 @@ export default function CustomCakesPage() {
 
     const {
         paginatedProducts: paginatedCakes,
-        sortedProducts: sortedCakes, // Used for count
+        sortedProducts: sortedCakes,
         activeCategory,
         setActiveCategory,
         searchQuery,

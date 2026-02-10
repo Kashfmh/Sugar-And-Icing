@@ -34,7 +34,7 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
     const toppingOptions = options.filter(opt => opt.option_category === 'topping');
     const dietaryOptions = options.filter(opt => opt.option_category === 'dietary');
 
-    // Sweet Preferences Integration: Auto-Preselect
+    // sweet preferences integration: auto-preselect
     useEffect(() => {
         async function applyPreferences() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -43,9 +43,9 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             const profile = await fetchUserProfile(user.id);
             if (!profile) return;
 
-            // 1. Auto-select Base Flavor if matches Favorite
+            // auto-select base flavor if matches favorite
             if (profile.favorite_flavors?.length > 0 && baseOptions.length > 0 && !selectedBase) {
-                // Find first matching flavor
+                // find first matching flavor
                 const match = baseOptions.find(opt =>
                     profile.favorite_flavors.some((fav: string) =>
                         opt.option_name.toLowerCase().includes(fav.toLowerCase()) ||
@@ -58,7 +58,7 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
                 }
             }
 
-            // 2. Auto-select Frosting if matches Favorite (Secondary check)
+            //  auto-select frosting if matches favorite (secondary check)
             if (profile.favorite_flavors?.length > 0 && frostingOptions.length > 0 && !selectedFrosting) {
                 const match = frostingOptions.find(opt =>
                     profile.favorite_flavors.some((fav: string) =>
@@ -71,43 +71,41 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
                 }
             }
 
-            // 3. Auto-select Dietary Options
+            // auto-select dietary options
             if (profile.dietary_restrictions?.length > 0 && dietaryOptions.length > 0) {
                 const matches = dietaryOptions
                     .filter(opt => profile.dietary_restrictions.includes(opt.option_name))
                     .map(opt => opt.option_name);
 
                 if (matches.length > 0) {
-                    // Combine with existing (should be empty usually)
+                    // combine with existing
                     setSelectedDietaryOptions(prev => Array.from(new Set([...prev, ...matches])));
                 }
             }
         }
         applyPreferences();
-    }, [baseOptions, frostingOptions, dietaryOptions]); // Run once when options load
-    // Note: passing options as deps to ensure we have them before checking
-
+    }, [baseOptions, frostingOptions, dietaryOptions]);
 
     const calculatePrice = () => {
         if (!product) return 0;
 
-        // For cupcakes with tiered pricing (6pc and 12pc sets)
+        // for cupcakes with tiered pricing (6pc and 12pc sets)
         if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
             let baseTotal = 0;
-            // Quantity 1 = 6 pieces = base_price
-            // Quantity 2 = 12 pieces = premium_price (discounted)
+            // quantity 1 = 6 pieces = base_price
+            // quantity 2 = 12 pieces = premium_price (discounted)
             if (quantity === 1) {
                 baseTotal = product.base_price;
             } else if (quantity === 2 && product.premium_price) {
                 baseTotal = product.premium_price;
             } else if (quantity > 2 && product.premium_price) {
-                // For quantities > 2, calculate proportionally from the 12pc price
+                // for quantities > 2, calculate proportionally from the 12pc price
                 baseTotal = product.premium_price * (quantity / 2);
             } else {
                 baseTotal = product.base_price * quantity;
             }
 
-            // Calculate dietary cost (per piece logic: 6 pieces per quantity unit)
+            // calculate dietary cost (per piece logic: 6 pieces per quantity unit)
             const totalPieces = quantity * 6;
             let dietaryCost = 0;
 
@@ -121,11 +119,11 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             return baseTotal + dietaryCost;
         }
 
-        // For brownies (per piece pricing with toppings and dietary options)
+        // for brownies (per piece pricing with toppings and dietary options)
         if (product.product_type === 'brownie') {
             let pricePerPiece = product.base_price; // RM 3
 
-            // Check if premium topping selected (any topping makes it RM 4)
+            // check if premium topping selected (any topping makes it RM 4)
             if (selectedTopping && selectedTopping !== 'None') {
                 const toppingOption = toppingOptions.find(opt => opt.option_name === selectedTopping);
                 if (toppingOption?.is_premium) {
@@ -133,7 +131,7 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
                 }
             }
 
-            // Add dietary option costs (cumulative)
+            // add dietary option costs
             selectedDietaryOptions.forEach(dietaryName => {
                 const dietaryOption = dietaryOptions.find(
                     opt => opt.option_name === dietaryName
@@ -146,13 +144,13 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             return pricePerPiece * quantity;
         }
 
-        // For other products (Fruitcake, Bread, Other)
-        // Pricing is per unit
+        // for other products (fruitcake, bread, other)
+        // pricing is per unit
         let basePrice = product.base_price;
 
         let total = basePrice * quantity;
 
-        // Add dietary costs per unit
+        // add dietary costs per unit
         selectedDietaryOptions.forEach(dietaryName => {
             const dietaryOption = dietaryOptions.find(opt => opt.option_name === dietaryName);
             if (dietaryOption) {

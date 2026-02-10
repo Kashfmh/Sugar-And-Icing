@@ -21,7 +21,7 @@ export default function CakeDetailModal({
     description
 }: CakeDetailModalProps) {
 
-    // Lock body scroll
+    // lock body scroll
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';

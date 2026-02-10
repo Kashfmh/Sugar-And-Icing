@@ -71,7 +71,7 @@ export default function MenuPage() {
             router.push(`/products/${slug}`);
         } else {
             setSelectedProductId(product.id);
-            // Optionally update URL without reload
+            // update URL without reload
             window.history.pushState(null, '', `?product_id=${product.id}`);
         }
     };

@@ -1,7 +1,3 @@
-/**
- * Centralized className constants to maintain DRY principles
- * Use these instead of repeating className strings throughout the app
- */
 
 // ============================================
 // BUTTON STYLES

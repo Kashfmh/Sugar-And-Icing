@@ -7,6 +7,7 @@ import { Home, FileText, ShoppingCart, CakeSlice, User, Bell, Package } from 'lu
 import { useCart } from '@/hooks/useCart';
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
+import InboxTrigger from './InboxTrigger';
 
 export default function BottomNav() {
     const supabase = createClient();
@@ -59,10 +60,12 @@ export default function BottomNav() {
         });
 
         window.addEventListener('profile-updated', fetchData);
+        window.addEventListener('notifications-updated', fetchData);
 
         return () => {
             subscription.unsubscribe();
             window.removeEventListener('profile-updated', fetchData);
+            window.removeEventListener('notifications-updated', fetchData);
         };
     }, []);
 
@@ -73,7 +76,7 @@ export default function BottomNav() {
         { href: '/custom-cakes', label: 'Cakes', icon: CakeSlice },
         { href: '/cart', label: 'Cart', icon: ShoppingCart, isElevated: true },
         { href: '/other-treats', label: 'Treats', icon: FileText },
-        { href: '/profile', label: 'Profile', icon: User },
+        { href: '/profile', label: 'Profile', icon: User, hasBadge: true },
     ];
 
     return (
@@ -134,27 +137,30 @@ export default function BottomNav() {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="flex flex-col items-center gap-1 transition-colors relative"
+                                className="flex flex-col items-center gap-1 transition-colors"
                             >
-                                {isProfileItem && avatarUrl ? (
-                                    <div className={`w-6 h-6 rounded-full relative overflow-hidden ${isActive ? 'ring-2 ring-sai-pink' : ''}`}>
-                                        <Image
-                                            src={avatarUrl}
-                                            alt="Profile"
-                                            fill
-                                            className="object-cover"
+                                <div className="relative">
+                                    {isProfileItem && avatarUrl ? (
+                                        <div className={`w-6 h-6 rounded-full relative overflow-hidden ${isActive ? 'ring-2 ring-sai-pink' : ''}`}>
+                                            <Image
+                                                src={avatarUrl}
+                                                alt="Profile"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <Icon
+                                            className={`w-5 h-5 ${isActive ? 'text-sai-pink' : 'text-gray-400'}`}
+                                            strokeWidth={isActive ? 2.5 : 2}
                                         />
-                                    </div>
-                                ) : (
-                                    <Icon
-                                        className={`w-5 h-5 ${isActive ? 'text-sai-pink' : 'text-gray-400'}`}
-                                        strokeWidth={isActive ? 2.5 : 2}
-                                    />
-                                )}
+                                    )}
 
-                                {mounted && (item as any).hasBadge && unreadCount > 0 && (
-                                    <span className="absolute top-0 right-2 w-2.5 h-2.5 bg-sai-pink border-2 border-white rounded-full"></span>
-                                )}
+                                    {mounted && (item as any).hasBadge && unreadCount > 0 && (
+                                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-sai-pink border-2 border-white rounded-full shadow-sm"></span>
+                                    )}
+                                </div>
+
                                 <span className={`text-[10px] font-medium ${isActive ? 'text-sai-pink' : 'text-gray-500'}`}>
                                     {item.label}
                                 </span>
@@ -164,5 +170,6 @@ export default function BottomNav() {
                 </div>
             </div>
         </nav>
+
     );
 }

@@ -21,8 +21,8 @@ export default function CakeDetailContent({
     className = "",
     onClose
 }: CakeDetailContentProps) {
-    // State
-    const [selectedSize, setSelectedSize] = useState(CAKE_SIZES[1]); // 500g default
+    // state
+    const [selectedSize, setSelectedSize] = useState(CAKE_SIZES[1]);
     const [selectedBase, setSelectedBase] = useState(CAKE_BASES[0]);
     const [selectedFrosting, setSelectedFrosting] = useState(CAKE_FROSTINGS[0]);
     const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
@@ -30,7 +30,7 @@ export default function CakeDetailContent({
     const [designNotes, setDesignNotes] = useState('');
     const [quantity, setQuantity] = useState(1);
 
-    // Build WhatsApp message
+    // build whatsapp message
     const handleRequestQuote = () => {
         const dietaryLabels = selectedDietaryOptions
             .map(id => CAKE_DIETARY_OPTIONS.find(opt => opt.id === id)?.label)

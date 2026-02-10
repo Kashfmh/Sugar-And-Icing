@@ -11,16 +11,15 @@ export default function AuthSync() {
     const supabase = createClient()
 
     useEffect(() => {
-        // 1. Initial Cart Sync
+        // initial cart sync
         syncWithUser()
 
-        // Channel reference for cleanup
+        // channel reference for cleanup
         let realtimeChannel: any = null;
 
         const setupRealtime = async (user: any) => {
             if (!user?.id) return;
 
-            // Remove existing channel if any
             if (realtimeChannel) {
                 supabase.removeChannel(realtimeChannel);
             }
@@ -100,13 +99,13 @@ export default function AuthSync() {
                         await supabase.auth.signOut();
                         useCart.getState().clearCart();
                         router.replace('/');
-                        window.location.reload(); // Force reload to clear all states
+                        window.location.reload();
                     }
                 )
                 .subscribe();
         };
 
-        // 2. Listen for AUTH events
+        // listen for auth events
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 if (session?.user) {
@@ -122,16 +121,16 @@ export default function AuthSync() {
             }
         })
 
-        // Initial setup if already logged in
+        // initial setup if already logged in
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) setupRealtime(user);
         });
 
-        // 3. Global Focus Listener (Refetch on Tab Switch)
+        // global focus listener (refetch on tab switch)
         const handleFocus = () => {
-            // Force check cart
+            // force check cart
             syncWithUser();
-            // Force components to re-fetch
+            // force components to re-fetch
             window.dispatchEvent(new Event('profile-updated'));
             window.dispatchEvent(new Event('notifications-updated'));
         };

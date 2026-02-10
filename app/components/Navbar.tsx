@@ -16,8 +16,8 @@ import {
     MobileNavToggle,
 } from '@/components/ui/resizable-navbar';
 import { useCart } from '@/hooks/useCart';
+import InboxTrigger from './InboxTrigger';
 
-// --- Separate Component for Avatar to isolate re-renders ---
 function UserAvatar({ user, avatarUrl }: { user: any, avatarUrl: string | null }) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const firstName = user?.user_metadata?.first_name || 'U';
@@ -46,7 +46,7 @@ function UserAvatar({ user, avatarUrl }: { user: any, avatarUrl: string | null }
 
 export default function Navbar() {
     const supabase = createClient();
-    const pathname = usePathname(); // This triggers re-render only for active link styles, NOT unmount
+    const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +54,6 @@ export default function Navbar() {
     const [isMounted, setIsMounted] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
 
-    // --- Optimized Profile Fetching ---
     const fetchProfile = async (userId: string) => {
         try {
             const { data } = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
@@ -80,11 +79,9 @@ export default function Navbar() {
 
         initAuth();
 
-        // --- SINGLE Auth Listener (No Duplicates) ---
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             const currentUser = session?.user ?? null;
 
-            // Only update state if it ACTUALLY changed to avoid re-render loops
             setUser((prev: any) => {
                 if (prev?.id === currentUser?.id) return prev;
                 return currentUser;
@@ -98,13 +95,10 @@ export default function Navbar() {
             }
         });
 
-        // Scroll Listener
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener('scroll', handleScroll);
 
-        // Custom Event for Profile Updates (from AuthSync or Profile Page)
         const handleProfileUpdate = async () => {
-            // Fetch fresh user to avoid stale closure issues
             const { data: { user: currentUser } } = await supabase.auth.getUser();
             if (currentUser?.id) fetchProfile(currentUser.id);
         };
@@ -115,7 +109,7 @@ export default function Navbar() {
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('profile-updated', handleProfileUpdate);
         };
-    }, []); // Empty dependency array = Runs ONCE on mount. PERFECT.
+    }, []);
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -129,7 +123,6 @@ export default function Navbar() {
         { name: 'Contact', link: '/contact' },
     ];
 
-    // Safe Check: Don't render complex interactive UI during SSR to prevent hydration mismatch
     if (!isMounted) return <div className="h-20" />;
 
     return (
@@ -162,7 +155,7 @@ export default function Navbar() {
                 <NavItems items={navItems} pathname={pathname} />
 
                 <div className="relative z-20 flex items-center gap-4">
-                    <InboxTriggerButton pathname={pathname} userId={user?.id} />
+                    <InboxTrigger userId={user?.id} />
                     <CartTriggerButton pathname={pathname} />
 
                     {authLoading ? (
@@ -186,7 +179,7 @@ export default function Navbar() {
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <InboxTriggerButton pathname={pathname} userId={user?.id} />
+                        <InboxTrigger userId={user?.id} />
                         <CartTriggerButton pathname={pathname} />
                         <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
                     </div>
@@ -236,11 +229,8 @@ export default function Navbar() {
     );
 }
 
-// --- Isolated Components to prevent full Navbar re-renders ---
-
 function CartTriggerButton({ pathname }: { pathname?: string }) {
     const { totalItems, isLoading } = useCart();
-    // Only access store state here, so only this button re-renders on cart change
     const count = totalItems();
 
     return (
@@ -249,50 +239,6 @@ function CartTriggerButton({ pathname }: { pathname?: string }) {
             {!isLoading && count > 0 && (
                 <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
                     {count}
-                </span>
-            )}
-        </Link>
-    );
-}
-
-function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: string }) {
-    const supabase = createClient();
-    const [unreadCount, setUnreadCount] = useState(0);
-
-    useEffect(() => {
-        if (!userId) {
-            setUnreadCount(0);
-            return;
-        }
-
-        const fetchUnread = async () => {
-            const { count } = await supabase
-                .from('notifications')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', userId)
-                .eq('read', false);
-            setUnreadCount(count || 0);
-        };
-
-        fetchUnread();
-
-        fetchUnread();
-
-        // Listen for global updates from AuthSync
-        const handleNotificationUpdate = () => fetchUnread();
-        window.addEventListener('notifications-updated', handleNotificationUpdate);
-
-        return () => {
-            window.removeEventListener('notifications-updated', handleNotificationUpdate);
-        };
-    }, [userId]);
-
-    return (
-        <Link href="/inbox" className="relative group p-1" aria-label="Open inbox">
-            <Bell className={`w-5 h-5 transition-colors ${pathname === '/inbox' ? 'text-sai-pink' : 'text-sai-charcoal group-hover:text-sai-pink'}`} strokeWidth={2} />
-            {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-sai-pink text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
-                    {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
             )}
         </Link>

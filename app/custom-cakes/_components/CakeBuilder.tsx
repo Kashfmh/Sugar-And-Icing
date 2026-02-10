@@ -13,7 +13,7 @@ export default function CakeBuilder() {
     const [selectedFrosting, setSelectedFrosting] = useState(CAKE_FROSTINGS[0]);
     const [designNotes, setDesignNotes] = useState('');
 
-    // Pricing Logic
+    // pricing logic
     const isPremiumSelection = selectedBase.type === 'premium' || selectedFrosting.type === 'premium';
     const estimatedPrice = isPremiumSelection ? selectedSize.premiumPrice : selectedSize.basicPrice;
 

@@ -572,10 +572,6 @@
     margin: 0 !important;
 }
 
-/* REMOVED: Override Select component styling for country code dropdown */
-/* Now using shadcn DropdownMenu component instead */
-
-/* Mobile: Make dropdown and input scale proportionally */
 @media (max-width: 768px) {
     .auth-page .phone-input-group {
         gap: 6px;

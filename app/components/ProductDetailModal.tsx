@@ -126,8 +126,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             setLoading(false);
         }
     }
-    // ... rest of the component remains the same ...
-    // combine main image with gallery
+
     const images = [
         product?.image_url,
         ...(product?.gallery_images || [])
@@ -143,22 +142,16 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
         if (product.product_type === 'cupcake_basic' || product.product_type === 'cupcake_premium') {
             let baseTotal = 0;
-            // Quantity 1 = 6 pieces = base_price
-            // Quantity 2 = 12 pieces = premium_price (discounted)
             if (quantity === 1) {
                 baseTotal = product.base_price;
             } else if (quantity === 2 && product.premium_price) {
                 baseTotal = product.premium_price;
             } else if (quantity > 2 && product.premium_price) {
-                // For quantities > 2, calculate proportionally from the 12pc price
                 baseTotal = product.premium_price * (quantity / 2);
             } else {
                 baseTotal = product.base_price * quantity;
             }
 
-            // Calculate dietary cost (per piece logic: 6 pieces per quantity unit)
-            // Quantity 1 (6pcs) -> 6 * dietaryMod
-            // Quantity 2 (12pcs) -> 12 * dietaryMod
             const totalPieces = quantity * 6;
             let dietaryCost = 0;
 
@@ -173,12 +166,12 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
         }
 
         if (product.product_type === 'brownie') {
-            let pricePerPiece = product.base_price; // RM 3
+            let pricePerPiece = product.base_price;
 
             if (selectedTopping && selectedTopping !== 'None') {
                 const toppingOption = toppingOptions.find(opt => opt.option_name === selectedTopping);
                 if (toppingOption?.is_premium) {
-                    pricePerPiece = product.premium_price || product.base_price; // fallback to base if premium is null
+                    pricePerPiece = product.premium_price || product.base_price;
                 }
             }
 
@@ -194,7 +187,6 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             return pricePerPiece * quantity;
         }
 
-        // other products
         let basePrice = product.base_price;
 
         const selectedBaseOption = baseOptions.find(opt => opt.option_name === selectedBase);
@@ -683,8 +675,8 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                 isAdded
                                             }
                                             className={`w-full py-3 text-lg rounded-xl font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-lg ${(baseOptions.length > 0 && !selectedBase) || (frostingOptions.length > 0 && !selectedFrosting)
-                                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
-                                                    : isAdded ? 'bg-green-600 text-white shadow-green-200' : 'bg-sai-pink text-white shadow-pink-200'
+                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                                                : isAdded ? 'bg-green-600 text-white shadow-green-200' : 'bg-sai-pink text-white shadow-pink-200'
                                                 }`}
                                         >
                                             {isAdded ? (

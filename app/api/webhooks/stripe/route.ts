@@ -93,7 +93,7 @@ export async function POST(req: Request) {
             }
 
             if (userId) {
-                // Create Notification
+                // create notification
                 const { error: notifError } = await supabase.from('notifications').insert({
                     user_id: userId,
                     title: 'Order Confirmed! 🎉',

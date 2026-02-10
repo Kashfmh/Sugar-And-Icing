@@ -10,7 +10,7 @@ BEGIN
     INSERT INTO public.notifications (user_id, title, message, type, read)
     VALUES (
       NEW.user_id,
-      'Order Update 🧁',
+      'Order Update',  -- Removed Emoji
       'Your order #' || SUBSTRING(NEW.id::text, 1, 8) || ' is now ' || NEW.status || '.',
       'order',
       false
@@ -28,4 +28,4 @@ AFTER UPDATE ON public.orders
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_order_status_change();
 
-SELECT 'Trigger created successfully. Try changing an order status!' as result;
+SELECT 'Trigger updated successfully. Emojis removed.' as result;

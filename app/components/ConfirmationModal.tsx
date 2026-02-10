@@ -26,7 +26,6 @@ export default function ConfirmationModal({
     variant = 'danger'
 }: ConfirmationModalProps) {
 
-    // Lock body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';

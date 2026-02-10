@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google'; // Adjust fonts if needed
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
@@ -23,20 +23,20 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="bg-sai-white min-h-screen flex flex-col font-sans antialiased text-sai-charcoal selection:bg-sai-pink/20">
 
-        {/* 1. Global Auth Sync (Runs once, no visual rendering) */}
+        {/* global auth sync */}
         <AuthSync />
 
-        {/* 2. Navbar: NO key={pathname} here! It must persist. */}
+        {/* navbar */}
         <div className="relative z-50">
           <Navbar />
         </div>
 
-        {/* 3. Main Content */}
+        {/* main content */}
         <main className="flex-grow relative">
           {children}
         </main>
 
-        {/* 4. Footer & Bottom Nav */}
+        {/* footer & bottom nav */}
         <Footer />
         <BottomNav />
 
