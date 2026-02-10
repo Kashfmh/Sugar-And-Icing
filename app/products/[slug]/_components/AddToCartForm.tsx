@@ -44,25 +44,25 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             if (!profile) return;
 
             // extract base flavor (not frosting-related)
-            const baseFlavor = profile.favorite_flavors?.find(f => 
-                !f.includes('Frosting') && 
-                !f.includes('Ganache') && 
-                !f.includes('Rasmalai') && 
+            const baseFlavor = profile.favorite_flavors?.find(f =>
+                !f.includes('Frosting') &&
+                !f.includes('Ganache') &&
+                !f.includes('Rasmalai') &&
                 !f.includes('Gulab') &&
                 !f.includes('Belgian')
             );
 
             // extract frosting preference
-            const frostingPref = profile.favorite_flavors?.find(f => 
-                f.includes('Frosting') || 
-                f.includes('Ganache') || 
-                f.includes('Rasmalai') || 
+            const frostingPref = profile.favorite_flavors?.find(f =>
+                f.includes('Frosting') ||
+                f.includes('Ganache') ||
+                f.includes('Rasmalai') ||
                 f.includes('Gulab') ||
                 f.includes('Belgian')
             );
 
             // helper: find best match between saved flavor and available options (stricter)
-            const findBestFlavorMatch = (options: any[], favorites: string[]) => {
+            const findBestFlavorMatch = (options: ProductOption[], favorites: string[]) => {
                 if (!favorites.length || !options.length) return null;
 
                 for (const fav of favorites) {
