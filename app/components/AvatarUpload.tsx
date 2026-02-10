@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Camera, Upload, X, Loader2, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { uploadAvatar, deleteAvatar } from '@/lib/services/profileService';
@@ -30,6 +30,11 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdate 
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cropperRef = useRef<ReactCropperElement>(null);
+
+    // Sync preview when currentAvatarUrl changes (e.g., from another device)
+    useEffect(() => {
+        setPreview(currentAvatarUrl);
+    }, [currentAvatarUrl]);
 
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [showCropModal, setShowCropModal] = useState(false);

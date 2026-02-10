@@ -57,7 +57,7 @@ export default function Navbar() {
     const fetchProfile = async (userId: string) => {
         try {
             const { data } = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
-            if (data?.avatar_url) {
+            if (data) {
                 setAvatarUrl(data.avatar_url);
             }
         } catch (error) {

@@ -101,7 +101,7 @@ export function useProfile() {
                 )
                 .subscribe();
 
-            const handleProfileUpdate = () => initializeProfile();
+            const handleProfileUpdate = () => initializeProfile(true);
             window.addEventListener('profile-updated', handleProfileUpdate);
 
             return () => {
@@ -150,18 +150,22 @@ export function useProfile() {
         }
     }, [status]);
 
-    async function initializeProfile() {
+    async function initializeProfile(background = false) {
         try {
-            setIsCheckingAuth(true);
+            if (!background) setIsCheckingAuth(true);
+
             const session = await validateSession();
 
             if (!session) {
-                router.push('/login');
+                // Only redirect if NOT a background refresh
+                // (Though if session is gone, we should handle it)
+                if (!background) router.push('/login');
                 return;
             }
 
-            setIsCheckingAuth(false);
-            setIsLoadingData(true);
+            if (!background) setIsCheckingAuth(false);
+            if (!background) setIsLoadingData(true);
+
             setUser(session.user);
 
             const [profileData, addressesData, occasionsData] = await loadAllUserData(session.user.id);
@@ -172,8 +176,10 @@ export function useProfile() {
         } catch (error: any) {
             console.error('Profile initialization failed:', error);
         } finally {
-            setIsCheckingAuth(false);
-            setIsLoadingData(false);
+            if (!background) {
+                setIsCheckingAuth(false);
+                setIsLoadingData(false);
+            }
         }
     }
 
