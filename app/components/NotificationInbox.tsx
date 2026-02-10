@@ -24,6 +24,13 @@ export default function NotificationInbox({ userId }: NotificationInboxProps) {
 
     useEffect(() => {
         fetchNotifications();
+
+        const handleUpdate = () => fetchNotifications();
+        window.addEventListener('notifications-updated', handleUpdate);
+
+        return () => {
+            window.removeEventListener('notifications-updated', handleUpdate);
+        };
     }, [userId]);
 
     async function fetchNotifications() {

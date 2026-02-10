@@ -102,9 +102,11 @@ export default function Navbar() {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener('scroll', handleScroll);
 
-        // Custom Event for Profile Updates (from Profile Page)
-        const handleProfileUpdate = () => {
-            if (user?.id) fetchProfile(user.id);
+        // Custom Event for Profile Updates (from AuthSync or Profile Page)
+        const handleProfileUpdate = async () => {
+            // Fetch fresh user to avoid stale closure issues
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            if (currentUser?.id) fetchProfile(currentUser.id);
         };
         window.addEventListener('profile-updated', handleProfileUpdate);
 
@@ -274,17 +276,14 @@ function InboxTriggerButton({ pathname, userId }: { pathname?: string, userId?: 
 
         fetchUnread();
 
-        const channel = supabase
-            .channel('public:notifications')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-                () => fetchUnread()
-            )
-            .subscribe();
+        fetchUnread();
+
+        // Listen for global updates from AuthSync
+        const handleNotificationUpdate = () => fetchUnread();
+        window.addEventListener('notifications-updated', handleNotificationUpdate);
 
         return () => {
-            supabase.removeChannel(channel);
+            window.removeEventListener('notifications-updated', handleNotificationUpdate);
         };
     }, [userId]);
 

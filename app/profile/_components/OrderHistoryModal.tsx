@@ -25,7 +25,7 @@ const TABS = [
     { id: 'to_pay', label: 'To Pay', status: 'pending_payment' },
     { id: 'preparing', label: 'Preparing', status: ['paid', 'processing'] },
     { id: 'ready', label: 'Ready to Pickup', status: 'shipped' },
-    { id: 'completed', label: 'Completed', status: 'delivered' },
+    { id: 'completed', label: 'Completed', status: ['delivered', 'completed'] },
     { id: 'cancelled', label: 'Cancelled', status: 'cancelled' },
 ];
 

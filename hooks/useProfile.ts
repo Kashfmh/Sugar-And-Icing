@@ -83,6 +83,8 @@ export function useProfile() {
             loadRecentlyViewed();
             loadOrders();
 
+            loadOrders();
+
             const channel = supabase
                 .channel('orders-channel')
                 .on(
@@ -94,14 +96,17 @@ export function useProfile() {
                         filter: `user_id=eq.${user.id}`
                     },
                     (payload) => {
-                        console.log('Real-time order update:', payload);
                         loadOrders();
                     }
                 )
                 .subscribe();
 
+            const handleProfileUpdate = () => initializeProfile();
+            window.addEventListener('profile-updated', handleProfileUpdate);
+
             return () => {
                 supabase.removeChannel(channel);
+                window.removeEventListener('profile-updated', handleProfileUpdate);
             };
         }
     }, [user?.id]);

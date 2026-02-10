@@ -198,7 +198,8 @@ export const useCart = create<CartState>()(
         const { data: cartItems, error } = await supabase
           .from('cart_items')
           .select('*, products(*)')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
 
         if (error) {
           console.error("Error fetching cart (sync):", error);
