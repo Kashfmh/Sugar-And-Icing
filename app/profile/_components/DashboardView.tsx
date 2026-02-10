@@ -5,6 +5,7 @@ import { UserProfile, SpecialOccasion } from '@/lib/services/authService';
 import { Order } from '@/types';
 import { RecentlyViewedItem, Tab } from '@/hooks/useProfile';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { useSearchParams } from 'next/navigation';
 import OrderHistoryModal from './OrderHistoryModal';
 
 interface DashboardViewProps {
@@ -22,12 +23,24 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 1024);
         checkMobile();
         window.addEventListener('resize', checkMobile);
+
+        // Check for deep link to open orders
+        if (searchParams.get('open') === 'orders' && window.innerWidth >= 1024) {
+            setIsHistoryModalOpen(true);
+            // Clear the query param so it doesn't reopen on refresh
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('open');
+            window.history.replaceState({}, '', newUrl.toString());
+        }
+
         return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+    }, [searchParams]);
     const latestOrder = orders.length > 0 ? orders[0] : null;
 
     const handleViewOrders = () => {

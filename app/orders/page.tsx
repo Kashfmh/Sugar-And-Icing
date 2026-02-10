@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useProfile } from '@/hooks/useProfile';
 import AuthSync from '@/app/components/AuthSync';
 import LoginRequired from './_components/LoginRequired';
@@ -10,6 +12,21 @@ import { Loader2 } from 'lucide-react';
 
 export default function OrdersPage() {
     const { user, orders, isLoadingData, isCheckingAuth } = useProfile();
+    const router = useRouter();
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) {
+                router.replace('/profile?tab=dashboard&open=orders');
+            }
+        };
+
+        // Check on mount
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [router]);
 
     if (isCheckingAuth || (isLoadingData && !user)) {
         return (

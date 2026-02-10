@@ -1,6 +1,7 @@
 'use client';
 
-import { useParams, notFound } from 'next/navigation';
+import { useEffect } from 'react';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { useProductDetails } from '@/hooks/useProductDetails';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -15,6 +16,22 @@ export default function ProductPage() {
     const slug = params.slug as string;
 
     const { product, options, reviews, loading } = useProductDetails(slug);
+    const router = useRouter();
+
+    useEffect(() => {
+        if (product && window.innerWidth >= 1024) {
+            router.replace(`/other-treats?product_id=${product.id}`);
+        }
+
+        const handleResize = () => {
+            if (product && window.innerWidth >= 1024) {
+                router.replace(`/other-treats?product_id=${product.id}`);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [product, router]);
 
     if (loading) {
         return (
