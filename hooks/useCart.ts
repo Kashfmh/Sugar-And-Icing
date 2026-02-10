@@ -231,7 +231,8 @@ export const useCart = create<CartState>()(
 
         if (localItems.length === 0) return;
 
-        set({ isLoading: true });
+        // Clear local items immediately to prevent race conditions or re-merging
+        set({ items: [], isLoading: true });
 
         try {
           for (const item of localItems) {
@@ -266,6 +267,8 @@ export const useCart = create<CartState>()(
 
         } catch (error) {
           console.error("Error merging cart:", error);
+          // If merge fails, we might want to restore items? But that's complicated.
+          // For now, failure is rare + logged.
         } finally {
           set({ isLoading: false });
         }

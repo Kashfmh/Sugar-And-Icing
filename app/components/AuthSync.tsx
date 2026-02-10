@@ -128,9 +128,6 @@ export default function AuthSync() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 if (session?.user) {
-                    if (event === 'SIGNED_IN') {
-                        await useCart.getState().mergeLocalCart(session.user.id);
-                    }
                     syncWithUser()
                     setupRealtime(session.user)
                 }
