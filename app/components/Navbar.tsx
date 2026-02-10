@@ -120,7 +120,6 @@ export default function Navbar() {
         { name: 'Home', link: '/' },
         { name: 'Custom Cakes', link: '/custom-cakes' },
         { name: 'Other Treats', link: '/other-treats' },
-        { name: 'Contact', link: '/contact' },
     ];
 
     if (!isMounted) return <div className="h-20" />;
