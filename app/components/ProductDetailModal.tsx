@@ -677,8 +677,14 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                                     }, 1000);
                                                 }
                                             }}
-                                            disabled={isAdded}
-                                            className={`w-full py-3 text-lg rounded-xl font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-lg ${isAdded ? 'bg-green-600 text-white shadow-green-200' : 'bg-sai-pink text-white shadow-pink-200'
+                                            disabled={
+                                                (baseOptions.length > 0 && !selectedBase) ||
+                                                (frostingOptions.length > 0 && !selectedFrosting) ||
+                                                isAdded
+                                            }
+                                            className={`w-full py-3 text-lg rounded-xl font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-lg ${(baseOptions.length > 0 && !selectedBase) || (frostingOptions.length > 0 && !selectedFrosting)
+                                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                                                    : isAdded ? 'bg-green-600 text-white shadow-green-200' : 'bg-sai-pink text-white shadow-pink-200'
                                                 }`}
                                         >
                                             {isAdded ? (
@@ -689,7 +695,9 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                             ) : (
                                                 <>
                                                     <ShoppingCart className="w-5 h-5 mr-1" />
-                                                    Add to Cart
+                                                    {(baseOptions.length > 0 && !selectedBase) || (frostingOptions.length > 0 && !selectedFrosting)
+                                                        ? 'Select Options First'
+                                                        : 'Add to Cart'}
                                                 </>
                                             )}
                                         </button>
