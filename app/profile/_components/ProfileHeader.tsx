@@ -42,8 +42,6 @@ export default function ProfileHeader({ user, profile, orders = [] }: ProfileHea
                         </div>
                     </div>
                 </div>
-
-                <div className="hidden lg:block w-80 h-56 bg-contain bg-right bg-no-repeat" style={{ backgroundImage: "url('/cupcake-illustration.png')" }}></div>
             </div>
         </div>
     );
