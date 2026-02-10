@@ -9,7 +9,7 @@ async function checkOccasionReminders(userId: string) {
     try {
         const { fetchUserOccasions } = await import('@/lib/services/authService');
         const { checkAndCreateOccasionReminders } = await import('@/lib/services/notificationService');
-        
+
         const occasions = await fetchUserOccasions(userId);
         if (occasions && occasions.length > 0) {
             await checkAndCreateOccasionReminders(userId, occasions);
@@ -128,6 +128,9 @@ export default function AuthSync() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 if (session?.user) {
+                    if (event === 'SIGNED_IN') {
+                        await useCart.getState().mergeLocalCart(session.user.id);
+                    }
                     syncWithUser()
                     setupRealtime(session.user)
                 }
@@ -152,7 +155,7 @@ export default function AuthSync() {
             // force components to re-fetch
             window.dispatchEvent(new Event('profile-updated'));
             window.dispatchEvent(new Event('notifications-updated'));
-            
+
             // check for occasion reminders on focus
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {

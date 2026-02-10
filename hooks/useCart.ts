@@ -20,6 +20,7 @@ interface CartState {
   totalItems: () => number;
   subtotal: () => number;
   syncWithUser: () => Promise<void>;
+  mergeLocalCart: (userId: string) => Promise<void>;
 }
 
 export const useCart = create<CartState>()(
@@ -221,6 +222,52 @@ export const useCart = create<CartState>()(
               metadata: row.metadata
             }));
           set({ items });
+        }
+      },
+
+      mergeLocalCart: async (userId: string) => {
+        const state = get();
+        const localItems = state.items;
+
+        if (localItems.length === 0) return;
+
+        set({ isLoading: true });
+
+        try {
+          for (const item of localItems) {
+            const { data: existingRows } = await supabase
+              .from('cart_items')
+              .select('*')
+              .eq('user_id', userId)
+              .eq('product_id', item.productId);
+
+            const match = existingRows?.find((row: any) =>
+              JSON.stringify(row.metadata) === JSON.stringify(item.metadata)
+            );
+
+            if (match) {
+              const newQty = match.quantity + item.quantity;
+              await supabase
+                .from('cart_items')
+                .update({ quantity: newQty })
+                .eq('id', match.id);
+            } else {
+              await supabase.from('cart_items').insert({
+                user_id: userId,
+                product_id: item.productId,
+                quantity: item.quantity,
+                unit_price: item.price,
+                metadata: item.metadata || {}
+              });
+            }
+          }
+
+          await get().syncWithUser();
+
+        } catch (error) {
+          console.error("Error merging cart:", error);
+        } finally {
+          set({ isLoading: false });
         }
       }
     }),

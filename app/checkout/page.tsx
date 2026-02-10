@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -15,7 +17,14 @@ import OrderSummary from './_components/OrderSummary';
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutPage() {
+    const router = useRouter();
     const checkout = useCheckout();
+
+    useEffect(() => {
+        if (!checkout.loading && !checkout.user) {
+            router.push('/login?redirect=/checkout');
+        }
+    }, [checkout.loading, checkout.user, router]);
 
 
     if (checkout.loading || !checkout.clientSecret) {

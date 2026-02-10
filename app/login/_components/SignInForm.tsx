@@ -1,7 +1,9 @@
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { signIn } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { useCart } from '@/hooks/useCart';
 
 interface SignInFormProps {
     setIsSignUp: (isSignUp: boolean) => void;
@@ -11,6 +13,8 @@ interface SignInFormProps {
 
 export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFormProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get('redirect');
     const [loading, setLoading] = useState(false);
     const [signInEmail, setSignInEmail] = useState('');
     const [signInPassword, setSignInPassword] = useState('');
@@ -40,7 +44,18 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                 return;
             }
 
-            window.location.href = '/profile';
+            // Get user and merge cart
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await useCart.getState().mergeLocalCart(user.id);
+            }
+
+            if (redirect) {
+                window.location.href = redirect;
+            } else {
+                window.location.href = '/profile';
+            }
         } catch (err: any) {
             setErrors({ general: 'Server error. Please try again later.' });
         } finally {

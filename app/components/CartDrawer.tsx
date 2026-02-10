@@ -1,10 +1,12 @@
 'use client';
 
 
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, Minus, Plus, Trash2, X } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -24,8 +26,19 @@ export default function CartDrawer() {
     const router = useRouter();
     const { items, isOpen, setIsOpen, removeItem, updateQuantity, subtotal, totalItems } = useCart();
     const [itemToRemove, setItemToRemove] = useState<string | null>(null);
+    const [isGuest, setIsGuest] = useState(true);
+    const supabase = createClient();
+
+    useEffect(() => {
+        if (isOpen) {
+            supabase.auth.getUser().then(({ data: { user } }) => {
+                setIsGuest(!user);
+            });
+        }
+    }, [isOpen]);
 
     const handleCheckout = () => {
+        if (isGuest) return;
         setIsOpen(false);
         router.push('/checkout');
     };
@@ -134,11 +147,21 @@ export default function CartDrawer() {
                             </div>
                             <Button
                                 onClick={handleCheckout}
-                                className="w-full h-12 rounded-full text-base font-semibold bg-sai-pink hover:bg-sai-pink/90 text-white shadow-lg shadow-pink-200"
+                                disabled={isGuest}
+                                className={`w-full h-12 rounded-full text-base font-semibold shadow-lg transition-all ${isGuest
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300 pointer-events-none'
+                                    : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-200'
+                                    }`}
                             >
-                                Checkout
+                                {isGuest ? 'Login to Checkout' : 'Checkout'}
                             </Button>
+                            {isGuest && (
+                                <p className="text-xs text-center text-gray-400 mt-2">
+                                    Please <span className="font-medium text-sai-pink cursor-pointer hover:underline" onClick={() => router.push('/login?redirect=/checkout')}>sign in</span> to complete your purchase.
+                                </p>
+                            )}
                         </div>
+                        <div className="h-40 md:hidden"></div>
                     </>
                 )}
             </SheetContent>

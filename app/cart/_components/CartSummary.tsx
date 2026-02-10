@@ -1,15 +1,26 @@
+import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import Counter from '@/app/components/Counter';
 
 export default function CartSummary() {
     const { subtotal } = useCart();
     const router = useRouter();
+    const [isGuest, setIsGuest] = useState(true);
+    const supabase = createClient();
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setIsGuest(!user);
+        });
+    }, []);
 
     const handleCheckout = () => {
+        if (isGuest) return;
         router.push('/checkout');
     };
 
@@ -54,11 +65,21 @@ export default function CartSummary() {
 
             <Button
                 onClick={handleCheckout}
-                className="w-full mt-8 bg-sai-pink hover:bg-sai-pink/90 text-white rounded-xl py-6 text-lg shadow-lg shadow-pink-100 transition-all active:scale-[0.98]"
+                disabled={isGuest}
+                className={`w-full mt-8 rounded-xl py-6 text-lg shadow-lg transition-all active:scale-[0.98] ${isGuest
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300 pointer-events-none'
+                        : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-100'
+                    }`}
             >
-                Checkout
-                <ArrowRight className="w-5 h-5 ml-2" />
+                {isGuest ? 'Login to Checkout' : 'Checkout'}
+                {!isGuest && <ArrowRight className="w-5 h-5 ml-2" />}
             </Button>
+
+            {isGuest && (
+                <p className="text-xs text-center text-gray-400 mt-2">
+                    Please <span className="font-medium text-sai-pink cursor-pointer hover:underline" onClick={() => router.push('/login?redirect=/checkout')}>sign in</span> to complete your purchase.
+                </p>
+            )}
 
             <p className="mt-4 text-xs text-center text-gray-400">
                 Secure checkout with DuitNow QR

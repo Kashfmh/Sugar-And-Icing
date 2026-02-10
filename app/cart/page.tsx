@@ -18,7 +18,7 @@ export default function CartPage() {
     }
 
     return (
-        <main className="min-h-screen bg-gray-50 py-8 md:pt-28 px-4 sm:px-6 lg:px-8">
+        <main className="min-h-screen bg-gray-50 py-8 md:pt-28 px-4 sm:px-6 lg:px-8 pb-32 md:pb-8">
             <div className="max-w-7xl mx-auto">
                 <h1 className="text-3xl font-serif font-bold text-sai-charcoal mb-8">
                     Your Cart ({totalItems()} items)

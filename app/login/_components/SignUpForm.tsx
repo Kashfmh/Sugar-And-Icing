@@ -2,6 +2,8 @@ import { Eye, EyeOff, Check, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { signUp } from '@/lib/auth';
 import confetti from 'canvas-confetti';
+import { createClient } from '@/lib/supabase/client';
+import { useCart } from '@/hooks/useCart';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -86,6 +88,13 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
             if (!result.success) {
                 setErrors({ general: result.error || 'Failed to sign up' });
                 return;
+            }
+
+            // Get user and merge cart
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await useCart.getState().mergeLocalCart(user.id);
             }
 
             onSuccess(signUpEmail);
