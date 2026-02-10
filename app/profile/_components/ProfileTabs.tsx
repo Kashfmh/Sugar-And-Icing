@@ -8,7 +8,7 @@ interface ProfileTabsProps {
 export default function ProfileTabs({ activeTab, setActiveTab }: ProfileTabsProps) {
     return (
         <div className="max-w-7xl mx-auto px-6 border-b border-gray-200">
-            <div className="flex gap-8">
+            <div className="flex gap-8 justify-center md:justify-start">
                 <button
                     onClick={() => setActiveTab('dashboard')}
                     className={`pb-4 font-medium transition-colors relative ${activeTab === 'dashboard' ? 'text-sai-charcoal' : 'text-gray-500'}`}

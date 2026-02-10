@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Trash2, Calendar, Plus, Bell, Pencil } from 'lucide-react';
+import AlertModal from './AlertModal';
 
 interface SpecialOccasion {
     id: string;
@@ -30,6 +31,40 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
         type: 'Birthday',
         reminder_enabled: true
     });
+
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'error' | 'success' | 'confirm' | 'delete';
+        onConfirm?: () => void;
+        confirmText?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
+        setAlertConfig({
+            isOpen: true,
+            title,
+            message,
+            type
+        });
+    };
+
+    const showConfirm = (title: string, message: string, onConfirm: () => void, type: 'confirm' | 'delete' = 'confirm') => {
+        setAlertConfig({
+            isOpen: true,
+            title,
+            message,
+            type,
+            onConfirm,
+            confirmText: type === 'delete' ? 'Delete' : 'Confirm'
+        });
+    };
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -70,7 +105,7 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
             onUpdate();
         } catch (error) {
             console.error('Error saving occasion:', error);
-            alert('Failed to save occasion');
+            showAlert('Error', 'Failed to save occasion');
         } finally {
             setLoading(false);
         }
@@ -91,20 +126,26 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
     }
 
     async function handleDelete(id: string) {
-        if (!confirm('Are you sure you want to delete this occasion?')) return;
+        showConfirm(
+            'Delete Occasion?',
+            'Are you sure you want to delete this occasion? This action cannot be undone.',
+            async () => {
+                try {
+                    const { error } = await supabase
+                        .from('special_occasions')
+                        .delete()
+                        .eq('id', id);
 
-        try {
-            const { error } = await supabase
-                .from('special_occasions')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            onUpdate();
-        } catch (error) {
-            console.error('Error deleting occasion:', error);
-            alert('Failed to delete occasion');
-        }
+                    if (error) throw error;
+                    onUpdate();
+                    showAlert('Success', 'Occasion deleted successfully.', 'success');
+                } catch (error) {
+                    console.error('Error deleting occasion:', error);
+                    showAlert('Error', 'Failed to delete occasion.', 'error');
+                }
+            },
+            'delete'
+        );
     }
 
     return (
@@ -129,42 +170,42 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                 </button>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3">
                 {occasions.map((occ) => (
                     <div
                         key={occ.id}
-                        className="p-4 rounded-xl border border-gray-200 bg-white hover:border-sai-pink/30 flex justify-between items-center transition-all"
+                        className="p-3 rounded-xl border border-gray-200 bg-white hover:border-sai-pink/30 flex justify-between items-center transition-all gap-3"
                     >
-                        <div className="flex gap-3 items-center">
-                            <div className="p-2 rounded-lg bg-pink-50 text-sai-pink">
-                                <Calendar className="w-5 h-5" />
+                        <div className="flex gap-3 items-center flex-1 min-w-0">
+                            <div className="p-2 rounded-lg bg-pink-50 text-sai-pink shrink-0">
+                                <Calendar className="w-4 h-4" />
                             </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sai-charcoal">{occ.name}</span>
-                                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-[10px] uppercase font-bold text-gray-500">
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-semibold text-sai-charcoal text-sm truncate">{occ.name}</span>
+                                    <span className="px-1.5 py-0.5 rounded-md bg-gray-100 text-[10px] uppercase font-bold text-gray-500 whitespace-nowrap shrink-0">
                                         {occ.type}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-xs text-gray-600 mt-0.5 truncate">
                                     {new Date(occ.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 shrink-0">
                             {occ.reminder_enabled && (
-                                <Bell className="w-4 h-4 text-sai-pink/60" />
+                                <Bell className="w-3.5 h-3.5 text-sai-pink/60 mr-1" />
                             )}
                             <button
                                 onClick={() => handleEdit(occ)}
-                                className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+                                className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
                             >
                                 <Pencil className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => handleDelete(occ.id)}
-                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
@@ -262,6 +303,16 @@ export default function OccasionsManager({ occasions, onUpdate, userId }: Occasi
                     </form>
                 </div>
             )}
+
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={alertConfig.onConfirm}
+                confirmText={alertConfig.confirmText}
+            />
         </div>
     );
 }

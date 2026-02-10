@@ -186,7 +186,7 @@ export default function EditProfileView({
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Flavor (Choose One)</label>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap">
                             {[
                                 { label: 'Vanilla', value: 'Vanilla' },
                                 { label: 'Chocolate', value: 'Chocolate' },
@@ -197,9 +197,9 @@ export default function EditProfileView({
                             ].map((flavor) => {
                                 const isSelected = formData.favorite_flavors[0] === flavor.value;
                                 return (
-                                    <label key={flavor.value} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${isSelected
-                                        ? 'bg-sai-pink text-white border-sai-pink'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:border-sai-pink/50'
+                                    <label key={flavor.value} className={`px-3 py-2 md:px-4 md:py-2 rounded-xl md:rounded-full border cursor-pointer transition-all text-center text-xs md:text-sm font-medium flex items-center justify-center ${isSelected
+                                        ? 'bg-sai-pink text-white border-sai-pink shadow-md shadow-sai-pink/20'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-sai-pink/50 hover:bg-pink-50/30'
                                         }`}>
                                         <input
                                             type="checkbox"
@@ -223,20 +223,20 @@ export default function EditProfileView({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Frosting (Choose One)</label>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap">
                             {[
                                 { label: 'Vanilla Frosting', value: 'Vanilla Frosting' },
                                 { label: 'Chocolate Frosting', value: 'Chocolate Frosting' },
                                 { label: 'Whipped Ganache', value: 'Whipped Ganache' },
-                                { label: 'Belgian Chocolate (Prem)', value: 'Belgian Chocolate' },
-                                { label: 'Rasmalai Topping (Prem)', value: 'Rasmalai Topping' },
+                                { label: 'Belgian Choc (Prem)', value: 'Belgian Chocolate' },
+                                { label: 'Rasmalai (Prem)', value: 'Rasmalai Topping' },
                                 { label: 'Gulab Jamun (Prem)', value: 'Gulab Jamun Topping' }
                             ].map((frosting) => {
                                 const isSelected = formData.favorite_frosting === frosting.value;
                                 return (
-                                    <label key={frosting.value} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${isSelected
-                                        ? 'bg-indigo-500 text-white border-indigo-500'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-500/50'
+                                    <label key={frosting.value} className={`px-3 py-2 md:px-4 md:py-2 rounded-xl md:rounded-full border cursor-pointer transition-all text-center text-xs md:text-sm font-medium flex items-center justify-center ${isSelected
+                                        ? 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-500/50 hover:bg-indigo-50/30'
                                         }`}>
                                         <input
                                             type="checkbox"
@@ -260,11 +260,11 @@ export default function EditProfileView({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Dietary Restrictions</label>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap">
                             {['Eggless', 'Nutless', 'Vegan', 'Dairy-Free'].map((diet) => (
-                                <label key={diet} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${formData.dietary_restrictions.includes(diet)
-                                    ? 'bg-orange-500 text-white border-orange-500'
-                                    : 'bg-white text-gray-600 border-gray-200 hover:border-orange-500/50'
+                                <label key={diet} className={`px-3 py-2 md:px-4 md:py-2 rounded-xl md:rounded-full border cursor-pointer transition-all text-center text-xs md:text-sm font-medium flex items-center justify-center ${formData.dietary_restrictions.includes(diet)
+                                    ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-orange-500/50 hover:bg-orange-50/30'
                                     }`}>
                                     <input
                                         type="checkbox"

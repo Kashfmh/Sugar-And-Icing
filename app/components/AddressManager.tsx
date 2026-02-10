@@ -225,34 +225,34 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
                 </button>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3">
                 {addresses.map((addr) => (
                     <div
                         key={addr.id}
-                        className={`p-4 rounded-xl border transition-all ${addr.is_default
+                        className={`p-3 rounded-xl border transition-all ${addr.is_default
                             ? 'border-sai-pink bg-pink-50/30'
                             : 'border-gray-200 bg-white hover:border-sai-pink/30'
                             }`}
                     >
-                        <div className="flex justify-between items-start">
-                            <div className="flex gap-3 items-start">
-                                <div className={`p-2 rounded-lg ${addr.is_default ? 'bg-pink-100 text-sai-pink' : 'bg-gray-100 text-gray-500'}`}>
-                                    <MapPin className="w-5 h-5" />
+                        <div className="flex justify-between items-start gap-3">
+                            <div className="flex gap-3 items-start flex-1 min-w-0">
+                                <div className={`p-2 rounded-lg shrink-0 ${addr.is_default ? 'bg-pink-100 text-sai-pink' : 'bg-gray-100 text-gray-500'}`}>
+                                    <MapPin className="w-4 h-4" />
                                 </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-sai-charcoal">{addr.label}</span>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-semibold text-sai-charcoal text-sm truncate">{addr.label}</span>
                                         {addr.is_default && (
-                                            <span className="text-[10px] uppercase font-bold text-sai-pink bg-pink-100 px-2 py-0.5 rounded-full">
+                                            <span className="text-[10px] uppercase font-bold text-sai-pink bg-pink-100 px-1.5 py-0.5 rounded-md whitespace-nowrap">
                                                 Default
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    <p className="text-sm text-gray-600 mt-0.5 line-clamp-2 leading-snug break-words">
                                         {addr.address_line1}
                                         {addr.address_line2 && <>, {addr.address_line2}</>}
                                     </p>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-xs text-gray-500 mt-0.5">
                                         {addr.postcode} {addr.city}, {addr.state}
                                     </p>
                                 </div>
