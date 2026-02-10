@@ -43,7 +43,7 @@ export default function ConfirmationModal({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -101,8 +101,8 @@ export default function ConfirmationModal({
                                         onClose();
                                     }}
                                     className={`flex-1 py-2.5 rounded-xl font-medium text-white shadow-lg transition-all active:scale-95 ${variant === 'danger'
-                                            ? 'bg-red-500 hover:bg-red-600 shadow-red-200'
-                                            : 'bg-blue-500 hover:bg-blue-600 shadow-blue-200'
+                                        ? 'bg-red-500 hover:bg-red-600 shadow-red-200'
+                                        : 'bg-blue-500 hover:bg-blue-600 shadow-blue-200'
                                         }`}
                                 >
                                     {confirmLabel}

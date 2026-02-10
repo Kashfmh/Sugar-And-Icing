@@ -37,7 +37,8 @@ export default function AuthSync() {
         return () => {
             subscription.unsubscribe()
         }
-    }, [router, syncWithUser, supabase])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return null
 }
