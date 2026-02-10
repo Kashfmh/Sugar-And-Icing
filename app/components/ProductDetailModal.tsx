@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Star, ShoppingCart, ChevronDown, Check, Info } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchUserProfile } from '@/lib/services/authService';
 import AllergenBadge from './AllergenBadge';
 import { motion, AnimatePresence } from 'motion/react';
 import Counter from './Counter';
@@ -83,6 +84,9 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
                 if (!optionsError) {
                     setOptions((optionsData as unknown as ProductOption[]) || []);
+                    
+                    // apply user preferences after options load
+                    await applyUserPreferences(optionsData as unknown as ProductOption[]);
                 }
             }
 
@@ -124,6 +128,92 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             console.error('Error fetching product details:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function applyUserPreferences(loadedOptions: ProductOption[]) {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) return;
+
+            const profile = await fetchUserProfile(user.id);
+            if (!profile) return;
+
+            // get filtered options
+            const baseOptions = loadedOptions.filter(opt => opt.option_category === 'base');
+            const frostingOptions = loadedOptions.filter(opt => opt.option_category === 'frosting');
+            const dietaryOptions = loadedOptions.filter(opt => opt.option_category === 'dietary');
+
+            // extract base flavor (not frosting-related)
+            const baseFlavor = profile.favorite_flavors?.find(f => 
+                !f.includes('Frosting') && 
+                !f.includes('Ganache') && 
+                !f.includes('Rasmalai') && 
+                !f.includes('Gulab') &&
+                !f.includes('Belgian')
+            );
+
+            // extract frosting preference
+            const frostingPref = profile.favorite_flavors?.find(f => 
+                f.includes('Frosting') || 
+                f.includes('Ganache') || 
+                f.includes('Rasmalai') || 
+                f.includes('Gulab') ||
+                f.includes('Belgian')
+            );
+
+            // helper: find best match between saved flavor and available options (stricter)
+            const findBestFlavorMatch = (options: ProductOption[], favorites: string[]) => {
+                if (!favorites.length || !options.length) return null;
+
+                for (const fav of favorites) {
+                    const favLower = fav.toLowerCase();
+
+                    // exact match (after lowercase) - ONLY THIS FOR FROSTING
+                    const exact = options.find(opt => opt.option_name.toLowerCase() === favLower);
+                    if (exact) return exact;
+
+                    // for base flavors: word match - any word in the option name matches the favorite
+                    const wordMatch = options.find(opt => {
+                        const optWords = opt.option_name.toLowerCase().split(/[\s\-_]/);
+                        const favWords = favLower.split(/[\s\-_]/);
+                        return optWords.some(word => favWords.includes(word));
+                    });
+                    if (wordMatch) return wordMatch;
+                }
+
+                return null;
+            };
+
+            // auto-select dietary options based on saved preferences
+            if (profile.dietary_restrictions?.length > 0 && dietaryOptions.length > 0) {
+                const matches = dietaryOptions
+                    .filter(opt => profile.dietary_restrictions.includes(opt.option_name))
+                    .map(opt => opt.option_name);
+
+                if (matches.length > 0) {
+                    setSelectedDietaryOptions(matches);
+                }
+            }
+
+            // only auto-select base flavor if user has actually saved one
+            if (baseFlavor && baseOptions.length > 0) {
+                const match = findBestFlavorMatch(baseOptions, [baseFlavor]);
+                if (match) {
+                    setSelectedBase(match.option_name);
+                }
+            }
+
+            // only auto-select frosting if user has actually saved one
+            if (frostingPref && frostingOptions.length > 0) {
+                const match = findBestFlavorMatch(frostingOptions, [frostingPref]);
+                if (match) {
+                    setSelectedFrosting(match.option_name);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading user preferences:', error);
         }
     }
 

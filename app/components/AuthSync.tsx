@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCart } from '@/hooks/useCart'
 
+async function checkOccasionReminders(userId: string) {
+    try {
+        const { fetchUserOccasions } = await import('@/lib/services/authService');
+        const { checkAndCreateOccasionReminders } = await import('@/lib/services/notificationService');
+        
+        const occasions = await fetchUserOccasions(userId);
+        if (occasions && occasions.length > 0) {
+            await checkAndCreateOccasionReminders(userId, occasions);
+        }
+    } catch (error) {
+        console.error('Error checking occasion reminders:', error);
+    }
+}
+
 export default function AuthSync() {
     const router = useRouter()
     const { syncWithUser } = useCart()
@@ -19,6 +33,9 @@ export default function AuthSync() {
 
         const setupRealtime = async (user: any) => {
             if (!user?.id) return;
+
+            // check for occasion reminders when setting up
+            await checkOccasionReminders(user.id);
 
             if (realtimeChannel) {
                 supabase.removeChannel(realtimeChannel);
@@ -84,6 +101,8 @@ export default function AuthSync() {
                     },
                     () => {
                         window.dispatchEvent(new Event('profile-updated'));
+                        // check for occasion reminders when occasions change
+                        checkOccasionReminders(user.id);
                     }
                 )
                 .on(
@@ -127,12 +146,18 @@ export default function AuthSync() {
         });
 
         // global focus listener (refetch on tab switch)
-        const handleFocus = () => {
+        const handleFocus = async () => {
             // force check cart
             syncWithUser();
             // force components to re-fetch
             window.dispatchEvent(new Event('profile-updated'));
             window.dispatchEvent(new Event('notifications-updated'));
+            
+            // check for occasion reminders on focus
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await checkOccasionReminders(user.id);
+            }
         };
 
         window.addEventListener('focus', handleFocus);

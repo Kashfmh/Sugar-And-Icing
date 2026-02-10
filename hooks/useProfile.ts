@@ -21,6 +21,7 @@ export interface FormData {
     dob: string;
     preferred_contact_method: string;
     favorite_flavors: string[];
+    favorite_frosting: string;
     dietary_restrictions: string[];
     notification_preferences: {
         order_updates: boolean;
@@ -66,6 +67,7 @@ export function useProfile() {
         dob: '',
         preferred_contact_method: 'whatsapp',
         favorite_flavors: [],
+        favorite_frosting: '',
         dietary_restrictions: [],
         notification_preferences: {
             order_updates: true,
@@ -173,6 +175,12 @@ export function useProfile() {
             setProfile(profileData);
             setAddresses(addressesData);
             setOccasions(occasionsData);
+
+            // check for upcoming occasions and create reminders
+            if (occasionsData && occasionsData.length > 0 && session) {
+                const { checkAndCreateOccasionReminders } = await import('@/lib/services/notificationService');
+                await checkAndCreateOccasionReminders(session.user.id, occasionsData);
+            }
         } catch (error: any) {
             console.error('Profile initialization failed:', error);
         } finally {
@@ -213,6 +221,7 @@ export function useProfile() {
             dob: profileData.dob || '',
             preferred_contact_method: profileData.preferred_contact_method || 'whatsapp',
             favorite_flavors: profileData.favorite_flavors || [],
+            favorite_frosting: profileData.favorite_frosting || '',
             dietary_restrictions: profileData.dietary_restrictions || [],
             notification_preferences: profileData.notification_preferences || {
                 order_updates: true,

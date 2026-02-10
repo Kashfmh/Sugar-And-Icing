@@ -185,34 +185,83 @@ export default function EditProfileView({
 
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Flavors</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Flavor (Choose One)</label>
                         <div className="flex flex-wrap gap-3">
-                            {['Chocolate', 'Vanilla', 'Red Velvet', 'Matcha', 'Salted Caramel', 'Fruity', 'Coffee', 'Cheese'].map((flavor) => (
-                                <label key={flavor} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${formData.favorite_flavors.includes(flavor)
-                                    ? 'bg-sai-pink text-white border-sai-pink'
-                                    : 'bg-white text-gray-600 border-gray-200 hover:border-sai-pink/50'
-                                    }`}>
-                                    <input
-                                        type="checkbox"
-                                        className="hidden"
-                                        checked={formData.favorite_flavors.includes(flavor)}
-                                        onChange={(e) => {
-                                            const newFlavors = e.target.checked
-                                                ? [...formData.favorite_flavors, flavor]
-                                                : formData.favorite_flavors.filter(f => f !== flavor);
-                                            setFormData({ ...formData, favorite_flavors: newFlavors });
-                                        }}
-                                    />
-                                    {flavor}
-                                </label>
-                            ))}
+                            {[
+                                { label: 'Vanilla', value: 'Vanilla' },
+                                { label: 'Chocolate', value: 'Chocolate' },
+                                { label: 'Butterscotch', value: 'Butterscotch' },
+                                { label: 'Pineapple', value: 'Pineapple' },
+                                { label: 'Strawberry', value: 'Strawberry' },
+                                { label: 'Red Velvet (Prem)', value: 'Red Velvet' }
+                            ].map((flavor) => {
+                                const isSelected = formData.favorite_flavors[0] === flavor.value;
+                                return (
+                                    <label key={flavor.value} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${isSelected
+                                        ? 'bg-sai-pink text-white border-sai-pink'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-sai-pink/50'
+                                        }`}>
+                                        <input
+                                            type="checkbox"
+                                            name="favorite_flavor"
+                                            value={flavor.value}
+                                            checked={isSelected}
+                                            onChange={() => {
+                                                setFormData({
+                                                    ...formData,
+                                                    favorite_flavors: isSelected ? [] : [flavor.value]
+                                                });
+                                            }}
+                                            className="hidden"
+                                        />
+                                        {flavor.label}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Favorite Frosting (Choose One)</label>
+                        <div className="flex flex-wrap gap-3">
+                            {[
+                                { label: 'Vanilla Frosting', value: 'Vanilla Frosting' },
+                                { label: 'Chocolate Frosting', value: 'Chocolate Frosting' },
+                                { label: 'Whipped Ganache', value: 'Whipped Ganache' },
+                                { label: 'Belgian Chocolate (Prem)', value: 'Belgian Chocolate' },
+                                { label: 'Rasmalai Topping (Prem)', value: 'Rasmalai Topping' },
+                                { label: 'Gulab Jamun (Prem)', value: 'Gulab Jamun Topping' }
+                            ].map((frosting) => {
+                                const isSelected = formData.favorite_frosting === frosting.value;
+                                return (
+                                    <label key={frosting.value} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${isSelected
+                                        ? 'bg-indigo-500 text-white border-indigo-500'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-500/50'
+                                        }`}>
+                                        <input
+                                            type="checkbox"
+                                            name="favorite_frosting"
+                                            value={frosting.value}
+                                            checked={isSelected}
+                                            onChange={() => {
+                                                setFormData({
+                                                    ...formData,
+                                                    favorite_frosting: isSelected ? '' : frosting.value
+                                                });
+                                            }}
+                                            className="hidden"
+                                        />
+                                        {frosting.label}
+                                    </label>
+                                );
+                            })}
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Dietary Restrictions</label>
                         <div className="flex flex-wrap gap-3">
-                            {['Nut-Free', 'Gluten-Free', 'Egg-Free', 'Vegan', 'Halal', 'Less Sugar'].map((diet) => (
+                            {['Eggless', 'Nutless', 'Vegan', 'Dairy-Free'].map((diet) => (
                                 <label key={diet} className={`px-4 py-2 rounded-full border cursor-pointer transition-all ${formData.dietary_restrictions.includes(diet)
                                     ? 'bg-orange-500 text-white border-orange-500'
                                     : 'bg-white text-gray-600 border-gray-200 hover:border-orange-500/50'

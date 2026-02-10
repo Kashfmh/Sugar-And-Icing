@@ -11,6 +11,7 @@ export interface UserProfile {
     dob: string | null;
     preferred_contact_method: string | null;
     favorite_flavors: string[];
+    favorite_frosting: string | null;
     dietary_restrictions: string[];
     notification_preferences: {
         order_updates: boolean;
