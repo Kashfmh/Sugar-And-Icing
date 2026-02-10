@@ -131,7 +131,7 @@ export default function Navbar() {
     if (!isMounted) return <div className="h-20" />;
 
     return (
-        <AceternityNavbar className="top-2 text-sai-charcoal">
+        <AceternityNavbar className="top-2 text-sai-charcoal hidden lg:block">
             <NavBody>
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
                     {/* Logo Icon */}
