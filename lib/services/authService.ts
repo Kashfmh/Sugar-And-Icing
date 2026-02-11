@@ -37,6 +37,7 @@ export interface SpecialOccasion {
     date: string;
     type: string;
     reminder_enabled: boolean;
+    last_reminded_year?: number;
 }
 
 export async function validateSession() {

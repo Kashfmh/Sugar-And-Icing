@@ -74,14 +74,14 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
 
         switch (sortOption) {
             case 'oldest':
-                return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                return new Date(a.updated_at || a.created_at).getTime() - new Date(b.updated_at || b.created_at).getTime();
             case 'price_high':
                 return b.total_amount - a.total_amount;
             case 'price_low':
                 return a.total_amount - b.total_amount;
             case 'newest':
             default:
-                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
         }
     });
 

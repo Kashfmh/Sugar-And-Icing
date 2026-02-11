@@ -121,6 +121,7 @@ export function useProfile() {
                 .from('orders')
                 .select('*, order_items(*, products(name, image_url, gallery_images))', { count: 'exact' })
                 .eq('user_id', user.id)
+                .order('updated_at', { ascending: false, nullsFirst: false })
                 .order('created_at', { ascending: false });
 
             if (error) throw error;

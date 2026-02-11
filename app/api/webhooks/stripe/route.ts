@@ -56,7 +56,8 @@ export async function POST(req: Request) {
                 .from('orders')
                 .update({
                     status: 'paid',
-                    receipt_url: paymentIntent.charges?.data[0]?.receipt_url || null
+                    receipt_url: paymentIntent.charges?.data[0]?.receipt_url || null,
+                    updated_at: new Date().toISOString() // Bump order to top of list
                 })
                 .eq('id', orderId);
 

@@ -60,6 +60,7 @@ export interface Order {
     pickup_time: string | null;
     notes: string | null;
     created_at: string;
+    updated_at?: string;
     order_items?: OrderItem[];
     items_count?: number;
 }

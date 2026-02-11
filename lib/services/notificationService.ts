@@ -26,16 +26,23 @@ export async function checkAndCreateOccasionReminders(userId: string, occasions:
 
             // create notification if within 7 days
             if (daysUntil >= 0 && daysUntil <= 7) {
-                // check if notification already exists for this occasion today
-                const notificationKey = `occasion_${occasion.id}_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                
+
+                // CHECK 1: Has this occasion already been reminded this year?
+                if (occasion.last_reminded_year === today.getFullYear()) {
+                    continue;
+                }
+
+                // CHECK 2: (Legacy/Backup) check if notification already exists for this occasion today
+                // We keep this as a secondary check just in case, but the main driver is now the DB flag.
+                const notificationKey = `occasion_${occasion.id}_${today.getFullYear()}`;
+
                 const { data: existing } = await supabase
                     .from('notifications')
                     .select('id')
                     .eq('user_id', userId)
                     .eq('type', 'system')
                     .ilike('message', `%${occasion.name}%`)
-                    .gte('created_at', new Date(today).toISOString())
+                    .gte('created_at', new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString())
                     .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
 
                 // only create if notification doesn't already exist
@@ -68,6 +75,12 @@ export async function checkAndCreateOccasionReminders(userId: string, occasions:
                     if (error) {
                         console.error('Error creating occasion reminder notification:', error);
                     } else {
+                        // CRITICAL: Update the occasion to mark it as reminded for this year
+                        await supabase
+                            .from('special_occasions')
+                            .update({ last_reminded_year: today.getFullYear() })
+                            .eq('id', occasion.id);
+
                         // dispatch event to update notification UI
                         window.dispatchEvent(new Event('notifications-updated'));
                     }
