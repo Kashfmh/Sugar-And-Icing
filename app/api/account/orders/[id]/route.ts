@@ -3,9 +3,17 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
     try {
+        const params = await props.params;
+        const orderId = params.id;
+
+        // 2. validate order id
+        if (!orderId || orderId === 'undefined' || orderId === 'null') {
+            return NextResponse.json({ error: "Invalid Order ID" }, { status: 400 });
+        }
+
         const supabase = await createClient();
         const {
             deliveryType,
@@ -27,9 +35,9 @@ export async function PATCH(
                 // @ts-ignore
                 delivery_slot: deliverySlot,
                 // @ts-ignore
-                payment_method: paymentMethod || 'card' // Default to card for now if not specified
+                payment_method: paymentMethod || 'card'
             })
-            .eq('id', params.id);
+            .eq('id', orderId); // Use the validated orderId
 
         if (error) {
             console.error('Error updating order:', error);

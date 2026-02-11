@@ -13,8 +13,11 @@ export async function POST(req: Request) {
     // initialize server client
     const supabase = await createClient();
 
+    // --- FIX 1: Validate orderId is not the string "undefined" ---
+    const isValidOrderId = orderId && orderId !== 'undefined' && orderId !== 'null';
+
     // IF ORDER ID EXISTS: Fetch and Resume
-    if (orderId) {
+    if (isValidOrderId) {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .select('*, order_items(*)')
@@ -64,8 +67,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // collect ids
-    const potentialIds = items.map((item: any) => item.id.split('-')[0]);
+    // --- FIX 2: Sanitize Product IDs ---
+    // 1. Split the ID
+    // 2. Filter out "undefined", null, or empty strings to prevent UUID crash
+    const potentialIds = items
+      .map((item: any) => item.id.split('-')[0])
+      .filter((id: string) => id && id !== 'undefined' && id !== 'null');
 
     let products: any[] = [];
 

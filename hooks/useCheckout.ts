@@ -8,7 +8,12 @@ export function useCheckout() {
     const supabase = createClient();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const urlOrderId = searchParams.get('orderId');
+    let urlOrderId = searchParams.get('orderId');
+
+    // Force "undefined" string to be actual null
+    if (urlOrderId === 'undefined' || urlOrderId === 'null') {
+        urlOrderId = null;
+    }
 
     const { items, subtotal, clearCart } = useCart();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
