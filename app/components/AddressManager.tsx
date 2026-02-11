@@ -87,6 +87,13 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
             return;
         }
 
+        // Limit check
+        if (!editingId && addresses.length >= 5) {
+            showAlert('Limit Reached', 'You have reached the maximum of 5 saved addresses. Please delete one to add a new one.', 'error');
+            setLoading(false);
+            return;
+        }
+
         try {
             if (formData.is_default) {
                 await supabase
@@ -204,25 +211,37 @@ export default function AddressManager({ addresses, onUpdate, userId, initialIsA
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-sai-charcoal">Address Book</h3>
-                <button
-                    onClick={() => {
-                        setEditingId(null);
-                        setFormData({
-                            label: 'Home',
-                            address_line1: '',
-                            address_line2: '',
-                            city: FIXED_CITY,
-                            state: FIXED_STATE,
-                            postcode: '',
-                            is_default: false
-                        });
-                        setIsAdding(!isAdding);
-                    }}
-                    className="flex items-center gap-2 text-sm font-medium text-sai-pink hover:text-sai-pink/80"
-                >
-                    <Plus className="w-4 h-4" />
-                    Add New
-                </button>
+                <div className="flex items-center gap-4">
+                    {addresses.length >= 5 && !editingId && !isAdding && (
+                        <span className="text-xs text-red-500 font-medium bg-red-50 px-2 py-1 rounded-md">
+                            Limit Reached (5/5)
+                        </span>
+                    )}
+                    <button
+                        disabled={addresses.length >= 5 && !editingId && !isAdding}
+                        onClick={() => {
+                            if (addresses.length >= 5 && !editingId && !isAdding) return;
+                            setEditingId(null);
+                            setFormData({
+                                label: 'Home',
+                                address_line1: '',
+                                address_line2: '',
+                                city: FIXED_CITY,
+                                state: FIXED_STATE,
+                                postcode: '',
+                                is_default: false
+                            });
+                            setIsAdding(!isAdding);
+                        }}
+                        className={`flex items-center gap-2 text-sm font-medium transition-colors ${addresses.length >= 5 && !editingId && !isAdding
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-sai-pink hover:text-sai-pink/80'
+                            }`}
+                    >
+                        <Plus className="w-4 h-4" />
+                        Add New
+                    </button>
+                </div>
             </div>
 
             <div className="grid gap-3">

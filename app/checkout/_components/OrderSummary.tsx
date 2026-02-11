@@ -1,19 +1,30 @@
 import Image from 'next/image';
 import { Loader2, Lock } from 'lucide-react';
+import { isValidEmail, isValidPhone, isValidName } from '@/lib/validators';
 
 interface OrderSummaryProps {
     cartItems: any[];
     cartTotal: number;
     isProcessing: boolean;
+    contact: {
+        first_name: string;
+        last_name: string;
+        email: string;
+        phone: string;
+    };
 }
 
-export default function OrderSummary({ cartItems, cartTotal, isProcessing }: OrderSummaryProps) {
+export default function OrderSummary({ cartItems, cartTotal, isProcessing, contact, deliveryType, selectedAddress, deliveryDate, deliverySlot }: any) {
+    const isContactComplete = isValidName(contact.first_name) && isValidName(contact.last_name) && isValidEmail(contact.email) && isValidPhone(contact.phone);
+    // Delivery validation: if delivery, need address + date + slot
+    const isDeliveryValid = deliveryType === 'pickup' || (deliveryType === 'delivery' && selectedAddress && deliveryDate && deliverySlot);
+
     return (
         <div className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 sticky top-24">
             <h2 className="text-lg font-bold text-sai-charcoal mb-4">Order Summary</h2>
 
             <div className="space-y-4 mb-6">
-                {cartItems.map((item) => (
+                {cartItems.map((item: any) => (
                     <div key={item.id} className="flex gap-3">
                         <div className="relative w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-100 flex-shrink-0">
                             {item.image_url && <Image src={item.image_url} alt={item.name} fill className="object-cover" />}
@@ -36,11 +47,23 @@ export default function OrderSummary({ cartItems, cartTotal, isProcessing }: Ord
                 <button
                     type="submit"
                     form="checkout-form"
-                    disabled={isProcessing}
+                    disabled={isProcessing || !isContactComplete || !isDeliveryValid}
                     className="w-full bg-sai-pink text-white py-4 rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-sai-white hover:text-sai-pink hover:border-sai-pink border border-transparent hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {isProcessing ? <Loader2 className="animate-spin" /> : <><Lock className="w-4 h-4" /> Pay RM {cartTotal.toFixed(2)}</>}
                 </button>
+                {!isContactComplete && (
+                    <p className="text-xs text-red-500 text-center mt-2">
+                        Please fill in all contact details to proceed.
+                    </p>
+                )}
+                {isContactComplete && !isDeliveryValid && (
+                    <p className="text-xs text-red-500 text-center mt-2">
+                        {deliveryType === 'delivery' && !selectedAddress
+                            ? "Please select a delivery address."
+                            : "Please select a delivery date and time slot."}
+                    </p>
+                )}
             </div>
         </div>
     );

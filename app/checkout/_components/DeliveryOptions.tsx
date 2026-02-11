@@ -10,12 +10,17 @@ interface DeliveryOptionsProps {
     setSelectedAddress: (id: string) => void;
     userId: string;
     onRefresh: () => void;
+    deliveryDate: string;
+    setDeliveryDate: (date: string) => void;
+    deliverySlot: string;
+    setDeliverySlot: (slot: string) => void;
 }
 
 const ALLOWED_POSTCODES = ['50470'];
 
 export default function DeliveryOptions({
-    deliveryType, setDeliveryType, addresses, selectedAddress, setSelectedAddress, userId, onRefresh
+    deliveryType, setDeliveryType, addresses, selectedAddress, setSelectedAddress, userId, onRefresh,
+    deliveryDate, setDeliveryDate, deliverySlot, setDeliverySlot
 }: DeliveryOptionsProps) {
     const [showAddressManager, setShowAddressManager] = useState(false);
 
@@ -119,19 +124,60 @@ export default function DeliveryOptions({
                                             </div>
                                         );
                                     })}
-                                    <div
-                                        onClick={() => setShowAddressManager(true)}
-                                        className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-sai-pink hover:bg-pink-50/50 transition-all group min-h-[100px]"
-                                    >
-                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-sai-pink group-hover:text-white transition-colors text-gray-400">
-                                            <span className="text-xl leading-none mb-0.5">+</span>
+                                    {addresses.length < 5 ? (
+                                        <div
+                                            onClick={() => setShowAddressManager(true)}
+                                            className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-sai-pink hover:bg-pink-50/50 transition-all group min-h-[100px]"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-sai-pink group-hover:text-white transition-colors text-gray-400">
+                                                <span className="text-xl leading-none mb-0.5">+</span>
+                                            </div>
+                                            <span className="text-xs font-medium text-gray-500 group-hover:text-sai-pink">Add New Address</span>
                                         </div>
-                                        <span className="text-xs font-medium text-gray-500 group-hover:text-sai-pink">Add New Address</span>
-                                    </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-gray-100 bg-gray-50 min-h-[100px] opacity-70">
+                                            <span className="text-xs font-semibold text-gray-400">Address Limit Reached</span>
+                                            <span className="text-[10px] text-gray-400 mt-1 text-center">Delete an address to add a new one (Max 5)</span>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
                     )}
+
+                    <div className="border-t border-gray-100 pt-4 mt-2">
+                        <h3 className="text-sm font-bold text-gray-700 mb-3">Delivery Preferences</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">Preferred Date</label>
+                                <input
+                                    type="date"
+                                    value={deliveryDate}
+                                    onChange={(e) => setDeliveryDate(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink outline-none transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">Time Slot</label>
+                                <div className="relative">
+                                    <select
+                                        value={deliverySlot}
+                                        onChange={(e) => setDeliverySlot(e.target.value)}
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink outline-none appearance-none transition-all"
+                                    >
+                                        <option value="">Select a time slot</option>
+                                        <option value="10am-1pm">10:00 AM - 1:00 PM</option>
+                                        <option value="1pm-4pm">1:00 PM - 4:00 PM</option>
+                                        <option value="4pm-7pm">4:00 PM - 7:00 PM</option>
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 

@@ -33,7 +33,16 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
     const [sortOption, setSortOption] = useState('newest');
+    const ITEMS_PER_PAGE = 5;
+
+    // Reset page when filters change
+    if (activeTab !== 'all' || searchQuery || sortOption !== 'newest') {
+        // This causes infinite loop if we set state directly in render. 
+        // Better to use useEffect for resets or just slice based on current filtered list length.
+        // Actually, let's use useEffect to reset page.
+    }
 
     const filteredOrders = orders.filter(order => {
 
@@ -76,6 +85,20 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
         }
     });
 
+    // Pagination logic
+    const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+    const paginatedOrders = filteredOrders.slice(
+        (page - 1) * ITEMS_PER_PAGE,
+        page * ITEMS_PER_PAGE
+    );
+
+    // Reset page when filters change
+    const [prevFilterKey, setPrevFilterKey] = useState(`${activeTab}-${searchQuery}-${sortOption}`);
+    if (prevFilterKey !== `${activeTab}-${searchQuery}-${sortOption}`) {
+        setPage(1);
+        setPrevFilterKey(`${activeTab}-${searchQuery}-${sortOption}`);
+    }
+
     if (!isOpen) return null;
 
     return (
@@ -87,7 +110,7 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+                        className="fixed inset-0 h-screen w-screen bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
                     >
                         <motion.div
                             initial={{ scale: 0.98, opacity: 0 }}
@@ -175,8 +198,8 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-4">
-                                {filteredOrders.length > 0 ? (
-                                    filteredOrders.map(order => (
+                                {paginatedOrders.length > 0 ? (
+                                    paginatedOrders.map(order => (
                                         <HistoryOrderCard key={order.id} order={order} router={router} />
                                     ))
                                 ) : (
@@ -188,11 +211,43 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                                     </div>
                                 )}
                             </div>
+
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="bg-white border-t border-gray-100 p-4 flex justify-center gap-2">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setPage(p => Math.max(1, p - 1)); }}
+                                        disabled={page === 1}
+                                        className="px-3 py-1 rounded border disabled:opacity-50 hover:bg-gray-50 text-sm"
+                                    >
+                                        Prev
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={(e) => { e.stopPropagation(); setPage(p); }}
+                                            className={`px-3 py-1 rounded border min-w-[2rem] text-sm ${page === p ? 'bg-sai-pink text-white border-sai-pink' : 'hover:bg-gray-50'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setPage(p => Math.min(totalPages, p + 1)); }}
+                                        disabled={page === totalPages}
+                                        className="px-3 py-1 rounded border disabled:opacity-50 hover:bg-gray-50 text-sm"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
+
                         </motion.div>
                     </motion.div>
                 </>
-            )}
-        </AnimatePresence>
+            )
+            }
+        </AnimatePresence >
     );
 }
 
@@ -324,6 +379,14 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
 
                 {/* Actions Row */}
                 <div className="flex gap-3">
+                    {order.status === 'pending_payment' && (
+                        <button
+                            onClick={() => router.push(`/checkout?orderId=${order.id}`)}
+                            className="px-5 py-2.5 bg-white border border-sai-pink text-sai-pink text-sm font-medium rounded-xl hover:bg-pink-50 transition-colors shadow-sm"
+                        >
+                            Pay Now
+                        </button>
+                    )}
                     {order.status === 'delivered' && (
                         <button className="px-5 py-2.5 bg-sai-pink text-white text-sm font-medium rounded-xl shadow-lg shadow-pink-200 hover:bg-sai-pink/90 hover:shadow-xl hover:shadow-pink-200/50 transition-all">
                             Rate Order
@@ -337,13 +400,15 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
                         Contact Seller
                     </button>
 
-                    <button
-                        onClick={handleBuyAgain}
-                        disabled={isBuyingAgain}
-                        className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isBuyingAgain ? 'Adding...' : 'Buy Again'}
-                    </button>
+                    {['completed', 'cancelled'].includes(order.status) && (
+                        <button
+                            onClick={handleBuyAgain}
+                            disabled={isBuyingAgain}
+                            className="px-5 py-2.5 bg-white border border-gray-200 text-sai-charcoal text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isBuyingAgain ? 'Adding...' : 'Buy Again'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
@@ -360,8 +425,8 @@ function OrderItemRow({ item, getImageUrl, getItemName }: { item: any, getImageU
     // secondary fields - show in dropdown
     const secondaryKeys = ['dietary', 'dietary_options', 'design_notes', 'notes', 'message', 'special_instructions'];
 
-    const primaryEntries = Object.entries(metadata).filter(([key]) =>
-        primaryKeys.some(pk => key.toLowerCase().includes(pk.toLowerCase()))
+    const primaryEntries = Object.entries(metadata).filter(([key, val]) =>
+        primaryKeys.some(pk => key.toLowerCase().includes(pk.toLowerCase())) && val && String(val).trim() !== ''
     );
 
     const secondaryEntries = Object.entries(metadata).filter(([key]) =>

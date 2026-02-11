@@ -4,11 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
-    const { items, userId, userEmail } = await req.json();
-
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
-    }
+    const { items, userId, userEmail, orderId, deliveryType, addressSnapshot, deliveryDate, deliverySlot } = await req.json();
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 401 });
@@ -16,6 +12,57 @@ export async function POST(req: Request) {
 
     // initialize server client
     const supabase = await createClient();
+
+    // IF ORDER ID EXISTS: Fetch and Resume
+    if (orderId) {
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('*, order_items(*)')
+        .eq('id', orderId)
+        .eq('user_id', userId)
+        .single();
+
+      if (orderError || !order) {
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      }
+
+      // Check if already paid
+      if (order.status === 'paid' || order.status === 'succeeded') {
+        return NextResponse.json({ error: "Order already paid" }, { status: 400 });
+      }
+
+      // Create Payment Intent for existing order
+      // We use the total from the database, not the client
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(order.total_amount * 100),
+        currency: 'myr',
+        automatic_payment_methods: { enabled: true },
+        metadata: {
+          order_id: order.id,
+          user_id: userId,
+          user_email: userEmail || ""
+        },
+      });
+
+      // Update the order with intent ID
+      await supabase
+        .from('orders')
+        .update({
+          // @ts-ignore
+          stripe_payment_intent_id: paymentIntent.id
+        })
+        .eq('id', order.id);
+
+      return NextResponse.json({
+        clientSecret: paymentIntent.client_secret,
+        orderId: order.id
+      });
+    }
+
+    // IF NO ORDER ID: Create New (Existing Logic)
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    }
 
     // collect ids
     const potentialIds = items.map((item: any) => item.id.split('-')[0]);
@@ -84,10 +131,19 @@ export async function POST(req: Request) {
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert({
+        // @ts-ignore - Schema updated but types not yet generated
         user_id: userId,
         total_amount: serverTotal,
         status: 'pending_payment',
         receipt_url: null,
+        // @ts-ignore
+        delivery_type: deliveryType,
+        // @ts-ignore
+        delivery_address_snapshot: addressSnapshot || null,
+        // @ts-ignore
+        delivery_date: deliveryDate ? new Date(deliveryDate).toISOString() : null, // Ensure ISO string for timestamptz
+        // @ts-ignore
+        delivery_slot: deliverySlot || null
       })
       .select('id')
       .single();
@@ -97,12 +153,13 @@ export async function POST(req: Request) {
       throw new Error(`Failed to create order: ${orderError.message}`);
     }
 
-    const orderId = orderData.id;
+    const newOrderId = orderData.id;
+    if (!newOrderId) throw new Error("Database failed to return Order ID");
 
     // insert items
     const itemsToInsert = dbOrderItems.map(item => ({
       ...item,
-      order_id: orderId
+      order_id: newOrderId
     }));
 
     const { error: itemsError } = await supabase
@@ -120,7 +177,7 @@ export async function POST(req: Request) {
       currency: 'myr',
       automatic_payment_methods: { enabled: true },
       metadata: {
-        order_id: orderId,
+        order_id: newOrderId,
         user_id: userId,
         user_email: userEmail || ""
       },
@@ -128,7 +185,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
-      orderId: orderId
+      orderId: newOrderId
     });
 
   } catch (error: any) {
