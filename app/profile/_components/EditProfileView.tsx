@@ -67,7 +67,21 @@ export default function EditProfileView({
                 </div>
 
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                            <input
+                                type="text"
+                                value={formData.username || ''}
+                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-sai-pink focus:ring-2 focus:ring-sai-pink/20 transition-all outline-none"
+                                placeholder="Enter username"
+                                disabled={profile && profile.last_username_change && (Date.now() - new Date(profile.last_username_change).getTime()) < 14 * 24 * 60 * 60 * 1000}
+                            />
+                            {profile && profile.last_username_change && (Date.now() - new Date(profile.last_username_change).getTime()) < 14 * 24 * 60 * 60 * 1000 && (
+                                <p className="text-xs text-gray-400 mt-2">Username can only be changed once every 14 days.</p>
+                            )}
+                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                             <input

@@ -15,6 +15,7 @@ import { Order, Profile } from '@/types';
 export type Tab = 'dashboard' | 'edit-profile' | 'settings';
 
 export interface FormData {
+    username?: string;
     first_name: string;
     last_name: string;
     phone: string;
@@ -61,6 +62,7 @@ export function useProfile() {
     const [status, setStatus] = useState<Status | null>(null);
 
     const [formData, setFormData] = useState<FormData>({
+        username: '',
         first_name: '',
         last_name: '',
         phone: '',
@@ -218,6 +220,7 @@ export function useProfile() {
     function populateFormData(profileData: UserProfile | null) {
         const meta = user?.user_metadata || {};
         setFormData({
+            username: profileData?.username || meta.username || '',
             first_name: (profileData?.first_name && profileData.first_name.length > 0)
                 ? profileData.first_name
                 : (meta.first_name || meta.display_name || (user?.email?.split('@')[0] ?? '')),
