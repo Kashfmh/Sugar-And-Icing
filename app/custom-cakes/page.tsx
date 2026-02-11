@@ -70,7 +70,7 @@ export default function CustomCakesPage() {
     };
 
     return (
-        <main className="min-h-screen bg-sai-white relative">
+        <main className="min-h-screen bg-sai-white relative pb-24 md:pb-0">
             <header className="md:hidden sticky top-0 z-40 bg-sai-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-lg font-semibold text-sai-charcoal">Custom Cakes</h1>
