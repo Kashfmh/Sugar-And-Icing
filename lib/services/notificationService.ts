@@ -78,7 +78,7 @@ export async function checkAndCreateOccasionReminders(userId: string, occasions:
                         // CRITICAL: Update the occasion to mark it as reminded for this year
                         await supabase
                             .from('special_occasions')
-                            .update({ last_reminded_year: today.getFullYear() })
+                            .update({ last_reminded_year: today.getFullYear() } as any)
                             .eq('id', occasion.id);
 
                         // dispatch event to update notification UI
