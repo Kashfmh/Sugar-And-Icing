@@ -1,5 +1,8 @@
-'use client';
+"use client";
 
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import RateOrderModal from '@/app/components/RateOrderModal';
 import { useProfile } from '@/hooks/useProfile';
 import ProfileSkeleton from '@/app/components/ProfileSkeleton';
 import ProfileHeader from './_components/ProfileHeader';
@@ -32,6 +35,29 @@ export default function ProfilePage() {
         initializeProfile,
         router
     } = useProfile();
+
+    // Hooks that must run on every render (do not place after conditional returns)
+    const searchParams = useSearchParams();
+    const openRateId = searchParams?.get('openRate');
+    const [openRateOrder, setOpenRateOrder] = useState<any | null>(null);
+
+    useEffect(() => {
+        if (openRateId && orders && orders.length > 0) {
+            const found = orders.find(o => o.id === openRateId);
+            if (found) setOpenRateOrder(found);
+        }
+    }, [openRateId, orders]);
+
+    // Listen for global requests to open rate modal (from other components)
+    useEffect(() => {
+        const handler = (e: any) => {
+            const od = e?.detail;
+            if (od) setOpenRateOrder(od);
+        };
+
+        window.addEventListener('open-rate', handler as EventListener);
+        return () => window.removeEventListener('open-rate', handler as EventListener);
+    }, []);
 
     if (isCheckingAuth || isLoadingData) {
         return <ProfileSkeleton />;
@@ -82,6 +108,10 @@ export default function ProfilePage() {
                     <SettingsView handleSignOut={handleSignOut} />
                 )}
             </div>
+
+            {openRateOrder && (
+                <RateOrderModal isOpen={true} onClose={() => setOpenRateOrder(null)} order={openRateOrder} userId={user?.id} />
+            )}
         </div>
     );
 }

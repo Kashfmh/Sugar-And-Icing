@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Filter, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Order, OrderItem } from '@/types';
+import dynamic from 'next/dynamic';
+import RateOrderModal from '@/app/components/RateOrderModal';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { createClient } from '@/lib/supabase/client';
 import { useCart } from '@/hooks/useCart';
 
 
@@ -200,7 +203,7 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                             <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-4">
                                 {paginatedOrders.length > 0 ? (
                                     paginatedOrders.map(order => (
-                                        <HistoryOrderCard key={order.id} order={order} router={router} />
+                                        <HistoryOrderCard key={order.id} order={order} router={router} onOpenRate={() => { onClose(); window.dispatchEvent(new CustomEvent('open-rate', { detail: order })); }} />
                                     ))
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
@@ -211,6 +214,9 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                                     </div>
                                 )}
                             </div>
+
+                            {/* Rate Order Modal - mounted here so each order can open it */}
+                            {/* Modal will be controlled from HistoryOrderCard via custom event */}
 
 
                             {/* Pagination Controls */}
@@ -251,9 +257,68 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
     );
 }
 
-function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterInstance }) {
+function HistoryOrderCard({ order, router, onOpenRate }: { order: Order, router: AppRouterInstance, onOpenRate?: () => void }) {
     const { addItems } = useCart();
     const [isBuyingAgain, setIsBuyingAgain] = useState(false);
+    const [isRated, setIsRated] = useState(false);
+
+    const supabase = createClient();
+
+    const checkRated = async () => {
+        try {
+            const productIds = (order.order_items || []).map((it: any) => {
+                // Try multiple ways to extract product_id (matching RateOrderModal logic)
+                let productId: string | null = null;
+                if (Array.isArray(it.products) && it.products[0]?.id) {
+                    productId = it.products[0].id;
+                } else if (it.products?.id) {
+                    productId = it.products.id;
+                } else if (it.product_id) {
+                    productId = it.product_id;
+                } else if (it.productId) {
+                    productId = it.productId;
+                }
+                return productId;
+            }).filter((id): id is string => id !== null);
+
+            if (productIds.length === 0) {
+                setIsRated(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('product_id')
+                .in('product_id', productIds)
+                .eq('order_id', order.id);
+
+            if (error) {
+                console.error('Failed to fetch reviews for order:', error);
+                setIsRated(false);
+                return;
+            }
+
+            const reviewedProductIds = (data || []).map((r: any) => r.product_id);
+
+            const allReviewed = productIds.length > 0 && productIds.every(pid => reviewedProductIds.includes(pid));
+            setIsRated(allReviewed);
+        } catch (e) {
+            console.error(e);
+            setIsRated(false);
+        }
+    };
+
+    // check rated status on mount and when reviews update
+    useEffect(() => {
+        checkRated();
+        const handler = () => {
+            console.log('reviews-updated event received, rechecking rated status...');
+            checkRated();
+        };
+        window.addEventListener('reviews-updated', handler as EventListener);
+        return () => window.removeEventListener('reviews-updated', handler as EventListener);
+    }, [order.id, supabase]);
+    
 
     // set status and label color
 
@@ -387,10 +452,16 @@ function HistoryOrderCard({ order, router }: { order: Order, router: AppRouterIn
                             Pay Now
                         </button>
                     )}
-                    {order.status === 'delivered' && (
-                        <button className="px-5 py-2.5 bg-sai-pink text-white text-sm font-medium rounded-xl shadow-lg shadow-pink-200 hover:bg-sai-pink/90 hover:shadow-xl hover:shadow-pink-200/50 transition-all">
-                            Rate Order
-                        </button>
+                    {['delivered', 'completed'].includes(order.status) && (
+                        <>
+                            {!isRated ? (
+                                <button onClick={() => { if (onOpenRate) onOpenRate(); }} className="px-5 py-2.5 bg-white border border-sai-pink text-sai-pink text-sm font-medium rounded-xl hover:bg-pink-50 transition-colors shadow-sm">
+                                    Rate Order
+                                </button>
+                            ) : (
+                                <button disabled className="px-5 py-2.5 bg-white border border-gray-200 text-gray-400 text-sm font-medium rounded-xl shadow-sm cursor-not-allowed">Rated</button>
+                            )}
+                        </>
                     )}
 
                     <button
