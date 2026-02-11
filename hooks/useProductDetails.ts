@@ -18,6 +18,7 @@ export interface Review {
     created_at: string;
     profiles?: {
         first_name: string;
+        username?: string | null;
     } | null;
 }
 
@@ -71,7 +72,7 @@ export function useProductDetails(slug: string) {
                     comment,
                     created_at,
                     user_id,
-                    profiles(first_name)
+                    profiles(first_name, username)
                 `)
                 .eq('product_id', productId)
                 .order('created_at', { ascending: false })

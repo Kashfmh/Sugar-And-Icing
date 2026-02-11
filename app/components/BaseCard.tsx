@@ -54,11 +54,9 @@ export default function BaseCard({
                             {name}
                         </h3>
 
-                        {description && (
-                            <p className="text-xs text-gray-600 line-clamp-1 mb-2">
-                                {description}
-                            </p>
-                        )}
+                        <p className="text-xs text-gray-600 line-clamp-1 mb-2">
+                            {description || <span className="text-gray-400 italic">No description added</span>}
+                        </p>
 
                         {tags && tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-2">
@@ -108,23 +106,21 @@ export default function BaseCard({
                     {name}
                 </h3>
 
-                {description && (
-                    <p
-                        className="text-sm mb-4 line-clamp-2"
-                        style={{
-                            color: 'var(--color-sai-text-gray)',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            minHeight: '3em',
-                            maxHeight: '3em'
-                        }}
-                        title={description}
-                    >
-                        {description}
-                    </p>
-                )}
+                <p
+                    className="text-sm mb-4 line-clamp-2"
+                    style={{
+                        color: description ? 'var(--color-sai-text-gray)' : 'var(--color-gray-400)',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        minHeight: '3em',
+                        maxHeight: '3em'
+                    }}
+                    title={description || 'No description added'}
+                >
+                    {description || <span className="text-gray-400 italic">No description added</span>}
+                </p>
 
                 {tags && tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">

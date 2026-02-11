@@ -75,6 +75,9 @@
         flex-direction: column;
     }
 
+    /* Extra safe bottom padding so fixed-height mobile view doesn't cut off submit button */
+    .auth-page .form-container { box-sizing: border-box; padding-bottom: 56px; }
+
     .auth-page .form-container form {
         flex: 1;
         display: flex;
@@ -354,12 +357,18 @@
     padding: 0 40px;
 }
 
-/* Desktop Sign-Up Form - Remove max-height so h1 and button never scroll off */
+/* Desktop Sign-Up Form */
 @media (min-width: 769px) {
     .auth-page .sign-up-container form {
         max-height: 600px;
         overflow-y: auto;
         padding-right: 10px;
+        padding-left: 10px;
+        padding-top: 140px;
+        padding-bottom: 48px;
+        box-sizing: border-box;
+        scroll-padding-top: 48px;
+        scrollbar-gutter: stable;
     }
 
     /* Remove scrolling from container */
@@ -370,7 +379,7 @@
 
     /* Custom scrollbar for sign-up form */
     .auth-page .sign-up-container form::-webkit-scrollbar {
-        width: 6px;
+        width: 10px;
     }
 
     .auth-page .sign-up-container form::-webkit-scrollbar-track {

@@ -112,8 +112,8 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                             </div>
                             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                                 <span className="text-sm text-sai-charcoal/60">Phone</span>
-                                <span className={`font-semibold ${profile?.phone ? 'text-sai-charcoal' : 'text-gray-400 italic'}`}>
-                                    {profile?.phone || 'Not set'}
+                                <span className={`font-semibold ${(profile?.phone || user?.user_metadata?.phone) ? 'text-sai-charcoal' : 'text-gray-400 italic'}`}>
+                                    {profile?.phone || user?.user_metadata?.phone || 'Not set'}
                                 </span>
                             </div>
                         </div>

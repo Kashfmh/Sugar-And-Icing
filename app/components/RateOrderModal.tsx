@@ -36,6 +36,7 @@ interface SubmitResult {
 export default function RateOrderModal({ isOpen, onClose, order, userId }: RateOrderModalProps) {
     const [reviews, setReviews] = useState<Record<string, ProductReview>>({});
     const [submitting, setSubmitting] = useState(false);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
     const [preview, setPreview] = useState<{ type: 'image' | 'video'; url: string } | null>(null);
     const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
 
@@ -164,6 +165,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
     };
 
     const handleSubmit = async () => {
+        if (hasSubmitted) return;
         setSubmitting(true);
         try {
             // Validate all media
@@ -233,6 +235,25 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                     }
                 }
 
+                // Backend: avoid duplicate reviews for same product+order
+                const { data: existing, error: checkErr } = await (supabase as any)
+                    .from('reviews')
+                    .select('id')
+                    .eq('product_id', r.productId)
+                    .eq('order_id', order.id)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (checkErr) {
+                    console.warn('Failed to check existing reviews:', checkErr);
+                }
+
+                // If a review already exists for this order + product, skip inserting another
+                if (existing && (existing as any).id) {
+                    console.info('Skipping duplicate review insert for', r.productId, order.id);
+                    continue;
+                }
+
                 // Insert review record into `reviews` table - THIS should succeed
                 const reviewRecord = {
                     product_id: r.productId,
@@ -286,6 +307,9 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                 success: true,
                 message: `Successfully submitted ${successCount} product review${successCount !== 1 ? 's' : ''}. Thank you for your feedback!`
             });
+
+            // Lock further submissions immediately
+            setHasSubmitted(true);
 
             // Auto-close after 3 seconds
             setTimeout(() => {
@@ -426,25 +450,25 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
 
                                                         <div className="mt-3">
                                                             <div className="relative">
-                                                                <textarea maxLength={100} disabled={submitting} value={state?.text || ''} onChange={(e) => handleText(id, e.target.value)} placeholder="Share more thoughts on the product to help other buyers." className="mt-3 w-full min-h-[80px] max-h-36 p-3 bg-white border border-gray-100 rounded-lg text-sm text-gray-700 resize-y overflow-auto disabled:opacity-50" />
+                                                                <textarea maxLength={100} disabled={submitting || hasSubmitted} value={state?.text || ''} onChange={(e) => handleText(id, e.target.value)} placeholder="Share more thoughts on the product to help other buyers." className="mt-3 w-full min-h-[80px] max-h-36 p-3 bg-white border border-gray-100 rounded-lg text-sm text-gray-700 resize-y overflow-auto disabled:opacity-50" />
                                                                 <div className="absolute right-3 bottom-3 text-xs text-gray-400">{(state?.text || '').length}/100</div>
                                                             </div>
 
                                                             <div className="mt-3 grid grid-cols-2 gap-3">
-                                                                <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
+                                                                    <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
                                                                     <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full">
                                                                         <Camera className="w-6 h-6 text-gray-400" />
                                                                     </div>
                                                                     <div className="text-sm font-medium">Photo ({(state?.media?.images || []).length}/5)</div>
-                                                                    <input className="hidden" disabled={submitting} type="file" accept="image/*" multiple onChange={(e) => handleImageSelect(id, e.target.files)} />
+                                                                    <input className="hidden" disabled={submitting || hasSubmitted} type="file" accept="image/*" multiple onChange={(e) => handleImageSelect(id, e.target.files)} />
                                                                 </label>
 
-                                                                <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
+                                                                    <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
                                                                     <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full">
                                                                         <Video className="w-6 h-6 text-gray-400" />
                                                                     </div>
                                                                     <div className="text-sm font-medium">Video ({state?.media?.video ? 1 : 0}/1)</div>
-                                                                    <input className="hidden" disabled={submitting} type="file" accept="video/*" onChange={(e) => handleVideoSelect(id, e.target.files)} />
+                                                                    <input className="hidden" disabled={submitting || hasSubmitted} type="file" accept="video/*" onChange={(e) => handleVideoSelect(id, e.target.files)} />
                                                                 </label>
                                                             </div>
 
@@ -453,20 +477,20 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                                                 {(state?.media?.images || []).map((f: File, i: number) => (
                                                                     <div key={i} className="relative w-full h-20 bg-gray-100 rounded overflow-hidden cursor-pointer">
                                                                         <img src={(f as any).__preview} alt={`img-${i}`} className="w-full h-full object-cover" onClick={() => openPreview('image', (f as any).__preview)} />
-                                                                        <button disabled={submitting} onClick={(e) => { e.stopPropagation(); removeImage(id, i); }} className="absolute top-1 right-1 bg-black/50 rounded-full p-1 text-white disabled:opacity-50"><Trash2 className="w-3 h-3" /></button>
+                                                                        <button disabled={submitting || hasSubmitted} onClick={(e) => { e.stopPropagation(); removeImage(id, i); }} className="absolute top-1 right-1 bg-black/50 rounded-full p-1 text-white disabled:opacity-50"><Trash2 className="w-3 h-3" /></button>
                                                                     </div>
                                                                 ))}
 
                                                                 {state?.media?.video ? (
                                                                     <div className="relative w-full h-20 bg-black rounded overflow-hidden col-span-1 cursor-pointer">
                                                                         <video src={(state?.media?.video as any).__preview} className="w-full h-full object-cover" onClick={() => openPreview('video', (state?.media?.video as any).__preview)} />
-                                                                        <button disabled={submitting} onClick={(e) => { e.stopPropagation(); removeVideo(id); }} className="absolute top-1 right-1 bg-black/50 rounded-full p-1 text-white disabled:opacity-50"><Trash2 className="w-3 h-3" /></button>
+                                                                        <button disabled={submitting || hasSubmitted} onClick={(e) => { e.stopPropagation(); removeVideo(id); }} className="absolute top-1 right-1 bg-black/50 rounded-full p-1 text-white disabled:opacity-50"><Trash2 className="w-3 h-3" /></button>
                                                                     </div>
                                                                 ) : null}
                                                             </div>
 
                                                             <div className="flex items-center gap-2 mt-3">
-                                                                <input id={`anon-${id}`} disabled={submitting} type="checkbox" checked={state?.anonymous || false} onChange={(e) => handleAnon(id, e.target.checked)} />
+                                                                <input id={`anon-${id}`} disabled={submitting || hasSubmitted} type="checkbox" checked={state?.anonymous || false} onChange={(e) => handleAnon(id, e.target.checked)} />
                                                                 <label htmlFor={`anon-${id}`} className="text-sm text-gray-600">Review Anonymously</label>
                                                             </div>
                                                         </div>
@@ -493,8 +517,8 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                 )}
 
                                 <div className="mt-6 flex items-center justify-end gap-3">
-                                    <button disabled={submitting} onClick={onClose} className="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 disabled:opacity-50">Cancel</button>
-                                    <button disabled={submitting} onClick={handleSubmit} className="px-5 py-2.5 bg-sai-pink text-white rounded-xl shadow-lg disabled:opacity-70">{submitting ? 'Submitting...' : 'Submit Reviews'}</button>
+                                    <button disabled={submitting || hasSubmitted} onClick={onClose} className="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 disabled:opacity-50">Cancel</button>
+                                    <button disabled={submitting || hasSubmitted} onClick={handleSubmit} className="px-5 py-2.5 bg-sai-pink text-white rounded-xl shadow-lg disabled:opacity-70">{submitting ? 'Submitting...' : hasSubmitted ? 'Submitted' : 'Submit Reviews'}</button>
                                 </div>
                             </div>
                         </motion.div>

@@ -21,6 +21,7 @@ export interface Product {
 export interface Profile {
     id: string;
     first_name: string | null;
+    username?: string | null;
     last_name: string | null;
     email: string | null;
     phone: string | null;
@@ -74,6 +75,7 @@ export interface Review {
     created_at: string;
     profiles?: {
         first_name: string | null;
+        username?: string | null;
     };
 }
 

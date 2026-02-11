@@ -34,6 +34,7 @@ interface Review {
     created_at: string;
     profiles?: {
         first_name: string;
+        username?: string | null;
     } | null;
 }
 
@@ -48,6 +49,10 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     const [product, setProduct] = useState<Product | null>(null);
     const [options, setOptions] = useState<ProductOption[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const REVIEWS_PAGE_SIZE = 5;
+    const [reviewsPage, setReviewsPage] = useState(0);
+    const [reviewsHasMore, setReviewsHasMore] = useState(false);
+    const [expandedReviews, setExpandedReviews] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedBase, setSelectedBase] = useState<string>('');
@@ -57,6 +62,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     const [selectedTopping, setSelectedTopping] = useState<string>('None');
     const [selectedDietaryOptions, setSelectedDietaryOptions] = useState<string[]>([]);
     const [isAdded, setIsAdded] = useState(false);
+    const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
 
     useEffect(() => {
         if (isOpen && productId) {
@@ -90,26 +96,39 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 }
             }
 
-            const { data: reviewsData, error: reviewsError } = await supabase
-                .from('reviews')
-                .select(`
+            // Load first page of reviews (paginated)
+            try {
+                const start = 0;
+                const end = REVIEWS_PAGE_SIZE - 1;
+                const { data: reviewsData, error: reviewsError } = await supabase
+                    .from('reviews')
+                    .select(`
           id,
           rating,
           comment,
           created_at,
           user_id,
-          profiles(first_name)
+          images,
+          video_urls,
+          profiles:user_id (first_name, username)
         `)
-                .eq('product_id', productId)
-                .order('created_at', { ascending: false })
-                .limit(5);
+                    .eq('product_id', productId)
+                    .order('created_at', { ascending: false })
+                    .range(start, end);
 
-            if (!reviewsError) {
-                const transformedReviews = (reviewsData || []).map((review: any) => ({
-                    ...review,
-                    profiles: Array.isArray(review.profiles) ? review.profiles[0] : review.profiles
-                }));
-                setReviews(transformedReviews);
+                if (!reviewsError) {
+                    const transformedReviews = (reviewsData || []).map((review: any) => ({
+                        ...review,
+                        profiles: Array.isArray(review.profiles) ? review.profiles[0] : review.profiles
+                    }));
+                    setReviews(transformedReviews);
+                    setReviewsPage(1);
+                    setReviewsHasMore((reviewsData || []).length === REVIEWS_PAGE_SIZE);
+                } else {
+                    console.error('Failed to fetch reviews:', reviewsError);
+                }
+            } catch (e) {
+                console.error('Failed to fetch reviews:', e);
             }
 
             try {
@@ -216,6 +235,48 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             console.error('Error loading user preferences:', error);
         }
     }
+
+    const loadMoreReviews = async () => {
+        if (!product || !reviewsHasMore) return;
+        setLoadingMoreReviews(true);
+        try {
+            const start = reviewsPage * REVIEWS_PAGE_SIZE;
+            const end = start + REVIEWS_PAGE_SIZE - 1;
+            const { data, error } = await supabase
+                .from('reviews')
+                .select(`
+                    id,
+                    rating,
+                    comment,
+                    created_at,
+                    user_id,
+                    images,
+                    video_urls,
+                    profiles:user_id (first_name, username)
+                `)
+                .eq('product_id', product.id)
+                .order('created_at', { ascending: false })
+                .range(start, end);
+
+            if (error) {
+                console.error('Failed to load more reviews:', error);
+            } else if (data && data.length > 0) {
+                const transformed = (data || []).map((review: any) => ({
+                    ...review,
+                    profiles: Array.isArray(review.profiles) ? review.profiles[0] : review.profiles
+                }));
+                setReviews(prev => [...prev, ...transformed]);
+                setReviewsPage(prev => prev + 1);
+                setReviewsHasMore((data || []).length === REVIEWS_PAGE_SIZE);
+            } else {
+                setReviewsHasMore(false);
+            }
+        } catch (e) {
+            console.error('Error loading more reviews:', e);
+        } finally {
+            setLoadingMoreReviews(false);
+        }
+    };
 
     const images = [
         product?.image_url,
@@ -500,7 +561,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
                                             {/* Description */}
                                             <p className="text-sai-gray leading-relaxed text-sm">
-                                                {product?.description}
+                                                {product?.description || <span className="text-gray-400 italic">No description added</span>}
                                             </p>
                                         </div>
 
@@ -674,32 +735,61 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                         {reviews.length > 0 && (
                                             <div className="border-t border-gray-100 pt-6 pb-6">
                                                 <h3 className="font-semibold text-lg mb-4 text-sai-charcoal">Customer Reviews</h3>
-                                                <div className="space-y-4">
-                                                    {reviews.map((review) => (
-                                                        <div key={review.id} className="bg-gray-50 rounded-xl p-4">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <div className="flex">
-                                                                    {[...Array(5)].map((_, i) => (
-                                                                        <Star
-                                                                            key={i}
-                                                                            className={`w-3.5 h-3.5 ${i < review.rating
-                                                                                ? 'fill-yellow-400 text-yellow-400'
-                                                                                : 'text-gray-300'
-                                                                                }`}
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                                <span className="text-sm font-semibold text-gray-900">
-                                                                    {review.profiles?.first_name || 'Anonymous'}
-                                                                </span>
-                                                                <span className="text-xs text-gray-400">
-                                                                    • {new Date(review.created_at).toLocaleDateString()}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>
+                                                        <div className="space-y-4">
+                                                            {reviews.map((review) => {
+                                                                const isExpanded = !!expandedReviews[review.id];
+                                                                const shouldTruncate = (review.comment || '').length > 60;
+                                                                const previewText = shouldTruncate && !isExpanded ? (review.comment || '').slice(0, 60).trim() : (review.comment || '');
+                                                                return (
+                                                                    <div key={review.id} className="bg-gray-50 rounded-xl p-4 overflow-hidden">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <div className="flex">
+                                                                                {[...Array(5)].map((_, i) => (
+                                                                                    <Star
+                                                                                        key={i}
+                                                                                        className={`w-3.5 h-3.5 ${i < review.rating
+                                                                                            ? 'fill-yellow-400 text-yellow-400'
+                                                                                            : 'text-gray-300'
+                                                                                            }`}
+                                                                                    />
+                                                                                ))}
+                                                                            </div>
+                                                                            <span className="text-sm font-semibold text-gray-900">
+                                                                                {review.profiles?.username || review.profiles?.first_name || 'Anonymous'}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-400">
+                                                                                • {new Date(review.created_at).toLocaleDateString()}
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words break-all">
+                                                                            {previewText}
+                                                                            {shouldTruncate && !isExpanded && '... '}
+                                                                            {shouldTruncate && (
+                                                                                <button
+                                                                                    onClick={(e) => { e.stopPropagation(); setExpandedReviews(prev => ({ ...prev, [review.id]: !prev[review.id] })); }}
+                                                                                    className="ml-1 text-sai-pink text-sm font-medium hover:underline"
+                                                                                >
+                                                                                    {isExpanded ? 'less' : 'more'}
+                                                                                </button>
+                                                                            )}
+                                                                        </p>
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
-                                                    ))}
-                                                </div>
+
+                                                        {reviewsHasMore && (
+                                                            <div className="flex justify-center mt-3">
+                                                                <button
+                                                                    onClick={loadMoreReviews}
+                                                                    disabled={loadingMoreReviews}
+                                                                    className="text-sm text-gray-400 inline-flex items-center gap-1"
+                                                                >
+                                                                    Load more reviews
+                                                                    <ChevronDown className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                             </div>
                                         )}
                                     </div>

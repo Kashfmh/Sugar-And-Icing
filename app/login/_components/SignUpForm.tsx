@@ -24,6 +24,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
     const [signUpPassword, setSignUpPassword] = useState('');
     const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('');
     const [signUpFirstName, setSignUpFirstName] = useState('');
+    const [signUpUsername, setSignUpUsername] = useState('');
     const [signUpPhone, setSignUpPhone] = useState('');
     const [countryCode, setCountryCode] = useState('+60');
     const [showSignUpPassword, setShowSignUpPassword] = useState(false);
@@ -73,6 +74,27 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
         else if (!/[0-9]/.test(signUpPassword)) newErrors.password = 'Password must contain at least one number';
 
         if (signUpPassword !== signUpConfirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+        
+        // Username validation (3-30 chars, letters/numbers, underscores and dots)
+        if (!signUpUsername.trim()) {
+            newErrors.username = 'Username is required';
+        } else {
+            const uname = signUpUsername.trim();
+
+            if (uname.length < 3) {
+                newErrors.username = 'Username must be at least 3 characters';
+            } else if (uname.length > 30) {
+                newErrors.username = 'Username must be at most 30 characters';
+            } else if (/\s/.test(uname)) {
+                newErrors.username = 'Username cannot contain spaces';
+            } else if (!/^[A-Za-z0-9._]+$/.test(uname)) {
+                newErrors.username = 'Username can only contain letters, numbers, dots (.) and underscores (_)';
+            } else if (/^[._]/.test(uname) || /[._]$/.test(uname)) {
+                newErrors.username = 'Username cannot start or end with a dot or underscore';
+            } else if (/([._])\1/.test(uname) || /[._]{2,}/.test(uname)) {
+                newErrors.username = 'Username cannot contain consecutive dots or underscores';
+            }
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -83,7 +105,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
 
         try {
             const fullPhone = countryCode + signUpPhone;
-            const result = await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone);
+            const result = await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone, signUpUsername.trim().toLowerCase());
 
             if (!result.success) {
                 setErrors({ general: result.error || 'Failed to sign up' });
@@ -111,6 +133,16 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
             <form onSubmit={handleSignUp}>
                 <h1>Create Account</h1>
                 <span className="auth-subtitle">Join us for sweet moments</span>
+
+                <input
+                    type="text"
+                    placeholder="Username (unique)"
+                    value={signUpUsername}
+                    onChange={(e) => setSignUpUsername(e.target.value)}
+                    required
+                    disabled={loading}
+                />
+                {errors.username && <div className="field-error">{errors.username}</div>}
 
                 <input
                     type="text"
@@ -212,7 +244,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
                     )}
                 </div>
                 {errors.password && <div className="field-error">{errors.password}</div>}
-
+                
                 {signUpPassword && (
                     <div className="password-strength-enhanced">
                         <div className="strength-bars">

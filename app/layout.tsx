@@ -5,6 +5,7 @@ import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import BottomNav from '@/app/components/BottomNav';
 import AuthSync from '@/app/components/AuthSync';
+import GlobalReviewsLauncher from '@/app/components/GlobalReviewsLauncher';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
@@ -35,6 +36,9 @@ export default function RootLayout({
         <main className="flex-grow relative">
           {children}
         </main>
+
+        {/* global reviews launcher listens for open-reviews events */}
+        <GlobalReviewsLauncher />
 
         {/* footer & bottom nav */}
         <Footer />

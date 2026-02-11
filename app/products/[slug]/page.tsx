@@ -77,7 +77,7 @@ export default function ProductPage() {
                     {/* customization form */}
                     <AddToCartForm product={product} options={options} />
 
-                    <ProductReviews reviews={reviews} />
+                    <ProductReviews reviews={reviews} product={product} />
                 </div>
             </div>
         </main>

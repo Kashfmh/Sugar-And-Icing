@@ -139,10 +139,11 @@ export function useProfile() {
     }
     // ... rest of the file stays the same
     useEffect(() => {
-        if (profile) {
-            populateFormData(profile);
+        // Populate form when either profile or auth user metadata becomes available.
+        if (profile || user) {
+            populateFormData(profile || null);
         }
-    }, [profile]);
+    }, [profile, user]);
 
     useEffect(() => {
         if (status) {
@@ -214,17 +215,20 @@ export function useProfile() {
         }
     }
 
-    function populateFormData(profileData: UserProfile) {
+    function populateFormData(profileData: UserProfile | null) {
+        const meta = user?.user_metadata || {};
         setFormData({
-            first_name: profileData.first_name || '',
-            last_name: profileData.last_name || '',
-            phone: profileData.phone || '',
-            dob: profileData.dob || '',
-            preferred_contact_method: profileData.preferred_contact_method || 'whatsapp',
-            favorite_flavors: profileData.favorite_flavors || [],
-            favorite_frosting: profileData.favorite_frosting || '',
-            dietary_restrictions: profileData.dietary_restrictions || [],
-            notification_preferences: profileData.notification_preferences || {
+            first_name: (profileData?.first_name && profileData.first_name.length > 0)
+                ? profileData.first_name
+                : (meta.first_name || meta.display_name || (user?.email?.split('@')[0] ?? '')),
+            last_name: profileData?.last_name || '',
+            phone: profileData?.phone || meta.phone || '',
+            dob: profileData?.dob || '',
+            preferred_contact_method: profileData?.preferred_contact_method || 'whatsapp',
+            favorite_flavors: profileData?.favorite_flavors || [],
+            favorite_frosting: profileData?.favorite_frosting || '',
+            dietary_restrictions: profileData?.dietary_restrictions || [],
+            notification_preferences: profileData?.notification_preferences || {
                 order_updates: true,
                 marketing: false,
                 reminders: true
