@@ -24,7 +24,7 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="auth-page">
+        <div className="auth-page pb-24 lg:pb-0">
             {signupSuccess && (
                 <AuthSuccess email={signupEmail} onClose={handleSuccessClose} />
             )}
