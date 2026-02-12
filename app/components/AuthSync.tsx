@@ -89,6 +89,7 @@ export default function AuthSync() {
                     },
                     () => {
                         window.dispatchEvent(new Event('notifications-updated'));
+                        syncWithUser();
                     }
                 )
                 .on(
