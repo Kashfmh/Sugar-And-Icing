@@ -15,9 +15,10 @@ export interface UserProfile extends Omit<ProfileRow, 'notification_preferences'
     };
     // Email is already in ProfileRow (verified by lint error)
 
-    // Explicitly define fields missing in generated types
+    // Explicitly define fields missing in generated types or for type safety
     username?: string | null;
     last_username_change?: string | null;
+    favorite_frosting?: string | null;
 }
 
 export interface Address extends AddressRow { }

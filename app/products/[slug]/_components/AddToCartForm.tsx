@@ -101,9 +101,10 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             }
 
             // auto-select dietary options
-            if (profile.dietary_restrictions?.length > 0 && dietaryOptions.length > 0) {
+            const userDietary = profile.dietary_restrictions;
+            if (userDietary && userDietary.length > 0 && dietaryOptions.length > 0) {
                 const matches = dietaryOptions
-                    .filter(opt => profile.dietary_restrictions.includes(opt.option_name))
+                    .filter(opt => userDietary.includes(opt.option_name))
                     .map(opt => opt.option_name);
 
                 if (matches.length > 0) {

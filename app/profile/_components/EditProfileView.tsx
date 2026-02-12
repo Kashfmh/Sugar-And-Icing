@@ -76,9 +76,9 @@ export default function EditProfileView({
                                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-sai-pink focus:ring-2 focus:ring-sai-pink/20 transition-all outline-none"
                                 placeholder="Enter username"
-                                disabled={profile && profile.last_username_change && (Date.now() - new Date(profile.last_username_change).getTime()) < 14 * 24 * 60 * 60 * 1000}
+                                disabled={profile?.last_username_change ? (Date.now() - new Date(profile.last_username_change).getTime()) < 14 * 24 * 60 * 60 * 1000 : false}
                             />
-                            {profile && profile.last_username_change && (Date.now() - new Date(profile.last_username_change).getTime()) < 14 * 24 * 60 * 60 * 1000 && (
+                            {profile?.last_username_change && (Date.now() - new Date(profile.last_username_change).getTime()) < 14 * 24 * 60 * 60 * 1000 && (
                                 <p className="text-xs text-gray-400 mt-2">Username can only be changed once every 14 days.</p>
                             )}
                         </div>
@@ -173,11 +173,19 @@ export default function EditProfileView({
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
-                <AddressManager addresses={addresses} onUpdate={initializeProfile} userId={user?.id || ''} />
+                <AddressManager
+                    addresses={addresses.map(a => ({ ...a, address_line2: a.address_line2 || undefined, is_default: !!a.is_default }))}
+                    onUpdate={initializeProfile}
+                    userId={user?.id || ''}
+                />
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 flex flex-col">
-                <OccasionsManager occasions={occasions} onUpdate={initializeProfile} userId={user?.id || ''} />
+                <OccasionsManager
+                    occasions={occasions.map(o => ({ ...o, type: o.type || 'Other', reminder_enabled: !!o.reminder_enabled }))}
+                    onUpdate={initializeProfile}
+                    userId={user?.id || ''}
+                />
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-200 lg:col-span-2">

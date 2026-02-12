@@ -90,7 +90,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
 
                 if (!optionsError) {
                     setOptions((optionsData as unknown as ProductOption[]) || []);
-                    
+
                     // apply user preferences after options load
                     await applyUserPreferences(optionsData as unknown as ProductOption[]);
                 }
@@ -153,7 +153,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
     async function applyUserPreferences(loadedOptions: ProductOption[]) {
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            
+
             if (!user) return;
 
             const profile = await fetchUserProfile(user.id);
@@ -165,19 +165,19 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             const dietaryOptions = loadedOptions.filter(opt => opt.option_category === 'dietary');
 
             // extract base flavor (not frosting-related)
-            const baseFlavor = profile.favorite_flavors?.find(f => 
-                !f.includes('Frosting') && 
-                !f.includes('Ganache') && 
-                !f.includes('Rasmalai') && 
+            const baseFlavor = profile.favorite_flavors?.find(f =>
+                !f.includes('Frosting') &&
+                !f.includes('Ganache') &&
+                !f.includes('Rasmalai') &&
                 !f.includes('Gulab') &&
                 !f.includes('Belgian')
             );
 
             // extract frosting preference
-            const frostingPref = profile.favorite_flavors?.find(f => 
-                f.includes('Frosting') || 
-                f.includes('Ganache') || 
-                f.includes('Rasmalai') || 
+            const frostingPref = profile.favorite_flavors?.find(f =>
+                f.includes('Frosting') ||
+                f.includes('Ganache') ||
+                f.includes('Rasmalai') ||
                 f.includes('Gulab') ||
                 f.includes('Belgian')
             );
@@ -206,9 +206,10 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             };
 
             // auto-select dietary options based on saved preferences
-            if (profile.dietary_restrictions?.length > 0 && dietaryOptions.length > 0) {
+            const userDietary = profile.dietary_restrictions;
+            if (userDietary && userDietary.length > 0 && dietaryOptions.length > 0) {
                 const matches = dietaryOptions
-                    .filter(opt => profile.dietary_restrictions.includes(opt.option_name))
+                    .filter(opt => userDietary.includes(opt.option_name))
                     .map(opt => opt.option_name);
 
                 if (matches.length > 0) {
@@ -735,61 +736,61 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                                         {reviews.length > 0 && (
                                             <div className="border-t border-gray-100 pt-6 pb-6">
                                                 <h3 className="font-semibold text-lg mb-4 text-sai-charcoal">Customer Reviews</h3>
-                                                        <div className="space-y-4">
-                                                            {reviews.map((review) => {
-                                                                const isExpanded = !!expandedReviews[review.id];
-                                                                const shouldTruncate = (review.comment || '').length > 60;
-                                                                const previewText = shouldTruncate && !isExpanded ? (review.comment || '').slice(0, 60).trim() : (review.comment || '');
-                                                                return (
-                                                                    <div key={review.id} className="bg-gray-50 rounded-xl p-4 overflow-hidden">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <div className="flex">
-                                                                                {[...Array(5)].map((_, i) => (
-                                                                                    <Star
-                                                                                        key={i}
-                                                                                        className={`w-3.5 h-3.5 ${i < review.rating
-                                                                                            ? 'fill-yellow-400 text-yellow-400'
-                                                                                            : 'text-gray-300'
-                                                                                            }`}
-                                                                                    />
-                                                                                ))}
-                                                                            </div>
-                                                                            <span className="text-sm font-semibold text-gray-900">
-                                                                                {review.profiles?.username || review.profiles?.first_name || 'Anonymous'}
-                                                                            </span>
-                                                                            <span className="text-xs text-gray-400">
-                                                                                • {new Date(review.created_at).toLocaleDateString()}
-                                                                            </span>
-                                                                        </div>
-                                                                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words break-all">
-                                                                            {previewText}
-                                                                            {shouldTruncate && !isExpanded && '... '}
-                                                                            {shouldTruncate && (
-                                                                                <button
-                                                                                    onClick={(e) => { e.stopPropagation(); setExpandedReviews(prev => ({ ...prev, [review.id]: !prev[review.id] })); }}
-                                                                                    className="ml-1 text-sai-pink text-sm font-medium hover:underline"
-                                                                                >
-                                                                                    {isExpanded ? 'less' : 'more'}
-                                                                                </button>
-                                                                            )}
-                                                                        </p>
+                                                <div className="space-y-4">
+                                                    {reviews.map((review) => {
+                                                        const isExpanded = !!expandedReviews[review.id];
+                                                        const shouldTruncate = (review.comment || '').length > 60;
+                                                        const previewText = shouldTruncate && !isExpanded ? (review.comment || '').slice(0, 60).trim() : (review.comment || '');
+                                                        return (
+                                                            <div key={review.id} className="bg-gray-50 rounded-xl p-4 overflow-hidden">
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    <div className="flex">
+                                                                        {[...Array(5)].map((_, i) => (
+                                                                            <Star
+                                                                                key={i}
+                                                                                className={`w-3.5 h-3.5 ${i < review.rating
+                                                                                    ? 'fill-yellow-400 text-yellow-400'
+                                                                                    : 'text-gray-300'
+                                                                                    }`}
+                                                                            />
+                                                                        ))}
                                                                     </div>
-                                                                );
-                                                            })}
-                                                        </div>
-
-                                                        {reviewsHasMore && (
-                                                            <div className="flex justify-center mt-3">
-                                                                <button
-                                                                    onClick={loadMoreReviews}
-                                                                    disabled={loadingMoreReviews}
-                                                                    className="text-sm text-gray-400 inline-flex items-center gap-1"
-                                                                >
-                                                                    Load more reviews
-                                                                    <ChevronDown className="w-4 h-4" />
-                                                                </button>
+                                                                    <span className="text-sm font-semibold text-gray-900">
+                                                                        {review.profiles?.username || review.profiles?.first_name || 'Anonymous'}
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-400">
+                                                                        • {new Date(review.created_at).toLocaleDateString()}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words break-all">
+                                                                    {previewText}
+                                                                    {shouldTruncate && !isExpanded && '... '}
+                                                                    {shouldTruncate && (
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); setExpandedReviews(prev => ({ ...prev, [review.id]: !prev[review.id] })); }}
+                                                                            className="ml-1 text-sai-pink text-sm font-medium hover:underline"
+                                                                        >
+                                                                            {isExpanded ? 'less' : 'more'}
+                                                                        </button>
+                                                                    )}
+                                                                </p>
                                                             </div>
-                                                        )}
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                {reviewsHasMore && (
+                                                    <div className="flex justify-center mt-3">
+                                                        <button
+                                                            onClick={loadMoreReviews}
+                                                            disabled={loadingMoreReviews}
+                                                            className="text-sm text-gray-400 inline-flex items-center gap-1"
+                                                        >
+                                                            Load more reviews
+                                                            <ChevronDown className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
