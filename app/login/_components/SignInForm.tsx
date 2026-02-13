@@ -122,11 +122,10 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                     Forgot password?
                 </a>
 
-                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
-
-                {errors.general && <div className="error-message">{errors.general}</div>}
-
-                {errors.general && <div className="error-message">{errors.general}</div>}
+                <TurnstileWidget
+                    onVerify={(token) => setTurnstileToken(token)}
+                    retry="never"
+                />
 
                 {errors.general && <div className="error-message">{errors.general}</div>}
 

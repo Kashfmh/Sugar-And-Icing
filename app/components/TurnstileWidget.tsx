@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 interface TurnstileWidgetProps {
     onVerify: (token: string) => void;
     theme?: 'light' | 'dark' | 'auto';
+    retry?: 'auto' | 'never';
 }
 
-export default function TurnstileWidget({ onVerify, theme = 'auto' }: TurnstileWidgetProps) {
+export default function TurnstileWidget({ onVerify, theme = 'auto', retry = 'never' }: TurnstileWidgetProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [scriptLoaded, setScriptLoaded] = useState(false);
 
@@ -32,6 +33,7 @@ export default function TurnstileWidget({ onVerify, theme = 'auto' }: TurnstileW
         const widgetId = window.turnstile.render(containerRef.current, {
             sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
             theme,
+            retry, // Tells Cloudflare not to loop if the invisible check fails
             callback: (token: string) => {
                 onVerify(token);
             },
@@ -42,7 +44,7 @@ export default function TurnstileWidget({ onVerify, theme = 'auto' }: TurnstileW
                 window.turnstile.remove(widgetId);
             }
         };
-    }, [scriptLoaded, onVerify, theme]);
+    }, [scriptLoaded, onVerify, theme, retry]);
 
     return <div ref={containerRef} className="my-4" />;
 }
@@ -56,6 +58,7 @@ declare global {
                 options: {
                     sitekey: string;
                     theme?: 'light' | 'dark' | 'auto';
+                    retry?: 'auto' | 'never';
                     callback?: (token: string) => void;
                 }
             ) => string;

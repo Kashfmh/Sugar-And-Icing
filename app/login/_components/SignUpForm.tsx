@@ -283,9 +283,11 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
                     </button>
                 </div>
                 {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
-                {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
 
-                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
+                <TurnstileWidget
+                    onVerify={(token) => setTurnstileToken(token)}
+                    retry="never"
+                />
 
                 {errors.general && <div className="error-message">{errors.general}</div>}
 
