@@ -57,7 +57,7 @@ export default function CakeDetailContent({
     };
 
     return (
-        <div className={`flex flex-col md:flex-row h-full ${className}`}>
+        <div className={`flex flex-col md:flex-row md:h-full ${className}`}>
             {/* Image Section (Left) */}
             <div className="w-full md:w-1/2 bg-gray-100 relative h-64 md:h-full flex-shrink-0">
                 {imageUrl ? (
@@ -75,7 +75,7 @@ export default function CakeDetailContent({
             </div>
 
             {/* Config Section (Right) */}
-            <div className="w-full md:w-1/2 flex flex-col h-full bg-white relative">
+            <div className="w-full md:w-1/2 flex flex-col md:h-full bg-white relative">
                 {/* Close Button (Desktop) */}
                 {onClose && (
                     <button
@@ -103,7 +103,7 @@ export default function CakeDetailContent({
                 </div>
 
                 {/* Scrollable Form */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <div className="md:flex-1 md:overflow-y-auto p-6 space-y-6 custom-scrollbar">
 
                     <h3 className="font-semibold text-lg text-sai-charcoal border-b border-gray-100 pb-2">Configure Your Cake</h3>
 
@@ -258,7 +258,7 @@ export default function CakeDetailContent({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-gray-100 bg-white flex-shrink-0">
+                <div className="p-6 border-t border-gray-100 bg-white flex-shrink-0 pb-32 md:pb-6">
                     <p className="text-xs text-gray-500 mb-3 text-center">
                         Pricing depends on design complexity. We'll confirm the final price on WhatsApp.
                     </p>

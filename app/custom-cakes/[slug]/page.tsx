@@ -75,7 +75,7 @@ export default function CustomCakeMobilePage() {
                 </Link>
             </div>
 
-            <div className="max-w-5xl mx-auto md:py-8 h-[calc(100vh-60px)]">
+            <div className="max-w-5xl mx-auto md:py-8 md:h-[calc(100vh-60px)]">
                 <CakeDetailContent
                     cakeName={product.name}
                     imageUrl={product.image_url || undefined}

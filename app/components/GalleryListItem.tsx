@@ -11,14 +11,19 @@ interface Props {
 
 export default function GalleryListItem({ name, description, image_url, onRequestQuote }: Props) {
     const footerContent = (
-        <button
-            onClick={onRequestQuote}
-            className="self-start px-3 py-1.5 rounded-full text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1"
-            style={{ backgroundColor: 'var(--color-sai-pink)' }}
-        >
-            <MessageCircle className="w-3 h-3" />
-            Quote
-        </button>
+        <div className="flex justify-end w-full">
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onRequestQuote();
+                }}
+                className="px-3 py-1.5 rounded-full text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1"
+                style={{ backgroundColor: 'var(--color-sai-pink)' }}
+            >
+                <MessageCircle className="w-3 h-3" />
+                Quote
+            </button>
+        </div>
     );
 
     return (
@@ -28,6 +33,7 @@ export default function GalleryListItem({ name, description, image_url, onReques
             image_url={image_url}
             footerContent={footerContent}
             displayMode="list"
+            onClick={onRequestQuote}
         />
     );
 }
