@@ -74,10 +74,10 @@ export default function ProductPage() {
                 <div className="space-y-4">
                     <ProductInfo product={product} />
 
+                    <ProductReviews reviews={reviews} product={product} />
+
                     {/* customization form */}
                     <AddToCartForm product={product} options={options} />
-
-                    <ProductReviews reviews={reviews} product={product} />
                 </div>
             </div>
         </main>

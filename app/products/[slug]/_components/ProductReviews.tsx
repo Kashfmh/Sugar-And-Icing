@@ -5,6 +5,7 @@ import { Star } from 'lucide-react';
 
 interface FullReview extends Review {
     is_anonymous?: boolean;
+    images?: string[];
 }
 
 import { Review } from '@/hooks/useProductDetails';
@@ -100,6 +101,16 @@ export default function ProductReviews({ reviews, product }: ProductReviewsProps
                                         </button>
                                     )}
                                 </p>
+                                {/* Review Images */}
+                                {review.images && review.images.length > 0 && (
+                                    <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
+                                        {review.images.map((img, idx) => (
+                                            <div key={idx} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200">
+                                                <img src={img} alt="Review" className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

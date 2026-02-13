@@ -360,7 +360,12 @@ function MobileOrderCard({ order }: { order: Order }) {
 
     const handleRateOrder = (e: React.MouseEvent) => {
         e.stopPropagation();
-        window.dispatchEvent(new CustomEvent('open-rate', { detail: order }));
+        // Mobile specific navigation
+        if (window.innerWidth < 1024) {
+            router.push(`/rate-order/${order.id}`);
+        } else {
+            window.dispatchEvent(new CustomEvent('open-rate', { detail: order }));
+        }
     };
 
     const handleContactSeller = (e: React.MouseEvent) => {
