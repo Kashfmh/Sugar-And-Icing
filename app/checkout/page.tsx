@@ -13,12 +13,15 @@ import ContactInfo from './_components/ContactInfo';
 import DeliveryOptions from './_components/DeliveryOptions';
 import PaymentForm from './_components/PaymentForm';
 import OrderSummary from './_components/OrderSummary';
+import TurnstileWidget from '@/app/components/TurnstileWidget';
+import { useState } from 'react';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const checkout = useCheckout();
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const checkout = useCheckout(turnstileToken);
 
     useEffect(() => {
         if (!checkout.loading && !checkout.user) {
@@ -69,6 +72,21 @@ export default function CheckoutPage() {
         );
     }
 
+    if (!turnstileToken) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-sai-white gap-6 p-4">
+                <div className="text-center">
+                    <h2 className="text-2xl font-serif font-bold text-sai-charcoal mb-2">Security Check</h2>
+                    <p className="text-gray-500">Please verify you are human to proceed to checkout.</p>
+                </div>
+                <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
+                </div>
+                <Link href="/other-treats" className="text-sai-pink hover:underline">Return to Menu</Link>
+            </div>
+        );
+    }
+
     return (
         <main className="min-h-screen bg-sai-white pb-12">
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 lg:hidden">
@@ -105,7 +123,7 @@ export default function CheckoutPage() {
 
                     <Elements stripe={stripePromise} options={{ clientSecret: checkout.clientSecret }}>
                         <PaymentForm
-                            clientSecret={checkout.clientSecret}
+                            clientSecret={checkout.clientSecret!}
                             orderId={checkout.orderId!}
                             contact={checkout.contact}
                             cartTotal={checkout.cartTotal}

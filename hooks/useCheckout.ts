@@ -4,7 +4,7 @@ import { fetchUserProfile } from '@/lib/services/authService';
 import { useCart } from '@/hooks/useCart';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export function useCheckout() {
+export function useCheckout(turnstileToken: string | null) {
     const supabase = createClient();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -83,6 +83,10 @@ export function useCheckout() {
 
             // If we have an order ID in URL, we MUST be in loading state until we fetch it
             if (urlOrderId) {
+                // Determine if we need to verify turnstile for fetching an existing order.
+                // Strictly speaking, we should, to prevent scraping.
+                if (!turnstileToken) return; // Wait for token
+
                 // If already initialized for THIS orderId, skip
                 if (initializedRef.current === true && existingOrder?.id === urlOrderId) {
                     return;
@@ -128,7 +132,8 @@ export function useCheckout() {
                         },
                         body: JSON.stringify({
                             userId: user.id,
-                            orderId: urlOrderId
+                            orderId: urlOrderId,
+                            turnstileToken // Add token
                         }),
                     });
 
@@ -151,6 +156,8 @@ export function useCheckout() {
 
             // Case 2: Creating New Order from Cart
             if (items.length > 0 && !urlOrderId) {
+                if (!turnstileToken) return; // Wait for token
+
                 if (initializedRef.current) return;
                 initializedRef.current = true;
                 setLoading(true);
@@ -168,7 +175,8 @@ export function useCheckout() {
                         body: JSON.stringify({
                             items,
                             userId: user.id,
-                            userEmail: user.email || null
+                            userEmail: user.email || null,
+                            turnstileToken // Add token
                         }),
                     });
 
@@ -203,7 +211,7 @@ export function useCheckout() {
         }
 
         initPayment();
-    }, [user, items, urlOrderId, clearCart, router, supabase]);
+    }, [user, items, urlOrderId, clearCart, router, supabase, turnstileToken]);
 
 
     // Reset initializedRef when orderId changes (e.g. navigation)

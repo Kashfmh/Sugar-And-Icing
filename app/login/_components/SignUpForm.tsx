@@ -10,6 +10,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import TurnstileWidget from '@/app/components/TurnstileWidget';
 
 interface SignUpFormProps {
     setIsSignUp: (isSignUp: boolean) => void;
@@ -29,6 +30,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
     const [countryCode, setCountryCode] = useState('+60');
     const [showSignUpPassword, setShowSignUpPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const calculatePasswordStrength = (password: string) => {
         if (!password) return { score: 0, level: 'empty', label: '', color: '#e5e7eb', bars: 0 };
@@ -74,7 +76,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
         else if (!/[0-9]/.test(signUpPassword)) newErrors.password = 'Password must contain at least one number';
 
         if (signUpPassword !== signUpConfirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-        
+
         // Username validation (3-30 chars, letters/numbers, underscores and dots)
         if (!signUpUsername.trim()) {
             newErrors.username = 'Username is required';
@@ -244,7 +246,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
                     )}
                 </div>
                 {errors.password && <div className="field-error">{errors.password}</div>}
-                
+
                 {signUpPassword && (
                     <div className="password-strength-enhanced">
                         <div className="strength-bars">
@@ -281,9 +283,13 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
                     </button>
                 </div>
                 {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
+                {errors.confirmPassword && <div className="field-error">{errors.confirmPassword}</div>}
+
+                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
+
                 {errors.general && <div className="error-message">{errors.general}</div>}
 
-                <button type="submit" disabled={loading}>
+                <button type="submit" disabled={loading || !turnstileToken}>
                     {loading ? 'Creating...' : 'Sign Up'}
                 </button>
 

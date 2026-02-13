@@ -23,6 +23,24 @@ export async function POST(request: NextRequest) {
     try {
         const { userId, confirmText } = await request.json();
 
+        // --- SECURITY FIX: Verify Identity ---
+        const authClient = await createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+        const authHeader = request.headers.get('Authorization');
+
+        if (authHeader) {
+            // If we have a token, verify it matches
+            const token = authHeader.replace('Bearer ', '');
+            const { data: { user }, error: userError } = await authClient.auth.getUser(token);
+
+            if (userError || !user || user.id !== userId) {
+                return NextResponse.json({ error: 'Unauthorized: Identity mismatch' }, { status: 401 });
+            }
+        } else {
+            // If no token (unlikely for a delete request from frontend), fail
+            return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
+        }
+        // -------------------------------------
+
         if (confirmText !== 'DELETE') {
             return NextResponse.json(
                 { error: 'Invalid confirmation' },

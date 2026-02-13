@@ -19,12 +19,13 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "@tabler/icons-react": "^3.36.1",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.2",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cropperjs": "^1.6.2",
     "embla-carousel-react": "^8.6.0",
-    "flag-icons": "^7.5.0",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",
     "motion": "^12.23.26",
@@ -34,7 +35,7 @@
     "react-dom": "19.2.3",
     "stripe": "^20.2.0",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7",
+    "zod": "^4.3.6",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

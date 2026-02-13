@@ -1,10 +1,31 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
+import { paymentSchema } from '@/lib/validations';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export async function POST(req: Request) {
   try {
-    const { items, userId, userEmail, orderId, deliveryType, addressSnapshot, deliveryDate, deliverySlot } = await req.json();
+    const body = await req.json();
+    const result = paymentSchema.safeParse(body);
+
+    if (!result.success) {
+      const errorMessage = result.error.issues[0]?.message || 'Invalid request data';
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
+    }
+
+    const { items, userId, userEmail, orderId, deliveryType, addressSnapshot, deliveryDate, deliverySlot, turnstileToken } = body;
+
+    // --- TURNSTILE VERIFICATION ---
+    // Bypass for development/tests if needed, or strictly enforce
+    if (!turnstileToken) {
+      return NextResponse.json({ error: "Security check failed. Please refresh and try again." }, { status: 403 });
+    }
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      return NextResponse.json({ error: "Security check failed. Bot detected." }, { status: 403 });
+    }
+    // -----------------------------
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 401 });
@@ -119,8 +140,8 @@ export async function POST(req: Request) {
         productName = product.name;
         finalProductId = product.id;
       } else {
-        console.warn(`Item ${item.name} not found in DB via ID or Name. Using client price.`);
-        price = Number(item.price);
+        console.error(`Security Alert: Item ${item.name} not found in DB. Rejecting order.`);
+        return NextResponse.json({ error: `Invalid item in cart: ${item.name}` }, { status: 400 });
       }
 
       serverTotal += price * item.quantity;
@@ -133,6 +154,27 @@ export async function POST(req: Request) {
         metadata: item.metadata || item.selectedOptions || {}
       });
     }
+
+    // --- FIX 3: Atomic Stock Deduction (Race Condition Protection) ---
+    const stockItems = dbOrderItems.map(item => ({
+      id: item.product_id,
+      quantity: item.quantity
+    }));
+
+    // Call RPC function to check and deduct stock atomically
+    // @ts-ignore - RPC function added via SQL, types not yet generated
+    const { error: stockError } = await supabase.rpc('deduct_stock_atomic', {
+      order_items: stockItems
+    });
+
+    if (stockError) {
+      console.error("Stock Deduction Failed:", stockError);
+      // Construct a friendly error message
+      return NextResponse.json({
+        error: `Stock unavailable: ${stockError.message.replace('Insufficient stock for product id ', 'Item out of stock: ')}`
+      }, { status: 400 });
+    }
+    // -------------------------------------------------------------
 
     // create order
     const { data: orderData, error: orderError } = await supabase

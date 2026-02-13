@@ -4,6 +4,7 @@ import { signIn } from '@/lib/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useCart } from '@/hooks/useCart';
+import TurnstileWidget from '@/app/components/TurnstileWidget';
 
 interface SignInFormProps {
     setIsSignUp: (isSignUp: boolean) => void;
@@ -20,6 +21,7 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
     const [signInPassword, setSignInPassword] = useState('');
     const [showSignInPassword, setShowSignInPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -118,11 +120,18 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                     className="forgot-password-link"
                 >
                     Forgot password?
+                    Forgot password?
                 </a>
+
+                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
 
                 {errors.general && <div className="error-message">{errors.general}</div>}
 
-                <button type="submit" disabled={loading}>
+                {errors.general && <div className="error-message">{errors.general}</div>}
+
+                {errors.general && <div className="error-message">{errors.general}</div>}
+
+                <button type="submit" disabled={loading || !turnstileToken}>
                     {loading ? 'Signing in...' : 'Sign In'}
                 </button>
 

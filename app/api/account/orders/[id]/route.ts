@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { orderUpdateSchema } from '@/lib/validations';
 
 export async function PATCH(
     request: Request,
@@ -15,13 +16,21 @@ export async function PATCH(
         }
 
         const supabase = await createClient();
+        const body = await request.json();
+        const result = orderUpdateSchema.safeParse(body);
+
+        if (!result.success) {
+            const errorMessage = result.error.issues[0]?.message || 'Invalid request data';
+            return NextResponse.json({ error: errorMessage }, { status: 400 });
+        }
+
         const {
             deliveryType,
             deliveryAddressSnapshot,
             deliveryDate,
             deliverySlot,
             paymentMethod
-        } = await request.json();
+        } = body;
 
         const { error } = await supabase
             .from('orders')
@@ -37,7 +46,10 @@ export async function PATCH(
                 // @ts-ignore
                 payment_method: paymentMethod || 'card'
             })
-            .eq('id', orderId); // Use the validated orderId
+            .eq('id', orderId)
+            // --- SECURITY FIX: Ensure user owns this order ---
+            .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '');
+        // ------------------------------------------------
 
         if (error) {
             console.error('Error updating order:', error);

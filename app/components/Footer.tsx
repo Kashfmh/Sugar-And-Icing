@@ -2,10 +2,23 @@
 import Link from 'next/link';
 import { MapPin, Phone, Mail, Instagram, Facebook, MessageCircle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function Footer() {
     const pathname = usePathname();
     const currentYear = new Date().getFullYear();
+
+
+    // Let's just use data attributes and css or a simple text obfuscation.
+    // Better:
+    const [links, setLinks] = useState({ tel: '', wa: '' });
+
+    useEffect(() => {
+        setLinks({
+            tel: 'tel:+60108091351',
+            wa: 'https://wa.me/60108091351'
+        });
+    }, []);
 
     if (pathname === '/') {
         return null;
@@ -55,14 +68,14 @@ export default function Footer() {
                             </li>
                             <li className="flex items-center gap-2">
                                 <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-sai-pink)' }} />
-                                <a href="tel:+60108091351" className="text-gray-300 hover:text-sai-pink transition-colors">
+                                <a href={links.tel || '#'} className="text-gray-300 hover:text-sai-pink transition-colors">
                                     +60 10 809 1351
                                 </a>
                             </li>
                             <li className="flex items-center gap-2">
                                 <MessageCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-sai-pink)' }} />
                                 <a
-                                    href="https://wa.me/60108091351"
+                                    href={links.wa || '#'}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-gray-300 hover:text-sai-pink transition-colors"
