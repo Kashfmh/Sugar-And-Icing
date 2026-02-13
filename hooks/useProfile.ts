@@ -104,7 +104,17 @@ export function useProfile() {
                         loadOrders();
                     }
                 )
-                .subscribe();
+            if (typeof WebSocket !== 'undefined') {
+                try {
+                    channel.subscribe((status) => {
+                        if (status === 'SUBSCRIBED') {
+                            // console.log('Ready to receive profile updates');
+                        }
+                    });
+                } catch (error) {
+                    console.error('Realtime subscription error:', error);
+                }
+            }
 
             const handleProfileUpdate = () => initializeProfile(true);
             window.addEventListener('profile-updated', handleProfileUpdate);

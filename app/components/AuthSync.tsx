@@ -123,7 +123,17 @@ export default function AuthSync() {
                         window.location.reload();
                     }
                 )
-                .subscribe();
+            if (typeof WebSocket !== 'undefined') {
+                try {
+                    realtimeChannel.subscribe((status: string) => {
+                        if (status === 'SUBSCRIBED') {
+                            // console.log('AuthSync subscribed');
+                        }
+                    });
+                } catch (error) {
+                    console.error('AuthSync subscription error:', error);
+                }
+            }
         };
 
         // listen for auth events
