@@ -1,12 +1,17 @@
- 'use client';
+'use client';
 
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+
+interface FullReview extends Review {
+    is_anonymous?: boolean;
+}
+
 import { Review } from '@/hooks/useProductDetails';
 import ReviewsViewerModal from '@/app/components/ReviewsViewerModal';
 
 interface ProductReviewsProps {
-    reviews: Review[];
+    reviews: FullReview[];
     product?: {
         id: string;
         name: string;
@@ -80,7 +85,7 @@ export default function ProductReviews({ reviews, product }: ProductReviewsProps
                                         ))}
                                     </div>
                                     <span className="text-sm font-medium">
-                                        {review.profiles?.username || review.profiles?.first_name || 'Anonymous'}
+                                        {review.is_anonymous ? 'Anonymous' : (review.profiles?.username || review.profiles?.first_name || 'Anonymous')}
                                     </span>
                                 </div>
                                 <p className="text-sm text-gray-600 whitespace-pre-wrap break-words break-all">

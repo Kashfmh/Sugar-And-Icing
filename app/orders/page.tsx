@@ -32,7 +32,7 @@ const TABS = [
 const ITEMS_PER_PAGE = 5;
 
 export default function OrdersPage() {
-    const { user, orders, isLoadingData, isCheckingAuth } = useProfile();
+    const { user, orders, isLoadingData, isCheckingAuth, isLoadingOrders } = useProfile();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -111,10 +111,29 @@ export default function OrdersPage() {
     }, [activeTab, searchQuery, sortOption]);
 
 
-    if (isCheckingAuth || (isLoadingData && !user)) {
+    if (isCheckingAuth || (isLoadingData && !user) || (isLoadingOrders && orders.length === 0)) {
         return (
-            <div className="min-h-screen pt-24 px-4 flex justify-center">
-                <Loader2 className="w-8 h-8 text-sai-pink animate-spin" />
+            <div className="min-h-screen bg-sai-cream pb-36 lg:pt-24 px-4 pt-4 space-y-4">
+                {/* Mobile Header Skeleton */}
+                <div className="w-full h-12 bg-gray-200 animate-pulse rounded-lg lg:hidden mb-4" />
+
+                <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-md" />
+                    <div className="flex gap-3">
+                        <div className="flex-1 h-10 bg-gray-200 animate-pulse rounded-xl" />
+                        <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-xl" />
+                    </div>
+                    <div className="flex gap-2 overflow-x-hidden">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="w-24 h-9 bg-gray-200 animate-pulse rounded-full" />
+                        ))}
+                    </div>
+                    <div className="space-y-4">
+                        {[1, 2, 3].map(i => (
+                            <MobileOrderSkeleton key={i} />
+                        ))}
+                    </div>
+                </div>
             </div>
         );
     }
@@ -632,4 +651,24 @@ function CheckIcon(props: any) {
             <path d="M20 6 9 17l-5-5" />
         </svg>
     )
+}
+function MobileOrderSkeleton() {
+    return (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="flex gap-4 items-start">
+                <div className="w-12 h-12 bg-gray-100 rounded-full animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                    <div className="flex justify-between">
+                        <div className="h-5 w-32 bg-gray-100 rounded animate-pulse" />
+                        <div className="h-4 w-20 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                    <div className="flex justify-between mt-2">
+                        <div className="h-6 w-24 bg-gray-100 rounded-full animate-pulse" />
+                        <div className="h-5 w-24 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                    <div className="h-4 w-20 bg-gray-100 rounded animate-pulse mt-2" />
+                </div>
+            </div>
+        </div>
+    );
 }

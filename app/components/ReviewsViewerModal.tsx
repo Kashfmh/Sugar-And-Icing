@@ -11,6 +11,7 @@ interface FullReview {
     user_id: string;
     rating: number;
     comment: string;
+    is_anonymous?: boolean;
     images: string[] | null;
     video_urls: string[] | null;
     created_at: string;
@@ -64,6 +65,7 @@ export default function ReviewsViewerModal({
                     user_id,
                     rating,
                     comment,
+                    is_anonymous,
                     images,
                     video_urls,
                     created_at,
@@ -193,11 +195,10 @@ export default function ReviewsViewerModal({
                                             <button
                                                 key={rating}
                                                 onClick={() => toggleRating(rating)}
-                                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                                    selectedRatings.includes(rating)
+                                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedRatings.includes(rating)
                                                         ? 'bg-yellow-400 text-white'
                                                         : 'bg-white border border-gray-200 text-gray-600'
-                                                }`}
+                                                    }`}
                                             >
                                                 {rating} ★
                                             </button>
@@ -212,11 +213,10 @@ export default function ReviewsViewerModal({
                                             setMediaOnly(!mediaOnly);
                                             setCurrentPage(1);
                                         }}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                                            mediaOnly
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${mediaOnly
                                                 ? 'bg-blue-500 text-white'
                                                 : 'bg-white border border-gray-200 text-gray-600'
-                                        }`}
+                                            }`}
                                     >
                                         <ImageIcon className="w-4 h-4" />
                                         With Media Only
@@ -251,7 +251,7 @@ export default function ReviewsViewerModal({
                                                             ))}
                                                         </div>
                                                         <span className="text-sm font-medium text-sai-charcoal">
-                                                            {review.profiles?.username || review.profiles?.first_name || 'Anonymous'}
+                                                            {review.is_anonymous ? 'Anonymous' : (review.profiles?.username || review.profiles?.first_name || 'Anonymous')}
                                                         </span>
                                                     </div>
                                                     <p className="text-xs text-gray-500">

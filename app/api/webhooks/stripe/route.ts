@@ -94,18 +94,7 @@ export async function POST(req: Request) {
             }
 
             if (userId) {
-                // create notification
-                const { error: notifError } = await supabase.from('notifications').insert({
-                    user_id: userId,
-                    title: 'Order Confirmed! 🎉',
-                    message: `Your order #${orderId.slice(0, 8)} has been paid and confirmed. We'll start baking soon!`,
-                    type: 'order',
-                    read: false
-                });
 
-                if (notifError) {
-                    console.error("Error creating notification:", notifError);
-                }
 
                 const { error: deleteError } = await supabase
                     .from('cart_items')

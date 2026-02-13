@@ -47,7 +47,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
             (order.order_items || []).forEach((it: any) => {
                 // Try multiple ways to extract product_id
                 let productId: string | undefined = undefined;
-                
+
                 // Try: it.products[0].id (array)
                 if (Array.isArray(it.products) && it.products[0]?.id) {
                     productId = it.products[0].id;
@@ -64,12 +64,12 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                 else if (it.productId) {
                     productId = it.productId;
                 }
-                
+
                 // Log if we can't find it for debugging
                 if (!productId) {
                     console.warn('Could not extract product_id from order item:', it);
                 }
-                
+
                 initial[it.id] = {
                     itemId: it.id,
                     productId,
@@ -191,9 +191,9 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                 const orderItem = (order.order_items || []).find((it: any) => it.id === r.itemId);
                 const product = orderItem ? (Array.isArray(orderItem.products) ? orderItem.products[0] : orderItem.products) : null;
                 const productName = product?.name || orderItem?.product_name || 'Unknown Product';
-                
+
                 ratedProductNames.push(productName);
-                
+
                 const mediaUrls: { images: string[]; video?: string | null } = { images: [], video: null };
 
                 // Try to upload media, but don't fail the entire submission if storage isn't available
@@ -264,6 +264,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                     images: mediaUrls.images && mediaUrls.images.length > 0 ? mediaUrls.images : null,
                     video_urls: mediaUrls.video ? [mediaUrls.video] : null,
                     is_verified_purchase: true,
+                    is_anonymous: r.anonymous || false,
                     created_at: new Date().toISOString()
                 };
 
@@ -277,27 +278,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                 successCount++;
             }
 
-            // Create a notification for the successful review submission
-            if (userId && successCount > 0) {
-                const notificationTitle = 'Review Posted!';
-                const notificationMessage = `Your review for order ${order.id.substring(0, 8)}... has been posted. Products rated: ${ratedProductNames.join(', ')}`;
-                
-                const { error: notifErr } = await (supabase as any).from('notifications').insert([{
-                    user_id: userId,
-                    title: notificationTitle,
-                    message: notificationMessage,
-                    type: 'review',
-                    read: false,
-                    created_at: new Date().toISOString()
-                }]);
 
-                if (notifErr) {
-                    console.warn('Failed to create notification:', notifErr);
-                } else {
-                    // Dispatch event to update notification inbox
-                    window.dispatchEvent(new Event('notifications-updated'));
-                }
-            }
 
             // Dispatch event for UI updates
             window.dispatchEvent(new Event('reviews-updated'));
@@ -373,11 +354,10 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
-                                        className={`mt-4 p-4 rounded-lg flex gap-3 ${
-                                            submitResult.success
+                                        className={`mt-4 p-4 rounded-lg flex gap-3 ${submitResult.success
                                                 ? 'bg-green-50 border border-green-200'
                                                 : 'bg-red-50 border border-red-200'
-                                        }`}
+                                            }`}
                                     >
                                         {submitResult.success ? (
                                             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -416,7 +396,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex-1">
                                                                 <div className="font-medium text-sai-charcoal">{product?.name || it.product_name}</div>
-                                                                
+
                                                                 {/* Metadata details to distinguish product variants */}
                                                                 {it.metadata && Object.keys(it.metadata).length > 0 && (
                                                                     <div className="flex flex-wrap gap-2 mt-1 mb-1">
@@ -431,21 +411,21 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                                                         })}
                                                                     </div>
                                                                 )}
-                                                                
+
                                                                 <div className="text-xs text-gray-500">Qty: {it.quantity}</div>
                                                             </div>
 
                                                             <div className="flex items-center gap-1">
-                                                                    {[1,2,3,4,5].map(n => (
-                                                                        <button key={n} disabled={submitting} onClick={() => handleStar(id, n)} className="p-1 disabled:opacity-50">
-                                                                            {state?.rating >= n ? (
-                                                                                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                                                                            ) : (
-                                                                                <Star className="w-5 h-5 text-yellow-400 stroke-yellow-400" />
-                                                                            )}
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
+                                                                {[1, 2, 3, 4, 5].map(n => (
+                                                                    <button key={n} disabled={submitting} onClick={() => handleStar(id, n)} className="p-1 disabled:opacity-50">
+                                                                        {state?.rating >= n ? (
+                                                                            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                                                                        ) : (
+                                                                            <Star className="w-5 h-5 text-yellow-400 stroke-yellow-400" />
+                                                                        )}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
                                                         </div>
 
                                                         <div className="mt-3">
@@ -455,7 +435,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                                             </div>
 
                                                             <div className="mt-3 grid grid-cols-2 gap-3">
-                                                                    <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
+                                                                <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
                                                                     <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full">
                                                                         <Camera className="w-6 h-6 text-gray-400" />
                                                                     </div>
@@ -463,7 +443,7 @@ export default function RateOrderModal({ isOpen, onClose, order, userId }: RateO
                                                                     <input className="hidden" disabled={submitting || hasSubmitted} type="file" accept="image/*" multiple onChange={(e) => handleImageSelect(id, e.target.files)} />
                                                                 </label>
 
-                                                                    <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
+                                                                <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm cursor-pointer opacity-50 disabled:opacity-50">
                                                                     <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full">
                                                                         <Video className="w-6 h-6 text-gray-400" />
                                                                     </div>

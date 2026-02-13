@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lock, Trash2, LogOut, ChevronRight, Shield } from 'lucide-react';
 import ChangePasswordModal from './ChangePasswordModal';
 import DeleteAccountModal from './DeleteAccountModal';
@@ -12,6 +12,27 @@ interface SettingsViewProps {
 export default function SettingsView({ handleSignOut }: SettingsViewProps) {
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+    const [logoutState, setLogoutState] = useState<'idle' | 'confirm' | 'logging_out'>('idle');
+
+    // Reset confirmation state after 5 seconds
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (logoutState === 'confirm') {
+            timer = setTimeout(() => {
+                setLogoutState('idle');
+            }, 5000);
+        }
+        return () => clearTimeout(timer);
+    }, [logoutState]);
+
+    const handleLogoutClick = async () => {
+        if (logoutState === 'idle') {
+            setLogoutState('confirm');
+        } else if (logoutState === 'confirm') {
+            setLogoutState('logging_out');
+            await handleSignOut();
+        }
+    };
 
     return (
         <>
@@ -73,11 +94,17 @@ export default function SettingsView({ handleSignOut }: SettingsViewProps) {
                     {/* Session */}
                     <div className="pt-5 md:pt-6 border-t border-gray-100">
                         <button
-                            onClick={handleSignOut}
-                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm md:text-base font-medium hover:bg-gray-200 transition-colors"
+                            onClick={handleLogoutClick}
+                            className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm md:text-base font-medium transition-all duration-200 
+                                ${logoutState === 'confirm'
+                                    ? 'bg-red-50 text-red-600 hover:bg-red-100 ring-2 ring-red-100'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
                         >
-                            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-                            Log Out
+                            <LogOut className={`w-4 h-4 md:w-5 md:h-5 ${logoutState === 'confirm' ? 'text-red-500' : ''}`} />
+                            {logoutState === 'idle' && 'Log Out'}
+                            {logoutState === 'confirm' && 'Are you sure?'}
+                            {logoutState === 'logging_out' && 'Logging out...'}
                         </button>
                     </div>
                 </div>

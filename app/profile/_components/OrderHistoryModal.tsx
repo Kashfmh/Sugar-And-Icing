@@ -26,7 +26,8 @@ interface OrderHistoryModalProps {
 const TABS = [
     { id: 'all', label: 'All' },
     { id: 'to_pay', label: 'To Pay', status: 'pending_payment' },
-    { id: 'preparing', label: 'Preparing', status: ['paid', 'processing'] },
+    { id: 'paid', label: 'Paid', status: 'paid' },
+    { id: 'preparing', label: 'Preparing', status: 'processing' },
     { id: 'ready', label: 'Ready to Pickup', status: 'shipped' },
     { id: 'completed', label: 'Completed', status: ['delivered', 'completed'] },
     { id: 'cancelled', label: 'Cancelled', status: 'cancelled' },
@@ -318,7 +319,7 @@ function HistoryOrderCard({ order, router, onOpenRate }: { order: Order, router:
         window.addEventListener('reviews-updated', handler as EventListener);
         return () => window.removeEventListener('reviews-updated', handler as EventListener);
     }, [order.id, supabase]);
-    
+
 
     // set status and label color
 

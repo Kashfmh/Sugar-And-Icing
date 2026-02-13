@@ -58,6 +58,7 @@ export function useProfile() {
     const [occasions, setOccasions] = useState<SpecialOccasion[]>([]);
     const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedItem[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true);
     const [totalOrders, setTotalOrders] = useState(0);
     const [status, setStatus] = useState<Status | null>(null);
 
@@ -119,6 +120,9 @@ export function useProfile() {
         try {
             if (!user) return;
 
+            // Only show loading state if we don't have orders yet (initial load)
+            if (orders.length === 0) setIsLoadingOrders(true);
+
             const { data, count, error } = await supabase
                 .from('orders')
                 .select('*, order_items(*, products(name, image_url, gallery_images))', { count: 'exact' })
@@ -137,6 +141,8 @@ export function useProfile() {
             setTotalOrders(count || 0);
         } catch (error) {
             console.error('Failed to load orders:', error);
+        } finally {
+            setIsLoadingOrders(false);
         }
     }
     // ... rest of the file stays the same
@@ -166,6 +172,7 @@ export function useProfile() {
                 // Only redirect if NOT a background refresh
                 // (Though if session is gone, we should handle it)
                 if (!background) router.push('/login');
+                setIsLoadingOrders(false); // Stop loading if no session
                 return;
             }
 
@@ -298,6 +305,7 @@ export function useProfile() {
         occasions,
         recentlyViewed,
         orders,
+        isLoadingOrders,
         totalOrders,
         status,
         formData,
