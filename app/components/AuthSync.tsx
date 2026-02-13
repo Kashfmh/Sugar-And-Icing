@@ -123,7 +123,10 @@ export default function AuthSync() {
                         window.location.reload();
                     }
                 )
-            if (typeof WebSocket !== 'undefined') {
+            const isBrowser = typeof window !== 'undefined';
+            const hasWebSocket = isBrowser && typeof window.WebSocket !== 'undefined';
+
+            if (isBrowser && hasWebSocket) {
                 try {
                     realtimeChannel.subscribe((status: string) => {
                         if (status === 'SUBSCRIBED') {
@@ -133,6 +136,8 @@ export default function AuthSync() {
                 } catch (error) {
                     console.error('AuthSync subscription error:', error);
                 }
+            } else {
+                console.warn('AuthSync skipped: WebSocket not supported');
             }
         };
 

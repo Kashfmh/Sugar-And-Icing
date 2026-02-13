@@ -104,7 +104,10 @@ export function useProfile() {
                         loadOrders();
                     }
                 )
-            if (typeof WebSocket !== 'undefined') {
+            const isBrowser = typeof window !== 'undefined';
+            const hasWebSocket = isBrowser && typeof window.WebSocket !== 'undefined';
+
+            if (isBrowser && hasWebSocket) {
                 try {
                     channel.subscribe((status) => {
                         if (status === 'SUBSCRIBED') {
@@ -114,6 +117,8 @@ export function useProfile() {
                 } catch (error) {
                     console.error('Realtime subscription error:', error);
                 }
+            } else {
+                console.warn('Realtime subscription skipped: WebSocket not supported');
             }
 
             const handleProfileUpdate = () => initializeProfile(true);

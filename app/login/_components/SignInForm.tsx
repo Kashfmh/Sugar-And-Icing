@@ -120,7 +120,6 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                     className="forgot-password-link"
                 >
                     Forgot password?
-                    Forgot password?
                 </a>
 
                 <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />

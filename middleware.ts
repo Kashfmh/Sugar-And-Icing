@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
     // --- RATE LIMITING ---
     // Only run on specific routes to save Redis calls
     if (request.nextUrl.pathname.startsWith('/api/payment')) {
-        const ip = request.ip || '127.0.0.1';
+        const ip = (request as any).ip || request.headers.get('x-forwarded-for') || '127.0.0.1';
         try {
             // Create a new ratelimiter, that allows 10 requests per 60 seconds
             const ratelimit = new Ratelimit({

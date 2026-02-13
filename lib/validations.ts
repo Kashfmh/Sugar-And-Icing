@@ -28,7 +28,7 @@ export const paymentSchema = z.object({
         quantity: z.number().int().positive(),
         price: z.number().nonnegative(), // We validate against DB, but schema checks structure
         name: z.string(),
-        selectedOptions: z.record(z.any()).optional(),
-        metadata: z.record(z.any()).optional()
+        selectedOptions: z.record(z.string(), z.any()).optional(),
+        metadata: z.record(z.string(), z.any()).optional()
     })).optional()
 });
