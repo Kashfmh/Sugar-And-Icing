@@ -19,8 +19,25 @@ export default function CartSummary() {
         });
     }, []);
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (isGuest) return;
+
+        // Validation: Ensure cart is not empty before proceeding
+        // This handles cross-device sync where another device might have already checked out
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { count } = await supabase
+                .from('cart_items')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id);
+
+            if (count === 0) {
+                // Cart is empty, force refresh/sync to show empty state
+                window.location.reload();
+                return;
+            }
+        }
+
         router.push('/checkout');
     };
 
@@ -67,8 +84,8 @@ export default function CartSummary() {
                 onClick={handleCheckout}
                 disabled={isGuest}
                 className={`w-full mt-8 rounded-xl py-6 text-lg shadow-lg transition-all active:scale-[0.98] ${isGuest
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300 pointer-events-none'
-                        : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-100'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300 pointer-events-none'
+                    : 'bg-sai-pink hover:bg-sai-pink/90 text-white shadow-pink-100'
                     }`}
             >
                 {isGuest ? 'Login to Checkout' : 'Checkout'}

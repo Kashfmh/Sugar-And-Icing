@@ -52,6 +52,7 @@ export default function AuthSync() {
                         filter: `user_id=eq.${user.id}`
                     },
                     (payload) => {
+                        console.log('Cart updated externally', payload);
                         syncWithUser();
                     }
                 )
