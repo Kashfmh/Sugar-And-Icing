@@ -225,6 +225,8 @@ export default function RateOrderPage({ params }: { params: Promise<{ orderId: s
                     }
                 }
 
+                if (!r.productId) continue;
+
                 // Check duplicate
                 const { data: existing } = await supabase
                     .from('reviews')
