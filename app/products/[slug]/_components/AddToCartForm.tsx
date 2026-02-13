@@ -52,14 +52,8 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
                 !f.includes('Belgian')
             );
 
-            // extract frosting preference
-            const frostingPref = profile.favorite_flavors?.find(f =>
-                f.includes('Frosting') ||
-                f.includes('Ganache') ||
-                f.includes('Rasmalai') ||
-                f.includes('Gulab') ||
-                f.includes('Belgian')
-            );
+            // extract frosting preference directly from the column
+            const frostingPref = profile.favorite_frosting;
 
             // helper: find best match between saved flavor and available options (stricter)
             const findBestFlavorMatch = (options: ProductOption[], favorites: string[]) => {
@@ -87,7 +81,8 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             // only auto-select base flavor if user has actually saved one
             if (baseFlavor && baseOptions.length > 0 && !selectedBase) {
                 const match = findBestFlavorMatch(baseOptions, [baseFlavor]);
-                if (match) {
+                // Prevent auto-selecting premium option for basic product
+                if (match && !(product.product_type === 'cupcake_basic' && match.is_premium)) {
                     setSelectedBase(match.option_name);
                 }
             }
@@ -95,7 +90,8 @@ export default function AddToCartForm({ product, options }: AddToCartFormProps) 
             // only auto-select frosting if user has actually saved one
             if (frostingPref && frostingOptions.length > 0 && !selectedFrosting) {
                 const match = findBestFlavorMatch(frostingOptions, [frostingPref]);
-                if (match) {
+                // Prevent auto-selecting premium option for basic product
+                if (match && !(product.product_type === 'cupcake_basic' && match.is_premium)) {
                     setSelectedFrosting(match.option_name);
                 }
             }

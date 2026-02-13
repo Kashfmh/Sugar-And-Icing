@@ -92,7 +92,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                     setOptions((optionsData as unknown as ProductOption[]) || []);
 
                     // apply user preferences after options load
-                    await applyUserPreferences(optionsData as unknown as ProductOption[]);
+                    await applyUserPreferences(optionsData as unknown as ProductOption[], productData.product_type);
                 }
             }
 
@@ -150,7 +150,7 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
         }
     }
 
-    async function applyUserPreferences(loadedOptions: ProductOption[]) {
+    async function applyUserPreferences(loadedOptions: ProductOption[], productType: string) {
         try {
             const { data: { user } } = await supabase.auth.getUser();
 
@@ -173,14 +173,8 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
                 !f.includes('Belgian')
             );
 
-            // extract frosting preference
-            const frostingPref = profile.favorite_flavors?.find(f =>
-                f.includes('Frosting') ||
-                f.includes('Ganache') ||
-                f.includes('Rasmalai') ||
-                f.includes('Gulab') ||
-                f.includes('Belgian')
-            );
+            // extract frosting preference directly from the column
+            const frostingPref = profile.favorite_frosting;
 
             // helper: find best match between saved flavor and available options (stricter)
             const findBestFlavorMatch = (options: ProductOption[], favorites: string[]) => {
@@ -220,7 +214,8 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             // only auto-select base flavor if user has actually saved one
             if (baseFlavor && baseOptions.length > 0) {
                 const match = findBestFlavorMatch(baseOptions, [baseFlavor]);
-                if (match) {
+                // Prevent auto-selecting premium option for basic product
+                if (match && !(productType === 'cupcake_basic' && match.is_premium)) {
                     setSelectedBase(match.option_name);
                 }
             }
@@ -228,7 +223,8 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
             // only auto-select frosting if user has actually saved one
             if (frostingPref && frostingOptions.length > 0) {
                 const match = findBestFlavorMatch(frostingOptions, [frostingPref]);
-                if (match) {
+                // Prevent auto-selecting premium option for basic product
+                if (match && !(productType === 'cupcake_basic' && match.is_premium)) {
                     setSelectedFrosting(match.option_name);
                 }
             }
