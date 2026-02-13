@@ -39,7 +39,7 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
         }
 
         try {
-            const result = await signIn(email, password, rememberMe);
+            const result = await signIn(email, password, rememberMe, turnstileToken || undefined);
 
             if (!result.success) {
                 setErrors({ general: result.error || 'Failed to sign in' });
@@ -125,6 +125,7 @@ export default function SignInForm({ setIsSignUp, setErrors, errors }: SignInFor
                 <TurnstileWidget
                     onVerify={(token) => setTurnstileToken(token)}
                     retry="never"
+                    theme="light"
                 />
 
                 {errors.general && <div className="error-message">{errors.general}</div>}

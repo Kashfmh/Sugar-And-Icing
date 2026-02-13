@@ -133,8 +133,12 @@ export default function AuthSync() {
                             // console.log('AuthSync subscribed');
                         }
                     });
-                } catch (error) {
-                    console.error('AuthSync subscription error:', error);
+                } catch (error: any) {
+                    if (error.message?.includes('WebSocket')) {
+                        console.warn('AuthSync connection failed (WebSocket not available). Live updates disabled.');
+                    } else {
+                        console.error('AuthSync subscription error:', error);
+                    }
                 }
             } else {
                 console.warn('AuthSync skipped: WebSocket not supported');

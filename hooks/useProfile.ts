@@ -114,8 +114,12 @@ export function useProfile() {
                             // console.log('Ready to receive profile updates');
                         }
                     });
-                } catch (error) {
-                    console.error('Realtime subscription error:', error);
+                } catch (error: any) {
+                    if (error.message?.includes('WebSocket')) {
+                        console.warn('Realtime connection failed (WebSocket not available). Live updates disabled.');
+                    } else {
+                        console.error('Realtime subscription error:', error);
+                    }
                 }
             } else {
                 console.warn('Realtime subscription skipped: WebSocket not supported');

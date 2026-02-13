@@ -107,7 +107,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
 
         try {
             const fullPhone = countryCode + signUpPhone;
-            const result = await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone, signUpUsername.trim().toLowerCase());
+            const result = await signUp(signUpEmail, signUpPassword, signUpFirstName, fullPhone, signUpUsername.trim().toLowerCase(), turnstileToken || undefined);
 
             if (!result.success) {
                 setErrors({ general: result.error || 'Failed to sign up' });
@@ -287,6 +287,7 @@ export default function SignUpForm({ setIsSignUp, setErrors, errors, onSuccess }
                 <TurnstileWidget
                     onVerify={(token) => setTurnstileToken(token)}
                     retry="never"
+                    theme="light"
                 />
 
                 {errors.general && <div className="error-message">{errors.general}</div>}

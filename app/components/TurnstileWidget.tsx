@@ -14,7 +14,17 @@ export default function TurnstileWidget({ onVerify, theme = 'auto', retry = 'nev
 
     useEffect(() => {
         if (document.getElementById('turnstile-script')) {
-            setScriptLoaded(true);
+            if (window.turnstile) {
+                setScriptLoaded(true);
+            } else {
+                const checkInterval = setInterval(() => {
+                    if (window.turnstile) {
+                        clearInterval(checkInterval);
+                        setScriptLoaded(true);
+                    }
+                }, 100);
+                return () => clearInterval(checkInterval);
+            }
             return;
         }
 
@@ -27,15 +37,22 @@ export default function TurnstileWidget({ onVerify, theme = 'auto', retry = 'nev
         document.body.appendChild(script);
     }, []);
 
+    // Use a ref to store the latest callback to avoid re-running the effect
+    const onVerifyRef = useRef(onVerify);
+
+    useEffect(() => {
+        onVerifyRef.current = onVerify;
+    }, [onVerify]);
+
     useEffect(() => {
         if (!scriptLoaded || !containerRef.current || !window.turnstile) return;
 
         const widgetId = window.turnstile.render(containerRef.current, {
             sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
             theme,
-            retry, // Tells Cloudflare not to loop if the invisible check fails
+            retry,
             callback: (token: string) => {
-                onVerify(token);
+                onVerifyRef.current(token);
             },
         });
 
@@ -44,7 +61,7 @@ export default function TurnstileWidget({ onVerify, theme = 'auto', retry = 'nev
                 window.turnstile.remove(widgetId);
             }
         };
-    }, [scriptLoaded, onVerify, theme, retry]);
+    }, [scriptLoaded, theme, retry]);
 
     return <div ref={containerRef} className="my-4" />;
 }

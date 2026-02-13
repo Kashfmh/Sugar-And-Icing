@@ -53,7 +53,8 @@ export async function signUp(
     password: string,
     firstName: string,
     phone: string,
-    username?: string
+    username?: string,
+    captchaToken?: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const sanitizedEmail = sanitizeInput(email.toLowerCase());
@@ -94,6 +95,7 @@ export async function signUp(
             password: password,
             options: {
                 emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/profile`,
+                captchaToken,
                 data: {
                     // We pass these as metadata so the SQL Trigger can pick them up
                     display_name: sanitizedFirstName,
@@ -116,6 +118,7 @@ export async function signUp(
                     password: password,
                     options: {
                         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/profile`,
+                        captchaToken,
                     }
                 });
 
@@ -210,7 +213,8 @@ export async function signUp(
 export async function signIn(
     email: string,
     password: string,
-    rememberMe: boolean = true
+    rememberMe: boolean = true,
+    captchaToken?: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const sanitizedEmail = sanitizeInput(email.toLowerCase());
@@ -222,6 +226,9 @@ export async function signIn(
         const { data, error } = await supabase.auth.signInWithPassword({
             email: sanitizedEmail,
             password: password,
+            options: {
+                captchaToken,
+            }
         });
 
         if (error) {
