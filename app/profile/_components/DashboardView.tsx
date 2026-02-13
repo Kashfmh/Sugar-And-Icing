@@ -151,37 +151,35 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                         <div className="flex items-start justify-between mb-4">
                             <h3 className="text-lg font-semibold text-sai-charcoal">Cake Calendar</h3>
                             {(() => {
-                                const upcoming = occasions
-                                    .filter(o => {
-                                        const today = new Date();
-                                        today.setHours(0, 0, 0, 0);
-                                        const occDate = new Date(o.date);
-                                        occDate.setFullYear(today.getFullYear());
-                                        if (occDate < today) occDate.setFullYear(today.getFullYear() + 1);
-                                        return true;
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+
+                                const futureOccasions = occasions
+                                    .map(o => {
+                                        const [y, m, d] = o.date.split('-').map(Number);
+                                        const dateObj = new Date(y, m - 1, d);
+
+                                        if (o.type === 'Birthday' || o.type === 'Anniversary') {
+                                            const currentYear = today.getFullYear();
+                                            dateObj.setFullYear(currentYear);
+                                            if (dateObj < today) {
+                                                dateObj.setFullYear(currentYear + 1);
+                                            }
+                                        }
+                                        return { ...o, targetDate: dateObj };
                                     })
-                                    .sort((a, b) => {
-                                        const today = new Date();
-                                        today.setHours(0, 0, 0, 0);
-                                        const dateA = new Date(a.date);
-                                        dateA.setFullYear(today.getFullYear());
-                                        if (dateA < today) dateA.setFullYear(today.getFullYear() + 1);
+                                    .filter(o => o.targetDate >= today)
+                                    .sort((a, b) => a.targetDate.getTime() - b.targetDate.getTime());
 
-                                        const dateB = new Date(b.date);
-                                        dateB.setFullYear(today.getFullYear());
-                                        if (dateB < today) dateB.setFullYear(today.getFullYear() + 1);
-
-                                        return dateA.getTime() - dateB.getTime();
-                                    })[0];
+                                const upcoming = futureOccasions[0];
 
                                 if (upcoming) {
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    const dateA = new Date(upcoming.date);
-                                    dateA.setFullYear(today.getFullYear());
-                                    if (dateA < today) dateA.setFullYear(today.getFullYear() + 1);
-                                    const diffTime = Math.abs(dateA.getTime() - today.getTime());
+                                    const diffTime = upcoming.targetDate.getTime() - today.getTime();
                                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                                    if (diffDays === 0) {
+                                        return <span className="px-3 py-1 bg-white/80 text-xs font-bold text-indigo-600 rounded-full border border-indigo-200">Today!</span>;
+                                    }
                                     return <span className="px-3 py-1 bg-white/80 text-xs font-bold text-indigo-600 rounded-full border border-indigo-200">In {diffDays} Days!</span>;
                                 }
                                 return <span className="px-3 py-1 bg-white/80 text-xs font-medium text-gray-500 rounded-full border border-gray-200">No events</span>;
@@ -189,28 +187,63 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                         </div>
 
                         {(() => {
-                            const upcoming = occasions
-                                .filter(o => {
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    const occDate = new Date(o.date);
-                                    occDate.setFullYear(today.getFullYear());
-                                    if (occDate < today) occDate.setFullYear(today.getFullYear() + 1);
-                                    return true;
+                            const getTargetDate = (o: SpecialOccasion) => {
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+
+                                // Parse the date string "YYYY-MM-DD" manually to avoid timezone issues
+                                // or just use new Date(o.date) if we trust it creates a date instance.
+                                // The existing code used new Date(o.date). stick with that but be careful about time.
+                                const occDate = new Date(o.date);
+                                // Reset time to start of day for accurate comparison
+                                occDate.setHours(0, 0, 0, 0);
+
+                                // Adjust for local timezone offset if creating from ISO string 
+                                const timezoneOffset = occDate.getTimezoneOffset() * 60000;
+                                const localOccDate = new Date(occDate.getTime() + timezoneOffset);
+
+
+                                if (o.type === 'Birthday' || o.type === 'Anniversary') {
+                                    // Recurring logic
+                                    const currentYearDate = new Date(o.date);
+                                    currentYearDate.setFullYear(today.getFullYear());
+                                    // Fix time for comparison
+                                    currentYearDate.setHours(0, 0, 0, 0);
+                                    // Adjust for timezone offset just in case
+                                    const localCurrentYearDate = new Date(currentYearDate.getTime() + currentYearDate.getTimezoneOffset() * 60000);
+
+                                    if (localCurrentYearDate < today) {
+                                        localCurrentYearDate.setFullYear(today.getFullYear() + 1);
+                                    }
+                                    return localCurrentYearDate;
+                                }
+
+                                // One-time event: simple date parse + offset fix
+                                return localOccDate;
+                            };
+
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+
+                            const futureOccasions = occasions
+                                .map(o => {
+                                    // Simple parsing to local date to avoid UTC mess
+                                    const [y, m, d] = o.date.split('-').map(Number);
+                                    const dateObj = new Date(y, m - 1, d); // Local time 00:00:00
+
+                                    if (o.type === 'Birthday' || o.type === 'Anniversary') {
+                                        const currentYear = today.getFullYear();
+                                        dateObj.setFullYear(currentYear);
+                                        if (dateObj < today) {
+                                            dateObj.setFullYear(currentYear + 1);
+                                        }
+                                    }
+                                    return { ...o, targetDate: dateObj };
                                 })
-                                .sort((a, b) => {
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    const dateA = new Date(a.date);
-                                    dateA.setFullYear(today.getFullYear());
-                                    if (dateA < today) dateA.setFullYear(today.getFullYear() + 1);
+                                .filter(o => o.targetDate >= today)
+                                .sort((a, b) => a.targetDate.getTime() - b.targetDate.getTime());
 
-                                    const dateB = new Date(b.date);
-                                    dateB.setFullYear(today.getFullYear());
-                                    if (dateB < today) dateB.setFullYear(today.getFullYear() + 1);
-
-                                    return dateA.getTime() - dateB.getTime();
-                                })[0];
+                            const upcoming = futureOccasions[0];
 
                             if (upcoming) {
                                 return (
@@ -219,7 +252,10 @@ export default function DashboardView({ user, profile, occasions, recentlyViewed
                                             {upcoming.name}&apos;s {upcoming.type}
                                         </p>
                                         <p className="text-sm text-sai-charcoal/60 mb-6">
-                                            Don&apos;t forget to order something sweet!
+                                            {upcoming.targetDate.toDateString() === today.toDateString()
+                                                ? "It's today! Don't forget something sweet!"
+                                                : `Coming up on ${upcoming.targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                            }
                                         </p>
                                         <button onClick={() => router.push('/custom-cakes')} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
                                             Order a Cake Now

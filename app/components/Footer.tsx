@@ -43,11 +43,6 @@ export default function Footer() {
                                     Other Treats
                                 </Link>
                             </li>
-                            <li>
-                                <Link href="/contact" className="text-gray-300 hover:text-sai-pink transition-colors">
-                                    Contact Us
-                                </Link>
-                            </li>
                         </ul>
                     </div>
 

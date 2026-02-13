@@ -11,18 +11,22 @@ export async function checkAndCreateOccasionReminders(userId: string, occasions:
         for (const occasion of occasions) {
             if (!occasion.reminder_enabled) continue;
 
-            // calculate the next occurrence of this occasion
-            const occDate = new Date(occasion.date);
-            occDate.setFullYear(today.getFullYear());
-            occDate.setHours(0, 0, 0, 0);
+            // Robust date parsing (YYYY-MM-DD) to avoid timezone issues
+            const [y, m, d] = occasion.date.split('-').map(Number);
+            let targetDate = new Date(y, m - 1, d); // Local time 00:00:00
 
-            // if date has passed this year, check next year
-            if (occDate < today) {
-                occDate.setFullYear(today.getFullYear() + 1);
+            if (occasion.type === 'Birthday' || occasion.type === 'Anniversary') {
+                // Recurring: Adjust to current or next year
+                targetDate.setFullYear(today.getFullYear());
+                if (targetDate < today) {
+                    targetDate.setFullYear(today.getFullYear() + 1);
+                }
             }
+            // For others (Graduation, etc.), targetDate stays as the specific date entered
 
             // calculate days until occasion
-            const daysUntil = Math.floor((occDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            const diffTime = targetDate.getTime() - today.getTime();
+            const daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             // create notification if within 7 days
             if (daysUntil >= 0 && daysUntil <= 7) {
