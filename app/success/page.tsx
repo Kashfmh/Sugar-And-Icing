@@ -31,7 +31,7 @@ export default function SuccessPage() {
     }, [clearCart, orderId, paymentIntentId]);
 
     return (
-        <main className="min-h-screen bg-sai-white flex items-center justify-center p-4 lg:pt-20">
+        <main className="min-h-screen bg-sai-white flex flex-col items-center justify-start md:justify-center px-4 pt-0 pb-32 md:p-4 lg:pt-20">
             <SuccessCard orderId={orderId} paymentStatus={paymentStatus} />
         </main>
     );
