@@ -324,3 +324,20 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
         }
     });
 }
+
+export async function signInWithOAuth(provider: 'google' | 'facebook') {
+    const redirectTo = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback`
+        : undefined;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            redirectTo
+        }
+    });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+}
