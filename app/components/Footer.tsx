@@ -20,7 +20,7 @@ export default function Footer() {
         });
     }, []);
 
-    if (pathname === '/') {
+    if (pathname === '/' || pathname === '/login') {
         return null;
     }
 
