@@ -24,11 +24,12 @@ type CustomerRow = {
 interface CustomersInteractiveTableProps {
     customers: CustomerRow[];
     orderCounts: Record<string, number>;
+    totalSpent: Record<string, number>;
 }
 
-export function CustomersInteractiveTable({ customers, orderCounts }: CustomersInteractiveTableProps) {
+export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }: CustomersInteractiveTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState<"All" | "Returning" | "New">("All");
+    const [sortBy, setSortBy] = useState<"newest" | "total_spent" | "order_count">("newest");
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -43,28 +44,37 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
         'bg-indigo-100 text-indigo-600'
     ];
 
-    // Filter logic
+    // Filter + sort logic
     const filteredCustomers = useMemo(() => {
-        return customers.filter(customer => {
+        const searchLower = searchQuery.toLowerCase();
+
+        const filtered = customers.filter(customer => {
             const firstName = customer.first_name || "";
             const lastName = customer.last_name || "";
             const email = customer.email || "";
             const username = customer.username || "";
-            const fullName = `${firstName} ${lastName}`.toLowerCase();
-            const searchLower = searchQuery.toLowerCase();
+            const phone = customer.phone || "";
+            const fullName = `${firstName} ${lastName}`;
 
-            const matchesSearch = fullName.includes(searchLower) || email.toLowerCase().includes(searchLower) || username.toLowerCase().includes(searchLower);
-
-            const orderCount = orderCounts[customer.id] || 0;
-            const isReturning = orderCount > 0;
-
-            let matchesFilter = true;
-            if (statusFilter === "Returning") matchesFilter = isReturning;
-            if (statusFilter === "New") matchesFilter = !isReturning;
-
-            return matchesSearch && matchesFilter;
+            return (
+                fullName.toLowerCase().includes(searchLower) ||
+                email.toLowerCase().includes(searchLower) ||
+                username.toLowerCase().includes(searchLower) ||
+                phone.toLowerCase().includes(searchLower)
+            );
         });
-    }, [customers, searchQuery, statusFilter, orderCounts]);
+
+        return filtered.sort((a, b) => {
+            if (sortBy === "total_spent") {
+                return (totalSpent[b.id] || 0) - (totalSpent[a.id] || 0);
+            }
+            if (sortBy === "order_count") {
+                return (orderCounts[b.id] || 0) - (orderCounts[a.id] || 0);
+            }
+            // Default: newest first
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        });
+    }, [customers, searchQuery, sortBy, orderCounts, totalSpent]);
 
     // Selection logic
     const allSelected = filteredCustomers.length > 0 && selectedIds.size === filteredCustomers.length;
@@ -87,12 +97,12 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
         setSelectedIds(newSet);
     };
 
-    // Export Data formatting
     const exportData = useMemo(() => {
         return filteredCustomers.map((customer) => {
             const firstName = customer.first_name || "";
             const lastName = customer.last_name || "";
             const totalOrders = orderCounts[customer.id] || 0;
+            const spent = totalSpent[customer.id] || 0;
             return {
                 ID: customer.id,
                 Username: customer.username || "Not Set",
@@ -100,10 +110,11 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                 Email: customer.email || "",
                 Phone: customer.phone || "--",
                 Joined_Date: customer.created_at || null,
-                Total_Orders: totalOrders
+                Total_Orders: totalOrders,
+                Total_Spent: spent
             };
         });
-    }, [filteredCustomers, orderCounts]);
+    }, [filteredCustomers, orderCounts, totalSpent]);
 
     // Apply pagination
     const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
@@ -114,7 +125,7 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
     // Reset page when filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, statusFilter]);
+    }, [searchQuery, sortBy]);
 
     return (
         <>
@@ -132,12 +143,18 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                     <SharedFilterDropdown
                         options={[
-                            { label: "Status: All", value: "All" },
-                            { label: "Status: Returning (Has Orders)", value: "Returning" },
-                            { label: "Status: New (No Orders)", value: "New" }
+                            { label: "Newest First", value: "newest" },
+                            { label: "Total Spent: High to Low", value: "total_spent" },
+                            { label: "Order Count: High to Low", value: "order_count" }
                         ]}
-                        activeValue={statusFilter}
-                        onFilterChange={(val) => setStatusFilter(val as any)}
+                        activeValue={sortBy}
+                        onFilterChange={(val) => setSortBy(val as any)}
+                        triggerLabel={
+                            sortBy === "newest" ? "Newest First" :
+                                sortBy === "total_spent" ? "Total Spent: High to Low" :
+                                    "Order Count: High to Low"
+                        }
+                        triggerIcon={null}
                     />
 
                     <ExcelExportButton
@@ -149,7 +166,8 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                             { header: "Email", key: "Email", width: 30, type: "text" },
                             { header: "Phone", key: "Phone", width: 20, type: "text" },
                             { header: "Joined Date", key: "Joined_Date", width: 15, type: "date" },
-                            { header: "Total Orders", key: "Total_Orders", width: 15, type: "number" }
+                            { header: "Total Orders", key: "Total_Orders", width: 15, type: "number" },
+                            { header: "Total Spent (RM)", key: "Total_Spent", width: 18, type: "currency" }
                         ]}
                         filename="Customers_Export"
                         sheetName="Customers"
@@ -175,7 +193,7 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Phone</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Joined Date</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-center">Total Orders</th>
-                                <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-center">Status</th>
+                                <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-right">Total Spent</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                             </tr>
                         </thead>
@@ -248,11 +266,11 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                                                 {realOrdersCount}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap text-center">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide ${isReturning ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-blue-50 text-blue-600 border border-blue-200'}`}>
-                                                <div className={`w-1.5 h-1.5 rounded-full ${isReturning ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                                                {isReturning ? "Returning" : "New"}
-                                            </span>
+                                        <td className="py-4 px-6 whitespace-nowrap text-right text-sm font-bold">
+                                            {(() => {
+                                                const spent = totalSpent[customer.id] || 0;
+                                                return spent > 0 ? `RM ${spent.toFixed(2)}` : '--';
+                                            })()}
                                         </td>
                                         <td className="py-4 px-6 whitespace-nowrap text-right">
                                             <Link

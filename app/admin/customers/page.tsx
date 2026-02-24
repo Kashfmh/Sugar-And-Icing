@@ -28,17 +28,22 @@ export default async function AdminCustomersPage() {
         .eq('role', 'customer')
         .order("created_at", { ascending: false });
 
-    // Separate fetch to aggregate order counts manually due to no explicit FK relation from profiles to orders
+    // Separate fetch to aggregate order counts + total spent (client-side aggregation, fine for < 1000 users)
     const { data: allOrders } = await supabase
         .from("orders")
-        .select("user_id");
+        .select("user_id, total_amount, status");
 
-    const orderCounts = (allOrders || []).reduce((acc: Record<string, number>, order) => {
-        if (order.user_id) {
-            acc[order.user_id] = (acc[order.user_id] || 0) + 1;
+    const orderCounts: Record<string, number> = {};
+    const totalSpent: Record<string, number> = {};
+
+    for (const order of (allOrders || [])) {
+        if (!order.user_id) continue;
+        orderCounts[order.user_id] = (orderCounts[order.user_id] || 0) + 1;
+        // Only sum completed/delivered orders for the "Total Spent" VIP metric
+        if (['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status)) {
+            totalSpent[order.user_id] = (totalSpent[order.user_id] || 0) + (order.total_amount || 0);
         }
-        return acc;
-    }, {});
+    }
 
     // Array of nice pastel background colors for text avatars
     const avatarColors = [
@@ -62,7 +67,7 @@ export default async function AdminCustomersPage() {
                 </div>
             </div>
 
-            <CustomersInteractiveTable customers={(customers || []) as any} orderCounts={orderCounts} />
+            <CustomersInteractiveTable customers={(customers || []) as any} orderCounts={orderCounts} totalSpent={totalSpent} />
 
             <div className="text-center text-xs font-medium text-neutral-400 pb-8">
                 © {new Date().getFullYear()} Sugar and Icing. All rights reserved.
