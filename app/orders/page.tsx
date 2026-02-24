@@ -9,12 +9,9 @@ import { useCart } from '@/hooks/useCart';
 import { createClient } from '@/lib/supabase/client';
 import AuthSync from '@/app/components/AuthSync';
 import LoginRequired from './_components/LoginRequired';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import SharedSearchBar from '@/app/components/ui/SharedSearchBar';
+import SharedFilterDropdown from '@/app/components/ui/SharedFilterDropdown';
+import SharedPagination from '@/app/components/ui/SharedPagination';
 import { Order } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -161,33 +158,23 @@ export default function OrdersPage() {
                     <h1 className="text-2xl font-serif font-bold text-sai-charcoal">Order History</h1>
 
                     {/* Search & Sort Row */}
-                    <div className="flex gap-3">
-                        <div className="relative flex-1">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-4 w-4 text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Search orders..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9 pr-4 py-2 w-full bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/20 focus:border-sai-pink transition-all placeholder:text-gray-400"
-                            />
-                        </div>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="flex items-center justify-center p-2 bg-white border border-gray-200 rounded-xl hover:border-sai-pink/50 focus:outline-none focus:ring-2 focus:ring-sai-pink/20 transition-all min-w-[42px]">
-                                    <Filter className="w-4 h-4 text-gray-500" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-100 rounded-xl shadow-lg p-1 z-50">
-                                <DropdownMenuItem onClick={() => setSortOption('newest')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink">Latest First</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSortOption('oldest')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink">Oldest First</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSortOption('price_high')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink">Price: High to Low</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSortOption('price_low')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink">Price: Low to High</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    <div className="flex gap-3 items-center">
+                        <SharedSearchBar
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            placeholder="Search orders..."
+                            className="bg-white border-gray-200 shadow-sm"
+                        />
+                        <SharedFilterDropdown
+                            options={[
+                                { label: 'Latest First', value: 'newest' },
+                                { label: 'Oldest First', value: 'oldest' },
+                                { label: 'Price: High to Low', value: 'price_high' },
+                                { label: 'Price: Low to High', value: 'price_low' },
+                            ]}
+                            activeValue={sortOption}
+                            onFilterChange={setSortOption}
+                        />
                     </div>
 
                     {/* Filter Tabs - Horizontal Scroll */}
@@ -233,33 +220,11 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="flex justify-center flex-wrap gap-2 mt-8">
-                        <button
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className="px-3 py-1 rounded border bg-white disabled:opacity-50 hover:bg-gray-50 text-sm font-medium text-gray-600"
-                        >
-                            Prev
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                            <button
-                                key={p}
-                                onClick={() => setPage(p)}
-                                className={`px-3 py-1 rounded border min-w-[2rem] text-sm font-medium transition-colors ${page === p ? 'bg-sai-pink text-white border-sai-pink' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
-                            >
-                                {p}
-                            </button>
-                        ))}
-                        <button
-                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                            disabled={page === totalPages}
-                            className="px-3 py-1 rounded border bg-white disabled:opacity-50 hover:bg-gray-50 text-sm font-medium text-gray-600"
-                        >
-                            Next
-                        </button>
-                    </div>
-                )}
+                <SharedPagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );

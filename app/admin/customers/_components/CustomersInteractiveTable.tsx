@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Search, Filter, ChevronRight, Check } from "lucide-react";
 import { getInitials } from "@/lib/utils";
-import { ExcelExportButton } from "../../_components/ExcelExportButton";
+import { ExcelExportButton } from '../../_components/ExcelExportButton';
+import SharedSearchBar from '@/app/components/ui/SharedSearchBar';
+import SharedFilterDropdown from '@/app/components/ui/SharedFilterDropdown';
+import SharedPagination from '@/app/components/ui/SharedPagination';
 
 type CustomerRow = {
     id: string;
@@ -26,6 +29,10 @@ interface CustomersInteractiveTableProps {
 export function CustomersInteractiveTable({ customers, orderCounts }: CustomersInteractiveTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"All" | "Returning" | "New">("All");
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const avatarColors = [
@@ -98,33 +105,40 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
         });
     }, [filteredCustomers, orderCounts]);
 
+    // Apply pagination
+    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+    const paginatedCustomers = useMemo(() => {
+        return filteredCustomers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    }, [filteredCustomers, currentPage, itemsPerPage]);
+
+    // Reset page when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
+
     return (
         <>
             {/* Filter and Action Bar Container */}
             <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 {/* Search Bar */}
-                <div className="relative flex-1 w-full lg:max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, username, or email..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/20"
-                    />
-                </div>
+                <SharedSearchBar
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    placeholder="Search by name, username, or email..."
+                    className="w-full lg:max-w-md"
+                />
 
                 {/* Filters Row */}
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value as any)}
-                        className="flex-1 lg:flex-none flex items-center justify-between gap-3 px-4 py-2 border border-neutral-200 rounded-lg text-sm font-medium text-sai-charcoal hover:bg-neutral-50 transition-colors bg-white whitespace-nowrap outline-none focus:ring-2 focus:ring-sai-pink/20 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%23A3A3A3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1rem] bg-[position:calc(100%-10px)_center] bg-no-repeat pr-10"
-                    >
-                        <option value="All">Status: All</option>
-                        <option value="Returning">Status: Returning (Has Orders)</option>
-                        <option value="New">Status: New (No Orders)</option>
-                    </select>
+                    <SharedFilterDropdown
+                        options={[
+                            { label: "Status: All", value: "All" },
+                            { label: "Status: Returning (Has Orders)", value: "Returning" },
+                            { label: "Status: New (No Orders)", value: "New" }
+                        ]}
+                        activeValue={statusFilter}
+                        onFilterChange={(val) => setStatusFilter(val as any)}
+                    />
 
                     <ExcelExportButton
                         data={exportData}
@@ -166,7 +180,7 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCustomers?.map((customer, index) => {
+                            {paginatedCustomers.map((customer, index) => {
                                 const firstName = customer?.first_name || "";
                                 const lastName = customer?.last_name || "";
                                 const email = customer?.email || "";
@@ -264,12 +278,14 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                 </div>
 
                 {/* Pagination Footer */}
-                <div className="border-t border-neutral-100 p-4 flex items-center justify-between text-sm text-sai-gray">
-                    <span><b>{filteredCustomers.length}</b> customer(s) found</span>
-                    <div className="flex gap-2">
-                        <button className="w-8 h-8 flex items-center justify-center border border-neutral-200 bg-white rounded-lg hover:bg-neutral-50 text-sai-gray disabled:opacity-50" disabled>&lt;</button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-sai-pink text-white rounded-lg font-bold shadow-sm">1</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-neutral-200 bg-white rounded-lg hover:bg-neutral-50 text-sai-gray disabled:opacity-50" disabled>&gt;</button>
+                <div className="border-t border-neutral-100 p-4 pb-6 flex flex-col items-center justify-center gap-4 text-sm text-sai-gray bg-white rounded-b-2xl">
+                    <span className="font-medium"><b>{filteredCustomers.length}</b> customer(s) found</span>
+                    <div className="-mt-6">
+                        <SharedPagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
                 </div>
             </div>

@@ -1,12 +1,8 @@
 import CategoryTabs from '@/app/components/CategoryTabs';
-import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { SlidersHorizontal } from 'lucide-react';
 import FilterModal from '@/app/components/FilterModal';
+import SharedSearchBar from '@/app/components/ui/SharedSearchBar';
+import SharedFilterDropdown from '@/app/components/ui/SharedFilterDropdown';
 
 interface MenuFilterBarProps {
     categories: string[];
@@ -40,30 +36,13 @@ export default function MenuFilterBar({
             {/* Desktop: Search & Filters Toolbar */}
             <section className="hidden md:block px-6 py-6">
                 <div className="max-w-6xl mx-auto">
-                    {/* Search Bar */}
-                    <div className="mb-6">
-                        <div className="relative max-w-md mx-auto">
-                            <input
-                                type="text"
-                                placeholder="Search products..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-3 pl-11 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink transition-all"
-                            />
-                            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            {searchQuery && (
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
+                    <div className="mb-6 max-w-md mx-auto">
+                        <SharedSearchBar
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            placeholder="Search products..."
+                            className="bg-white border-gray-200 shadow-sm"
+                        />
                     </div>
 
                     {/* Category Filters - Centered */}
@@ -80,45 +59,23 @@ export default function MenuFilterBar({
                         <p className="text-sm text-gray-600">
                             Showing <span className="font-semibold">{paginatedCount}</span> of <span className="font-semibold">{totalCount}</span> products
                         </p>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-2">
-                                    <span className="text-sm">
-                                        {sortBy === 'newest' && 'Newest First'}
-                                        {sortBy === 'price-low' && 'Price: Low to High'}
-                                        {sortBy === 'price-high' && 'Price: High to Low'}
-                                        {sortBy === 'name' && 'Name: A-Z'}
-                                    </span>
-                                    <ChevronDown className="w-4 h-4 text-gray-500 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                    onSelect={() => setSortBy('newest')}
-                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
-                                >
-                                    Newest First
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onSelect={() => setSortBy('price-low')}
-                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
-                                >
-                                    Price: Low to High
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onSelect={() => setSortBy('price-high')}
-                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
-                                >
-                                    Price: High to Low
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onSelect={() => setSortBy('name')}
-                                    className="hover:bg-sai-pink/5 focus:bg-sai-pink/10 focus:text-sai-pink cursor-pointer"
-                                >
-                                    Name: A-Z
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <SharedFilterDropdown
+                            options={[
+                                { label: 'Newest First', value: 'newest' },
+                                { label: 'Price: Low to High', value: 'price-low' },
+                                { label: 'Price: High to Low', value: 'price-high' },
+                                { label: 'Name: A-Z', value: 'name' }
+                            ]}
+                            activeValue={sortBy}
+                            onFilterChange={(val) => setSortBy(val as any)}
+                            triggerLabel={
+                                sortBy === 'newest' ? 'Newest First' :
+                                    sortBy === 'price-low' ? 'Price: Low to High' :
+                                        sortBy === 'price-high' ? 'Price: High to Low' :
+                                            'Name: A-Z'
+                            }
+                            triggerIcon={null}
+                        />
                     </div>
                 </div>
             </section>
@@ -128,24 +85,12 @@ export default function MenuFilterBar({
                 <div className="flex gap-2">
                     {/* Search Bar */}
                     <div className="relative flex-1">
-                        <input
-                            type="text"
+                        <SharedSearchBar
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
                             placeholder="Search products..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sai-pink/50 focus:border-sai-pink"
+                            className="bg-white border-gray-200"
                         />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        )}
                     </div>
 
                     {/* Filter Button */}

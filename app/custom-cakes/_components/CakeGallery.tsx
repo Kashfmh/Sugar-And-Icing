@@ -5,6 +5,7 @@ import GalleryCard from '@/app/components/GalleryCard';
 import GalleryListItem from '@/app/components/GalleryListItem';
 import ProductCardSkeleton from '@/app/components/ProductCardSkeleton';
 import GalleryListItemSkeleton from '@/app/components/GalleryListItemSkeleton';
+import SharedPagination from '@/app/components/ui/SharedPagination';
 import { Product } from '@/hooks/useProductFilters';
 
 interface CakeGalleryProps {
@@ -28,11 +29,11 @@ export default function CakeGallery({
 }: CakeGalleryProps) {
     const galleryTopRef = useRef<HTMLElement>(null);
 
-    const handlePageChange = (newPage: number) => {
-        if (newPage === currentPage) return;
+    const handlePageChange = (newPage: number | ((prev: number) => number)) => {
+        const next = typeof newPage === 'function' ? newPage(currentPage) : newPage;
+        if (next === currentPage) return;
 
-        setCurrentPage(newPage);
-
+        setCurrentPage(next);
         galleryTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
@@ -92,40 +93,13 @@ export default function CakeGallery({
                         </div>
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-2 mt-8">
-                                <button
-                                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                                >
-                                    Previous
-                                </button>
-
-                                <div className="flex gap-1">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <button
-                                            key={page}
-                                            onClick={() => handlePageChange(page)}
-                                            className={`w-10 h-10 rounded-lg transition-colors ${currentPage === page
-                                                ? 'bg-sai-pink text-white'
-                                                : 'border border-gray-200 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <button
-                                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        )}
+                        <div className="mt-8">
+                            <SharedPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
+                        </div>
                     </>
                 )}
             </div>

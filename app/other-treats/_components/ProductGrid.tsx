@@ -2,6 +2,7 @@ import ProductCard from '@/app/components/ProductCard';
 import ProductCardSkeleton from '@/app/components/ProductCardSkeleton';
 import ProductListItem from '@/app/components/ProductListItem';
 import ProductListItemSkeleton from '@/app/components/ProductListItemSkeleton';
+import SharedPagination from '@/app/components/ui/SharedPagination';
 import { Product } from '@/hooks/useProductFilters';
 
 interface ProductGridProps {
@@ -85,40 +86,13 @@ export default function ProductGrid({
                         </div>
 
                         {/* Pagination Controls */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-2 mt-8">
-                                <button
-                                    onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                                >
-                                    Previous
-                                </button>
-
-                                <div className="flex gap-1">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <button
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`w-10 h-10 rounded-lg transition-colors ${currentPage === page
-                                                ? 'bg-sai-pink text-white'
-                                                : 'border border-gray-200 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <button
-                                    onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="px-4 py-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        )}
+                        <div className="mt-8">
+                            <SharedPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
                     </>
                 )}
             </div>

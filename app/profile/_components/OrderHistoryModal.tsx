@@ -2,12 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Filter, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import SharedSearchBar from '@/app/components/ui/SharedSearchBar';
+import SharedFilterDropdown from '@/app/components/ui/SharedFilterDropdown';
+import SharedPagination from '@/app/components/ui/SharedPagination';
 
 import { Order, OrderItem } from '@/types';
 import dynamic from 'next/dynamic';
@@ -157,47 +154,23 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
                             </div>
 
                             <div className="bg-gray-50 p-6 pb-2">
-                                <div className="flex gap-4">
-                                    <div className="relative flex-1">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search by Order ID or Product Name"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sai-pink/20 focus:border-sai-pink transition-all placeholder:text-gray-400 text-sai-charcoal"
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <button className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-sai-charcoal hover:border-sai-pink/50 focus:outline-none focus:ring-2 focus:ring-sai-pink/20 transition-all">
-                                                    <Filter className="w-4 h-4 text-gray-500" />
-                                                    <span className="font-medium">
-                                                        {sortOption === 'newest' && 'Latest First'}
-                                                        {sortOption === 'oldest' && 'Oldest First'}
-                                                        {sortOption === 'price_high' && 'Price: High to Low'}
-                                                        {sortOption === 'price_low' && 'Price: Low to High'}
-                                                    </span>
-                                                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                                                </button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-100 rounded-xl shadow-lg p-1 z-[9999]">
-                                                <DropdownMenuItem onClick={() => setSortOption('newest')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink focus:bg-gray-50 focus:text-sai-pink">
-                                                    Latest First
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setSortOption('oldest')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink focus:bg-gray-50 focus:text-sai-pink">
-                                                    Oldest First
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setSortOption('price_high')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink focus:bg-gray-50 focus:text-sai-pink">
-                                                    Price: High to Low
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setSortOption('price_low')} className="cursor-pointer rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-sai-pink focus:bg-gray-50 focus:text-sai-pink">
-                                                    Price: Low to High
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
+                                <div className="flex gap-4 items-center">
+                                    <SharedSearchBar
+                                        searchQuery={searchQuery}
+                                        setSearchQuery={setSearchQuery}
+                                        placeholder="Search by Order ID or Product Name"
+                                        className="bg-white border-gray-200"
+                                    />
+                                    <SharedFilterDropdown
+                                        options={[
+                                            { label: 'Latest First', value: 'newest' },
+                                            { label: 'Oldest First', value: 'oldest' },
+                                            { label: 'Price: High to Low', value: 'price_high' },
+                                            { label: 'Price: Low to High', value: 'price_low' }
+                                        ]}
+                                        activeValue={sortOption}
+                                        onFilterChange={setSortOption}
+                                    />
                                 </div>
                             </div>
 
@@ -221,33 +194,13 @@ export default function OrderHistoryModal({ isOpen, onClose, orders }: OrderHist
 
 
                             {/* Pagination Controls */}
-                            {totalPages > 1 && (
-                                <div className="bg-white border-t border-gray-100 p-4 flex justify-center gap-2">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setPage(p => Math.max(1, p - 1)); }}
-                                        disabled={page === 1}
-                                        className="px-3 py-1 rounded border disabled:opacity-50 hover:bg-gray-50 text-sm"
-                                    >
-                                        Prev
-                                    </button>
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                                        <button
-                                            key={p}
-                                            onClick={(e) => { e.stopPropagation(); setPage(p); }}
-                                            className={`px-3 py-1 rounded border min-w-[2rem] text-sm ${page === p ? 'bg-sai-pink text-white border-sai-pink' : 'hover:bg-gray-50'}`}
-                                        >
-                                            {p}
-                                        </button>
-                                    ))}
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setPage(p => Math.min(totalPages, p + 1)); }}
-                                        disabled={page === totalPages}
-                                        className="px-3 py-1 rounded border disabled:opacity-50 hover:bg-gray-50 text-sm"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            )}
+                            <div className="bg-white border-t border-gray-100 p-4 flex justify-center pb-6">
+                                <SharedPagination
+                                    currentPage={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                />
+                            </div>
 
                         </motion.div>
                     </motion.div>
