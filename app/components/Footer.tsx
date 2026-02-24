@@ -20,7 +20,7 @@ export default function Footer() {
         });
     }, []);
 
-    if (pathname === '/' || pathname === '/login') {
+    if (pathname === '/' || pathname === '/login' || pathname.startsWith('/admin')) {
         return null;
     }
 

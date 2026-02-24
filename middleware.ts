@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
     const protectedPrefixes = ['/profile', '/orders', '/account'];
     if (protectedPrefixes.some(p => path.startsWith(p)) && !user) {
         url.pathname = '/login';
-        url.searchParams.set('next', path);
+        url.searchParams.set('redirect', path);
         return NextResponse.redirect(url);
     }
 
@@ -80,15 +80,19 @@ export async function middleware(request: NextRequest) {
     if (path.startsWith('/admin')) {
         if (!user) {
             url.pathname = '/login';
+            url.searchParams.set('redirect', path);
             return NextResponse.redirect(url);
         }
 
         // Strictly check role from DB or custom claims if available
-        // For now, we trust the session but ideally we fetch profile
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        const { data: profile, error } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+
+        // Allow if they actually have the 'admin' role in DB
         // @ts-ignore
         if (profile?.role !== 'admin') {
-            url.pathname = '/'; // Bounce non-admins to home
+            url.pathname = '/login'; // Bounce non-admins and unauthenticated to login
+            url.searchParams.set('redirect', path);
+            url.searchParams.set('auth_err', error?.message || `role_is_${profile?.role || 'null'}`);
             return NextResponse.redirect(url);
         }
     }

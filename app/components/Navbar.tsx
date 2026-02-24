@@ -126,30 +126,20 @@ export default function Navbar() {
 
     const isLoginPage = pathname === '/login';
 
+    if (pathname?.startsWith('/admin')) return null;
+
     return (
         <AceternityNavbar className={`top-2 text-sai-charcoal ${isLoginPage ? 'hidden lg:block' : ''}`}>
             <NavBody>
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
-                    {/* Logo Icon */}
-                    <div className="relative w-[35px] h-[35px]">
-                        <Image
-                            src={'/images/logo/icon-pink.svg'}
-                            alt="Sugar And Icing"
-                            fill
-                            className={`rounded-lg object-contain transition-all duration-300 ${scrolled ? 'opacity-100 scale-100' : 'opacity-100 scale-100'}`}
-                        />
-                    </div>
-
-                    {/* Logo Text */}
-                    <span className="font-semibold text-base relative overflow-hidden text-sai-charcoal min-w-[140px]">
-                        <span className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ${scrolled ? 'opacity-100 translate-y-[-50%]' : 'opacity-0 translate-y-10'}`}>
-                            SAI
-                        </span>
-                        <span className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ${scrolled ? 'opacity-0 -translate-y-10' : 'opacity-100 translate-y-[-50%]'}`}>
-                            Sugar And Icing
-                        </span>
-                        <span className="opacity-0">Sugar And Icing</span>
-                    </span>
+                    {/* Logo */}
+                    <Image
+                        src={'/images/logo/full-logo-pink.svg'}
+                        alt="Sugar And Icing"
+                        width={180}
+                        height={45}
+                        className={`object-contain transition-all duration-300 ${scrolled ? 'opacity-100 scale-95' : 'opacity-100 scale-100'}`}
+                    />
                 </Link>
 
                 {/* NavItems handles the active state internally via pathname prop */}
@@ -174,11 +164,8 @@ export default function Navbar() {
             {!isLoginPage && (
                 <MobileNav>
                     <MobileNavHeader>
-                        <Link href="/" className="flex items-center space-x-2 px-2 py-1">
-                            <Image src="/images/logo/icon-pink.svg" alt="Sugar And Icing" width={32} height={32} className="rounded-lg" />
-                            <span className="font-semibold text-base text-sai-charcoal">
-                                {scrolled ? 'SAI' : 'Sugar And Icing'}
-                            </span>
+                        <Link href="/" className="flex items-center px-2 py-1">
+                            <Image src="/images/logo/full-logo-pink.svg" alt="Sugar And Icing" width={140} height={35} className="object-contain" />
                         </Link>
                         <div className="flex items-center gap-4">
                             <InboxTrigger userId={user?.id} />
