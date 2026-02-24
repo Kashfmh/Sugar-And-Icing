@@ -63,7 +63,7 @@ export default async function AdminOrdersPage() {
                     <div className="flex items-center gap-2 mt-1 text-sm font-medium text-sai-gray">
                         <span>Home</span>
                         <span className="text-neutral-300">›</span>
-                        <span className="text-sai-charcoal">Orders</span>
+                        <span className="text-sai-pink">Orders</span>
                     </div>
                 </div>
             </div>
