@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ChevronRight, Calendar, Check } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -16,6 +17,7 @@ type OrderRow = {
     total_amount: number;
     created_at: string;
     profiles: any;
+    item_count?: number;
 };
 
 interface OrdersInteractiveTableProps {
@@ -26,6 +28,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const router = useRouter();
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -54,10 +57,26 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
             case 'completed':
             case 'delivered':
             case 'paid': return 'bg-green-50 text-green-600 border border-green-200';
+            case 'pending_payment': return 'bg-yellow-50 text-yellow-700 border border-yellow-200';
             case 'cancelled':
             case 'refunded': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
             default: return 'bg-neutral-50 text-neutral-600 border border-neutral-200';
         }
+    };
+
+    const getStatusLabel = (status: string) => {
+        const labels: Record<string, string> = {
+            pending: 'Pending',
+            pending_payment: 'Payment Pending',
+            processing: 'Processing',
+            paid: 'Paid',
+            shipped: 'Shipped',
+            delivered: 'Delivered',
+            completed: 'Completed',
+            cancelled: 'Cancelled',
+            refunded: 'Refunded',
+        };
+        return labels[status.toLowerCase()] ?? status.charAt(0).toUpperCase() + status.slice(1);
     };
 
     // Filter logic
@@ -95,6 +114,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                 Customer: customerName,
                 Date: order.created_at,
                 TotalAmount: order.total_amount,
+                Items: order.item_count || 0,
                 Status: order.status
             };
         });
@@ -172,6 +192,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                             { header: "Customer Name", key: "Customer", width: 30, type: "text" },
                             { header: "Date", key: "Date", width: 15, type: "date" },
                             { header: "Total Amount", key: "TotalAmount", width: 15, type: "currency" },
+                            { header: "Items", key: "Items", width: 10, type: "number" },
                             { header: "Status", key: "Status", width: 15, type: "text" }
                         ]}
                         filename="Orders_Export"
@@ -197,7 +218,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Order ID</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Customer</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Date</th>
-                                <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Items (Mock)</th>
+                                <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-center">Items</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Total</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-center">Status</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
@@ -218,10 +239,10 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                 return (
                                     <tr
                                         key={order.id}
-                                        className={`border-b border-neutral-50 last:border-0 hover:bg-neutral-50/50 transition-colors group ${isSelected ? 'bg-pink-50/30' : ''}`}
-                                        onClick={() => toggleSelect(order.id)}
+                                        className={`border-b border-neutral-50 last:border-0 hover:bg-neutral-50/50 transition-colors group cursor-pointer ${isSelected ? 'bg-pink-50/30' : ''}`}
+                                        onClick={() => router.push(`/admin/orders/${order.id}`)}
                                     >
-                                        <td className="py-4 px-6 text-center">
+                                        <td className="py-4 px-6 text-center" onClick={(e) => { e.stopPropagation(); toggleSelect(order.id); }}>
                                             <div
                                                 className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer mx-auto transition-colors ${isSelected ? 'bg-sai-pink border-sai-pink text-white' : 'border-neutral-300 bg-white group-hover:border-sai-pink'}`}
                                             >
@@ -229,10 +250,12 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                             </div>
                                         </td>
                                         <td className="py-4 px-6 whitespace-nowrap font-medium text-sai-charcoal text-sm">
-                                            #{order.id.split('-')[0].toUpperCase()}
+                                            <Link href={`/admin/orders/${order.id}`} className="hover:text-sai-pink transition-colors">
+                                                #{order.id.split('-')[0].toUpperCase()}
+                                            </Link>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <div className="flex items-center gap-3">
+                                            <Link href={`/admin/orders/${order.id}`} className="flex items-center gap-3 group/link">
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 ${profile?.avatar_url ? 'bg-transparent' : colorClass}`}>
                                                     {profile?.avatar_url ? (
                                                         <img src={profile.avatar_url} alt={customerName} className="w-full h-full object-cover rounded-full" />
@@ -241,30 +264,30 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-sm text-sai-charcoal line-clamp-1 group-hover:text-sai-pink transition-colors">{customerName}</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-xs text-sai-gray line-clamp-1">{email}</p>
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <p className="font-bold text-sm text-sai-charcoal line-clamp-1 group-hover/link:text-sai-pink transition-colors">{customerName}</p>
                                                         {username && (
-                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-pink-50 text-sai-pink rounded border border-pink-100/50">
+                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-pink-50 text-sai-pink rounded border border-pink-100/50 whitespace-nowrap flex-shrink-0">
                                                                 @{username}
                                                             </span>
                                                         )}
                                                     </div>
+                                                    <p className="text-xs text-sai-gray line-clamp-1">{email}</p>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         </td>
                                         <td className="py-4 px-6 whitespace-nowrap text-sm text-sai-gray">
                                             {format(new Date(order.created_at), "MMM d, yyyy")}
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap text-sm text-sai-gray">
-                                            {3 /* Placeholder until order items are implemented */} items
+                                        <td className="py-4 px-6 whitespace-nowrap text-sm text-sai-gray text-center font-bold">
+                                            {order.item_count || 0}
                                         </td>
                                         <td className="py-4 px-6 whitespace-nowrap font-bold text-sai-charcoal">
                                             {formatCurrency(order.total_amount || 0)}
                                         </td>
                                         <td className="py-4 px-6 whitespace-nowrap text-center">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide ${getStatusStyle(order.status)}`}>
-                                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                                {getStatusLabel(order.status)}
                                             </span>
                                         </td>
                                         <td className="py-4 px-6 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>

@@ -7,21 +7,36 @@ import { OrdersInteractiveTable } from "./_components/OrdersInteractiveTable";
 export default async function AdminOrdersPage() {
     const supabase = await createClient();
 
-    const { data: orders } = await supabase
+    const { data: rawOrders, error: ordersError } = await supabase
         .from("orders")
-        .select(`
-      id,
-      status,
-      total_amount,
-      created_at,
-      profiles:user_id (
-        first_name,
-        last_name,
-        email,
-        avatar_url
-      )
-    `)
+        .select("id, status, total_amount, created_at, user_id, order_items(quantity)")
         .order("created_at", { ascending: false });
+
+    if (ordersError) {
+        console.error("[Admin Orders] Failed to fetch orders:", ordersError.message);
+    }
+
+    // Fetch profiles separately to avoid FK join issues
+    const userIds = [...new Set((rawOrders || []).map(o => o.user_id).filter(Boolean))];
+    const { data: profilesData } = userIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, first_name, last_name, email, username, avatar_url")
+            .in("id", userIds)
+        : { data: [] };
+
+    const profilesMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+
+    const orders = (rawOrders || []).map(order => {
+        // Calculate real item count by summing quantities
+        const itemsCount = (order.order_items as any[] || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+        return {
+            ...order,
+            profiles: profilesMap[order.user_id] || null,
+            item_count: itemsCount
+        };
+    });
 
     const getStatusStyle = (status: string) => {
         switch (status.toLowerCase()) {
