@@ -125,7 +125,7 @@ export function CustomersInteractiveTable({ customers, orderCounts }: CustomersI
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                     placeholder="Search by name, username, or email..."
-                    className="w-full lg:max-w-md"
+                    className="w-full"
                 />
 
                 {/* Filters Row */}

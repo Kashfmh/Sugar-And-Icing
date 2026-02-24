@@ -136,7 +136,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                     placeholder="Search by order ID, customer name, email..."
-                    className="w-full lg:max-w-md"
+                    className="w-full"
                 />
 
                 {/* Filters Row */}

@@ -106,15 +106,18 @@ export function ProductsInteractiveTable({ products }: ProductsInteractiveTableP
 
     return (
         <>
-            {/* Filter and Action Bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-neutral-200 bg-white shadow-sm p-4 rounded-2xl mb-4">
-                <div className="flex items-center gap-3 w-full sm:w-auto flex-1 max-w-2xl">
-                    <SharedSearchBar
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        placeholder="Filter by product name, SKU..."
-                        className="w-full sm:w-72"
-                    />
+            {/* Filter and Action Bar Container */}
+            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
+                {/* Search Bar */}
+                <SharedSearchBar
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    placeholder="Search by product name, SKU..."
+                    className="w-full"
+                />
+
+                {/* Filters Row */}
+                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                     <SharedFilterDropdown
                         options={[
                             { label: "All Categories", value: "All" },
@@ -126,8 +129,6 @@ export function ProductsInteractiveTable({ products }: ProductsInteractiveTableP
                         activeValue={categoryFilter}
                         onFilterChange={setCategoryFilter}
                     />
-                </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
                     <ExcelExportButton
                         data={exportData}
                         columns={[
