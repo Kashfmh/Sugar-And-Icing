@@ -90,9 +90,9 @@ export async function middleware(request: NextRequest) {
         // Allow if they actually have the 'admin' role in DB
         // @ts-ignore
         if (profile?.role !== 'admin') {
-            url.pathname = '/login'; // Bounce non-admins and unauthenticated to login
-            url.searchParams.set('redirect', path);
-            url.searchParams.set('auth_err', error?.message || `role_is_${profile?.role || 'null'}`);
+            url.pathname = '/'; // Bounce logged-in non-admins to home page
+            url.searchParams.delete('redirect');
+            url.searchParams.set('error', 'Unauthorized: Admin access required');
             return NextResponse.redirect(url);
         }
     }
