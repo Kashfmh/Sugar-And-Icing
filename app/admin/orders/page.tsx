@@ -1,15 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatCurrency } from "@/lib/utils";
-import Link from "next/link";
-import { format } from "date-fns";
 import { OrdersInteractiveTable } from "./_components/OrdersInteractiveTable";
 
 export default async function AdminOrdersPage() {
     const supabase = await createClient();
 
-    const { data: rawOrders, error: ordersError } = await supabase
-        .from("orders")
-        .select("id, status, total_amount, created_at, user_id, order_items(quantity)")
+    // @ts-ignore - delivery_type, delivery_date exist in DB but not in generated types
+    const { data: rawOrders, error: ordersError } = await (supabase
+        .from("orders") as any)
+        .select("id, status, total_amount, created_at, user_id, delivery_type, delivery_date, order_items(quantity)")
         .order("created_at", { ascending: false });
 
     if (ordersError) {
@@ -17,57 +15,24 @@ export default async function AdminOrdersPage() {
     }
 
     // Fetch profiles separately to avoid FK join issues
-    const userIds = [...new Set((rawOrders || []).map(o => o.user_id).filter(Boolean))];
+    const userIds = [...new Set((rawOrders || []).map((o: any) => o.user_id).filter(Boolean))];
     const { data: profilesData } = userIds.length > 0
-        ? await supabase
-            .from("profiles")
+        ? await (supabase
+            .from("profiles") as any)
             .select("id, first_name, last_name, email, username, avatar_url")
             .in("id", userIds)
         : { data: [] };
 
-    const profilesMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+    const profilesMap = Object.fromEntries((profilesData || []).map((p: any) => [p.id, p]));
 
-    const orders = (rawOrders || []).map(order => {
-        // Calculate real item count by summing quantities
-        const itemsCount = (order.order_items as any[] || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
-
+    const orders = (rawOrders || []).map((order: any) => {
+        const itemsCount = (order.order_items || []).reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
         return {
             ...order,
             profiles: profilesMap[order.user_id] || null,
-            item_count: itemsCount
+            item_count: itemsCount,
         };
     });
-
-    const getStatusStyle = (status: string) => {
-        switch (status.toLowerCase()) {
-            case 'pending': return 'bg-orange-50 text-orange-600 border border-orange-200';
-            case 'processing': return 'bg-blue-50 text-blue-600 border border-blue-200';
-            case 'shipped':
-            case 'completed':
-            case 'delivered':
-            case 'paid': return 'bg-green-50 text-green-600 border border-green-200';
-            case 'cancelled':
-            case 'refunded': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
-            default: return 'bg-neutral-50 text-neutral-600 border border-neutral-200';
-        }
-    };
-
-    // Helper to extract initials safely
-    const getInitials = (firstName: string, lastName: string, email: string) => {
-        if (firstName && lastName) return `${firstName[0]}${lastName[0]}`.toUpperCase();
-        if (firstName) return firstName.slice(0, 2).toUpperCase();
-        if (email) return email.slice(0, 2).toUpperCase();
-        return "??";
-    };
-
-    // Array of nice pastel background colors for text avatars
-    const avatarColors = [
-        'bg-pink-100 text-pink-600',
-        'bg-purple-100 text-purple-600',
-        'bg-teal-100 text-teal-600',
-        'bg-orange-100 text-orange-600',
-        'bg-indigo-100 text-indigo-600'
-    ];
 
     return (
         <div className="max-w-7xl mx-auto space-y-8">

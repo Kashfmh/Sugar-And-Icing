@@ -98,17 +98,12 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             {/* Page Header */}
             <div className="border-b border-neutral-200 pb-6">
                 <h1 className="text-3xl font-serif font-bold text-sai-charcoal tracking-tight">Orders Management</h1>
-                <div className="flex items-center justify-between mt-1">
-                    <div className="flex items-center gap-2 text-sm font-medium text-sai-gray">
-                        <Link href="/admin" className="hover:text-sai-charcoal transition-colors">Home</Link>
-                        <span className="text-neutral-300">›</span>
-                        <Link href="/admin/orders" className="hover:text-sai-charcoal transition-colors">Orders</Link>
-                        <span className="text-neutral-300">›</span>
-                        <span className="text-sai-pink px-1">Order #{shortId}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <StatusSelect orderId={order.id} currentStatus={order.status} />
-                    </div>
+                <div className="flex items-center gap-2 mt-1 text-sm font-medium text-sai-gray">
+                    <Link href="/admin" className="hover:text-sai-charcoal transition-colors">Home</Link>
+                    <span className="text-neutral-300">›</span>
+                    <Link href="/admin/orders" className="hover:text-sai-charcoal transition-colors">Orders</Link>
+                    <span className="text-neutral-300">›</span>
+                    <span className="text-sai-pink px-1">Order #{shortId}</span>
                 </div>
             </div>
 
@@ -129,17 +124,17 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                                             <p className="text-sm text-sai-gray mt-0.5 font-mono">ID: {order.id}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 mt-4">
-                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wide border ${getStatusStyle(order.status)}`}>
-                                            {getStatusLabel(order.status)}
-                                        </span>
-                                        <span className="text-xs text-sai-gray font-medium flex items-center gap-1.5 ml-2">
+                                    <div className="flex items-center gap-3 mt-4">
+                                        <span className="text-xs text-sai-gray font-medium flex items-center gap-1.5">
                                             <Calendar className="h-3.5 w-3.5" />
                                             {format(new Date(order.created_at), "MMMM d, yyyy 'at' h:mm a")}
                                         </span>
                                     </div>
                                 </div>
-                                <PrintReceiptButton />
+                                <div className="flex items-center gap-3">
+                                    <StatusSelect orderId={order.id} currentStatus={order.status} />
+                                    <PrintReceiptButton />
+                                </div>
                             </div>
 
                             {/* Customer Profile Section */}

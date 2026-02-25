@@ -35,7 +35,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </button>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-auto p-6 sm:p-8 relative z-10 w-full">
+            <main className="flex-1 overflow-auto p-6 sm:p-8 w-full">
                 {/* Dynamic padding pushes content gently away from floating button */}
                 <div className={`transition-all duration-300 ease-in-out ${!isSidebarOpen ? 'pl-16 sm:pl-16' : ''}`}>
                     {children}

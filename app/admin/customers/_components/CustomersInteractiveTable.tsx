@@ -2,13 +2,17 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Search, Filter, ChevronRight, Check } from "lucide-react";
+import { Search, Filter, Check, Edit, Trash2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import AlertModal from "@/app/components/AlertModal";
 import { getInitials } from "@/lib/utils";
 import { ExcelExportButton } from '../../_components/ExcelExportButton';
 import SharedSearchBar from '@/app/components/ui/SharedSearchBar';
 import SharedFilterDropdown from '@/app/components/ui/SharedFilterDropdown';
 import SharedPagination from '@/app/components/ui/SharedPagination';
+import SharedTableCheckbox from '@/app/components/ui/SharedTableCheckbox';
 
 type CustomerRow = {
     id: string;
@@ -35,6 +39,25 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const router = useRouter();
+    const supabase = createClient();
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteCustomerId) return;
+        setIsDeleting(true);
+        // Delete customer profile (cascade handles auth if configured, otherwise just profile)
+        const { error } = await supabase.from("profiles").delete().eq("id", deleteCustomerId);
+        setIsDeleting(false);
+        setDeleteCustomerId(null);
+        if (error) {
+            alert("Failed to delete customer: " + error.message);
+        } else {
+            router.refresh();
+        }
+    };
 
     const avatarColors = [
         'bg-pink-100 text-pink-600',
@@ -176,18 +199,16 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
             </div>
 
             {/* Customers Table */}
-            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden mt-4">
+            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm mt-4">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-neutral-100">
                                 <th className="py-5 px-6 w-12 text-center text-[11px] font-bold text-sai-gray uppercase tracking-widest">
-                                    <div
+                                    <SharedTableCheckbox
+                                        checked={allSelected}
                                         onClick={toggleSelectAll}
-                                        className={`w-5 h-5 rounded border flex items-center justify-center cursor-pointer transition-colors mx-auto ${allSelected ? 'bg-sai-pink border-sai-pink' : 'border-neutral-300 bg-white'}`}
-                                    >
-                                        {allSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
-                                    </div>
+                                    />
                                 </th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Customer Info</th>
                                 <th className="py-5 px-6 text-[11px] font-bold text-sai-gray uppercase tracking-widest whitespace-nowrap">Phone</th>
@@ -217,12 +238,10 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
                                 return (
                                     <tr key={customer.id} className={`border-b border-neutral-100 last:border-0 hover:bg-neutral-50/50 transition-colors group ${isSelected ? 'bg-pink-50/30' : ''}`}>
                                         <td className="py-4 px-6 text-center">
-                                            <div
+                                            <SharedTableCheckbox
+                                                checked={isSelected}
                                                 onClick={() => toggleSelectOne(customer.id)}
-                                                className={`w-5 h-5 rounded border flex items-center justify-center cursor-pointer transition-colors mx-auto ${isSelected ? 'bg-sai-pink border-sai-pink' : 'border-neutral-300 bg-white'}`}
-                                            >
-                                                {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
-                                            </div>
+                                            />
                                         </td>
                                         <td className="py-4 px-6">
                                             <Link href={`/admin/customers/${customer.id}`} className="flex items-center gap-3">
@@ -272,14 +291,23 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
                                                 return spent > 0 ? `RM ${spent.toFixed(2)}` : '--';
                                             })()}
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap text-right">
-                                            <Link
-                                                href={`/admin/customers/${customer.id}`}
-                                                className="inline-flex items-center justify-center p-2 text-neutral-400 hover:text-sai-pink transition-colors hover:bg-pink-50 rounded-lg"
-                                                title="View Profile"
-                                            >
-                                                <ChevronRight className="h-5 w-5" />
-                                            </Link>
+                                        <td className="py-4 px-6 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex items-center justify-end gap-1">
+                                                <Link
+                                                    href={`/admin/customers/${customer.id}`}
+                                                    className="p-2 text-neutral-400 hover:text-sai-charcoal transition-colors hover:bg-neutral-100 rounded-lg"
+                                                    title="Edit"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Link>
+                                                <button
+                                                    onClick={() => setDeleteCustomerId(customer.id)}
+                                                    className="p-2 text-neutral-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-lg"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 );
@@ -307,6 +335,16 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
                     </div>
                 </div>
             </div>
+
+            <AlertModal
+                isOpen={!!deleteCustomerId}
+                onClose={() => setDeleteCustomerId(null)}
+                title="Delete Customer"
+                message="Are you sure you want to delete this customer? This action is destructive and cannot be undone."
+                type="delete"
+                confirmText={isDeleting ? "Deleting..." : "Delete"}
+                onConfirm={handleDeleteConfirm}
+            />
         </>
     );
 }
