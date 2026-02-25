@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { ShoppingBag, User, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
     Navbar as AceternityNavbar,
     NavBody,
@@ -95,7 +96,7 @@ export default function Navbar() {
             }
         });
 
-        const handleScroll = () => setScrolled(window.scrollY > 20);
+        const handleScroll = () => setScrolled(window.scrollY > 100);
         window.addEventListener('scroll', handleScroll);
 
         const handleProfileUpdate = async () => {
@@ -130,16 +131,30 @@ export default function Navbar() {
 
     return (
         <AceternityNavbar className={`top-2 text-sai-charcoal ${isLoginPage ? 'hidden lg:block' : ''}`}>
-            <NavBody>
-                <Link href="/" className="relative z-20 mr-4 flex items-center space-x-8 px-2 py-1">
+            <NavBody className="py-1 px-4 h-14">
+                <Link href="/" className="relative z-20 mr-4 flex items-center space-x-4 w-[220px]">
                     {/* Logo */}
                     <Image
-                        src={'/images/logo/full-logo-pink.svg'}
+                        src={'/images/logo/icon-pink.svg'}
                         alt="Sugar And Icing"
-                        width={180}
-                        height={45}
-                        className={`object-contain transition-all duration-300 ${scrolled ? 'opacity-100 scale-95' : 'opacity-100 scale-100'}`}
+                        width={32}
+                        height={32}
+                        className={`object-contain transition-all duration-300 flex-shrink-0`}
                     />
+                    <div className="relative h-7 w-full overflow-hidden flex items-center">
+                        <AnimatePresence mode="wait">
+                            <motion.span
+                                key={scrolled ? 'short' : 'full'}
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: 20, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className={`absolute left-0 font-medium text-sai-charcoal whitespace-nowrap text-lg tracking-tight`}
+                            >
+                                {scrolled ? 'SAI' : 'Sugar And Icing'}
+                            </motion.span>
+                        </AnimatePresence>
+                    </div>
                 </Link>
 
                 {/* NavItems handles the active state internally via pathname prop */}
@@ -164,8 +179,9 @@ export default function Navbar() {
             {!isLoginPage && (
                 <MobileNav>
                     <MobileNavHeader>
-                        <Link href="/" className="flex items-center px-2 py-1">
-                            <Image src="/images/logo/full-logo-pink.svg" alt="Sugar And Icing" width={140} height={35} className="object-contain" />
+                        <Link href="/" className="flex items-center space-x-3 px-2 py-2">
+                            <Image src="/images/logo/icon-pink.svg" alt="Sugar And Icing" width={32} height={32} className="object-contain" />
+                            <span className="font-bold text-sai-charcoal text-lg">SAI</span>
                         </Link>
                         <div className="flex items-center gap-4">
                             <InboxTrigger userId={user?.id} />
