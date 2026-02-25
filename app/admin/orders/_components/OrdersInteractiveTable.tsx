@@ -326,7 +326,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                         onClick={() => router.push(`/admin/orders/${order.id}`)}
                                     >
                                         {/* Checkbox */}
-                                        <td className="py-4 px-6 text-center">
+                                        <td className="py-6 px-6 text-center">
                                             <SharedTableCheckbox
                                                 checked={isSelected}
                                                 onClick={() => toggleSelect(order.id)}
@@ -334,23 +334,23 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                         </td>
 
                                         {/* Order ID */}
-                                        <td className="py-4 px-6 whitespace-nowrap font-mono text-xs text-sai-charcoal font-bold">
+                                        <td className="py-6 px-6 whitespace-nowrap font-mono text-xs text-sai-charcoal font-bold">
                                             #{order.id.split("-")[0].toUpperCase()}
                                         </td>
 
                                         {/* Customer */}
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 overflow-hidden ${profile?.avatar_url ? "bg-transparent" : colorClass}`}>
+                                        <td className="py-6 px-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 border overflow-hidden ${profile?.avatar_url ? "bg-transparent border-transparent" : `${colorClass} border-transparent`}`}>
                                                     {profile?.avatar_url ? (
                                                         <img src={profile.avatar_url} alt={customerName} className="w-full h-full object-cover rounded-full" />
                                                     ) : initials}
                                                 </div>
                                                 <div>
-                                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                                    <div className="flex items-center gap-2 mb-1">
                                                         <p className="font-bold text-sm text-sai-charcoal line-clamp-1 group-hover:text-sai-pink transition-colors">{customerName}</p>
                                                         {username && (
-                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-pink-50 text-sai-pink rounded border border-pink-100/50 whitespace-nowrap flex-shrink-0">
+                                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-pink-50 text-sai-pink rounded-md border border-pink-100/50 whitespace-nowrap flex-shrink-0">
                                                                 @{username}
                                                             </span>
                                                         )}
@@ -361,13 +361,13 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                         </td>
 
                                         {/* Placed On: DD/MM/YYYY HH:MM AM/PM */}
-                                        <td className="py-4 px-6 whitespace-nowrap text-xs text-sai-gray">
+                                        <td className="py-6 px-6 whitespace-nowrap text-xs text-sai-gray">
                                             <div>{format(new Date(order.created_at), "dd/MM/yyyy")}</div>
                                             <div className="text-[10px] text-neutral-400">{format(new Date(order.created_at), "hh:mm a")}</div>
                                         </td>
 
                                         {/* Delivery Type */}
-                                        <td className="py-4 px-6 whitespace-nowrap">
+                                        <td className="py-6 px-6 whitespace-nowrap">
                                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${isPickup ? "bg-purple-50 text-purple-600 border border-purple-100" : "bg-blue-50 text-blue-600 border border-blue-100"}`}>
                                                 {isPickup
                                                     ? <><ShoppingBag className="h-3 w-3" /> Pickup</>
@@ -377,7 +377,7 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                         </td>
 
                                         {/* Delivery Date */}
-                                        <td className="py-4 px-6 whitespace-nowrap text-xs text-sai-gray">
+                                        <td className="py-6 px-6 whitespace-nowrap text-xs text-sai-gray">
                                             {order.delivery_date ? (
                                                 <>
                                                     <div>{format(new Date(order.delivery_date), "dd/MM/yyyy")}</div>
@@ -389,24 +389,24 @@ export function OrdersInteractiveTable({ orders }: OrdersInteractiveTableProps) 
                                         </td>
 
                                         {/* Items */}
-                                        <td className="py-4 px-6 whitespace-nowrap text-sm text-sai-gray text-center font-bold">
+                                        <td className="py-6 px-6 whitespace-nowrap text-sm text-sai-gray text-center font-bold">
                                             {order.item_count || 0}
                                         </td>
 
                                         {/* Total */}
-                                        <td className="py-4 px-6 whitespace-nowrap font-bold text-sai-charcoal">
+                                        <td className="py-6 px-6 whitespace-nowrap font-bold text-sai-charcoal">
                                             {formatCurrency(order.total_amount || 0)}
                                         </td>
 
                                         {/* Status */}
-                                        <td className="py-4 px-6 whitespace-nowrap text-center">
+                                        <td className="py-6 px-6 whitespace-nowrap text-center">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${getStatusStyle(order.status)}`}>
                                                 {getStatusLabel(order.status)}
                                             </span>
                                         </td>
 
                                         {/* Actions */}
-                                        <td className="py-4 px-6 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                        <td className="py-6 px-6 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-1">
                                                 <Link
                                                     href={`/admin/orders/${order.id}`}

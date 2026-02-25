@@ -237,15 +237,15 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
 
                                 return (
                                     <tr key={customer.id} className={`border-b border-neutral-100 last:border-0 hover:bg-neutral-50/50 transition-colors group ${isSelected ? 'bg-pink-50/30' : ''}`}>
-                                        <td className="py-4 px-6 text-center">
+                                        <td className="py-6 px-6 text-center">
                                             <SharedTableCheckbox
                                                 checked={isSelected}
                                                 onClick={() => toggleSelectOne(customer.id)}
                                             />
                                         </td>
-                                        <td className="py-4 px-6">
-                                            <Link href={`/admin/customers/${customer.id}`} className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${customer?.avatar_url ? 'bg-transparent' : colorClass}`}>
+                                        <td className="py-6 px-6">
+                                            <Link href={`/admin/customers/${customer.id}`} className="flex items-center gap-4">
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0 border overflow-hidden ${customer?.avatar_url ? 'bg-transparent border-transparent' : `${colorClass} border-transparent`}`}>
                                                     {customer?.avatar_url ? (
                                                         <img src={customer.avatar_url} alt={customerName} className="w-full h-full object-cover rounded-full" />
                                                     ) : (
@@ -253,7 +253,7 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                    <div className="flex items-center gap-2 mb-1">
                                                         <p
                                                             className="font-bold text-sm text-sai-charcoal group-hover:text-sai-pink transition-colors truncate"
                                                             title={customerName}
@@ -261,7 +261,7 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
                                                             {customerName}
                                                         </p>
                                                         {username && (
-                                                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-pink-50 text-sai-pink rounded-md lowercase tracking-wide border border-pink-100 whitespace-nowrap flex-shrink-0" title={`@${username}`}>
+                                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-pink-50 text-sai-pink rounded-md lowercase tracking-wide border border-pink-100 whitespace-nowrap flex-shrink-0" title={`@${username}`}>
                                                                 @{username}
                                                             </span>
                                                         )}
@@ -270,28 +270,28 @@ export function CustomersInteractiveTable({ customers, orderCounts, totalSpent }
                                                 </div>
                                             </Link>
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap">
+                                        <td className="py-6 px-6 whitespace-nowrap">
                                             <p className="text-[13px] font-medium text-sai-charcoal">
                                                 {customer.phone || "--"}
                                             </p>
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap">
+                                        <td className="py-6 px-6 whitespace-nowrap">
                                             <p className="text-[13px] font-medium text-sai-charcoal">
                                                 {customer.created_at ? format(new Date(customer.created_at), "MMM do, yyyy") : "--"}
                                             </p>
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap text-center">
+                                        <td className="py-6 px-6 whitespace-nowrap text-center">
                                             <span className="inline-block px-3 py-1 bg-neutral-100 rounded-lg text-sm font-bold text-sai-charcoal">
                                                 {realOrdersCount}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap text-right text-sm font-bold">
+                                        <td className="py-6 px-6 whitespace-nowrap text-right text-sm font-bold">
                                             {(() => {
                                                 const spent = totalSpent[customer.id] || 0;
                                                 return spent > 0 ? `RM ${spent.toFixed(2)}` : '--';
                                             })()}
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                                        <td className="py-6 px-6 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-1">
                                                 <Link
                                                     href={`/admin/customers/${customer.id}`}
