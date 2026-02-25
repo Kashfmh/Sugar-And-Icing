@@ -176,70 +176,7 @@ export default function Navbar() {
                 </div>
             </NavBody>
 
-            {!isLoginPage && (
-                <MobileNav>
-                    <MobileNavHeader>
-                        <Link href="/" className="flex items-center space-x-3 px-2 py-2">
-                            <Image src="/images/logo/icon-pink.svg" alt="Sugar And Icing" width={32} height={32} className="object-contain" />
-                            <span className="font-bold text-sai-charcoal text-lg">SAI</span>
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            <InboxTrigger userId={user?.id} />
-                            <CartTriggerButton pathname={pathname} />
-                            <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
-                        </div>
-                    </MobileNavHeader>
-
-                    <MobileNavMenu isOpen={isOpen} onClose={() => setIsOpen(false)}>
-                        {navItems.map((item, idx) => (
-                            <Link
-                                key={`mobile-${idx}`}
-                                href={item.link}
-                                onClick={() => setIsOpen(false)}
-                                className="text-sm font-medium text-neutral-600 hover:text-sai-pink transition-colors"
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
-                        <div className="border-t border-gray-200 pt-4 mt-4 w-full flex flex-col gap-3">
-                            {user ? (
-                                <>
-                                    <Link
-                                        href="/profile"
-                                        onClick={() => setIsOpen(false)}
-                                        className="text-sm font-medium text-neutral-600 hover:text-sai-pink transition-colors"
-                                    >
-                                        Profile
-                                    </Link>
-                                    {user.email && ['saiadmin@yopmail.com'].includes(user.email.toLowerCase()) && (
-                                        <Link
-                                            href="/admin"
-                                            onClick={() => setIsOpen(false)}
-                                            className="text-sm font-medium text-sai-pink hover:text-sai-pink-dark transition-colors font-semibold"
-                                        >
-                                            Admin Dashboard
-                                        </Link>
-                                    )}
-                                    <button
-                                        onClick={handleSignOut}
-                                        className="text-sm font-medium text-neutral-600 hover:text-sai-pink transition-colors text-left"
-                                    >
-                                        Sign Out
-                                    </button>
-                                </>
-                            ) : (
-                                <Link
-                                    href="/login"
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-sm font-medium text-neutral-600 hover:text-sai-pink transition-colors"
-                                >
-                                    Login
-                                </Link>
-                            )}
-                        </div>
-                    </MobileNavMenu>
-                </MobileNav>
-            )}
+            {/* Mobile Nav is hidden as per user request (bottom navbar exists) */}
         </AceternityNavbar>
     );
 }
