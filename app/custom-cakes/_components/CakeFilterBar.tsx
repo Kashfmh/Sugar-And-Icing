@@ -41,7 +41,6 @@ export default function CakeFilterBar({
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
                             placeholder="Search cake designs..."
-                            className="bg-white border-gray-200 shadow-sm"
                         />
                     </div>
 
@@ -83,7 +82,6 @@ export default function CakeFilterBar({
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
                             placeholder="Search cake designs..."
-                            className="bg-white border-gray-200"
                         />
                     </div>
 

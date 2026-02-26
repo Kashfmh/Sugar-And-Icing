@@ -41,7 +41,6 @@ export default function MenuFilterBar({
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
                             placeholder="Search products..."
-                            className="bg-white border-gray-200 shadow-sm"
                         />
                     </div>
 
@@ -89,7 +88,6 @@ export default function MenuFilterBar({
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
                             placeholder="Search products..."
-                            className="bg-white border-gray-200"
                         />
                     </div>
 
