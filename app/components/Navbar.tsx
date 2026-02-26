@@ -131,7 +131,7 @@ export default function Navbar() {
 
     return (
         <AceternityNavbar className={`top-2 text-sai-charcoal ${isLoginPage ? 'hidden lg:block' : ''}`}>
-            <NavBody className="py-1 px-4 h-14">
+            <NavBody className="py-1 px-4 h-12">
                 <Link href="/" className="relative z-20 mr-4 flex items-center space-x-4 w-[220px]">
                     {/* Logo */}
                     <Image
@@ -149,7 +149,7 @@ export default function Navbar() {
                                 animate={{ y: 0, opacity: 1 }}
                                 exit={{ y: 20, opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className={`absolute left-0 font-medium text-sai-charcoal whitespace-nowrap text-lg tracking-tight`}
+                                className={`absolute left-0 font-medium text-[#525252] whitespace-nowrap text-lg`}
                             >
                                 {scrolled ? 'SAI' : 'Sugar And Icing'}
                             </motion.span>
